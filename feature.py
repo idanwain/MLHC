@@ -1,8 +1,9 @@
 from typing import NamedTuple
+from datetime import datetime
 
 
 class Feature(NamedTuple):
     """feature"""
-    time: str
+    time: datetime
     value: int
     uom: str
