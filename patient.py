@@ -1,17 +1,20 @@
-import db_interface
 from typing import List
 from feature import Feature
 
 
 class Patient:
-    def __init__(self, hadm_id, subj_id, age, gender, ethnicity, target):
+    estimated_age = None
+    gender = None
+    ethnicity = None
+    target = None
+
+    def __init__(self, hadm_id, estimated_age, gender, ethnicity, target,events_list):
         self.hadm_id = hadm_id
-        self.subj_id = subj_id
-        self.age = age
+        self.estimated_age = estimated_age
         self.gender = gender
         self.ethnicity = ethnicity
         self.target = target
-        self.events = db_interface.get_events_by_hadm_id(hadm_id)
+        self.events = events_list
 
     def get_feature_from_events(self, label: str or int) -> List[Feature]:
         pass
