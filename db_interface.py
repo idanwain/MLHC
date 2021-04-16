@@ -1,7 +1,8 @@
 from typing import Dict
 from feature import Feature
 
-class db:
+
+class DB:
     def __init__(self, path: str):
 
 
