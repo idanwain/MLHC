@@ -71,6 +71,11 @@ def main():
     patient_list = create_patient_list(db)
     patient_list = remove_features_by_threshold(threshold,patient_list,db)
     print(patient_list[0].events)
+    X_train = []
+    for patient in patient_list:
+        vector = patient.create_vector_from_event_list()
+        X_train.append(vector)
+        print(vector)
 
 
 
