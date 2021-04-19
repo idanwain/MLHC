@@ -1,6 +1,7 @@
 from typing import List
 from feature import Feature
-
+import datetime
+import sys
 
 class Patient:
     estimated_age = None
@@ -23,18 +24,36 @@ class Patient:
     def create_vector_from_event_list(self):
         event_list_vector = []
         for label in self.events:
-            avg_val,max_val = self.get_average_and_max_value_for_label(label)
-            event_list_vector.append(avg_val)
-            event_list_vector.append(max_val)
+            event_list_vector += self.get_essence_values_for_label(label)
         return event_list_vector
 
 
-    def get_average_and_max_value_for_label(self,label):
+    def get_essence_values_for_label(self,label):
+        """
+        Given a label, returns different type of measurements for the label's data.
+        :param label: label name
+        :return: Array of values, which are ordered as follows:
+        Average
+        Max value
+        Min value
+        Latest sample value
+        Amount of samples
+        """
         avg_val = 0
         max_val = -1
+        min_val = sys.maxsize
+        latest_sample = {
+            "Date": datetime.datetime.now(),
+            "Value": 0
+        }
         number_of_samples = len(self.events[label])
         for feature in self.events[label]:
             avg_val += feature.value
-            if(feature.value>max_val):
+            if feature.value > max_val:
                 max_val = feature.value
-        return (avg_val/number_of_samples),max_val
+            if feature.value < min_val:
+                min_val = feature.value
+            if feature.time > latest_sample["Date"]:
+                latest_sample["Date"] = feature.time
+                latest_sample["Value"] = feature.value
+        return [(avg_val/number_of_samples),max_val,min_val,latest_sample["Value"],number_of_samples]
