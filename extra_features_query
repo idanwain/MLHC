@@ -258,4 +258,8 @@ create table extra_features as
     left join admissions as adms on cast(adms.hadm_id as int) = cast(mamc.hadm_id as int)
     left join relevant_note_events as rne on cast(rne.hadm_id as int) = cast(mamc.hadm_id as int);
 
+alter table extra_features add id serial;
+delete from extra_features where id not in (select min(id) from extra_features group by hadm_id);
+alter table extra_features drop column id;
+
 
