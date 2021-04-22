@@ -261,5 +261,5 @@ create table extra_features as
 alter table extra_features add id serial;
 delete from extra_features where id not in (select min(id) from extra_features group by hadm_id);
 alter table extra_features drop column id;
-
+/* TODO: fiil 0's in num transfers instead of nulls */
 
