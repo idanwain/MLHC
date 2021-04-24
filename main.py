@@ -74,13 +74,26 @@ def remove_features_by_threshold(threshold: float, patient_list: list, db):
                 del patient.events[feature]
     return patient_list
 
+def get_top_50_features_xgb(labels_vector,feature_importance:list):
+    indices = []
+    list_cpy = feature_importance.copy()
+    for i in range(50):
+        index = np.argmax(list_cpy)
+        indices.append(index)
+        list_cpy.pop(index)
 
+    #Print list of features, can be removed
+    print("Top 50 features according to XGB:")
+    for i in indices:
+        print("Feature: %s, Importance: %s"%(labels_vector[i],feature_importance[i]))
+    return indices
 def main():
     X_train = []
     y_train = []
     db = DB(relevant_events_path)
     patient_list = create_patient_list(db)
     patient_list = remove_features_by_threshold(threshold, patient_list, db)
+    print(patient_list[0].events)
     for patient in patient_list:
         y_train.append(patient.target)
     labels_vector = patient_list[0].create_labels_vector()
@@ -91,8 +104,8 @@ def main():
     X_train = (imputer.fit_transform(X_train))
     model = XGBClassifier()
     model.fit(X_train, y_train)
-    for i in range(len(model.feature_importances_)):
-        print("Feature: %s. Importance: %s"%(labels_vector[i],model.feature_importances_[i]))
+    top_50_xgb = get_top_50_features_xgb(labels_vector,model.feature_importances_.tolist())
+
 
 
 if __name__ == "__main__":
