@@ -11,7 +11,6 @@ from datetime import datetime
 import sys
 from db_interface import DB
 
-relevant_events_path = "/Users/user/Documents/University/Workshop/features_mimic.csv"
 threshold = 0.5
 
 
@@ -90,7 +89,9 @@ def get_top_50_features_xgb(labels_vector,feature_importance:list):
 def main():
     X_train = []
     y_train = []
-    db = DB(relevant_events_path)
+    db = DB()
+    folds = db.get_folds()
+    print(folds)
     patient_list = create_patient_list(db)
     patient_list = remove_features_by_threshold(threshold, patient_list, db)
     print(patient_list[0].events)

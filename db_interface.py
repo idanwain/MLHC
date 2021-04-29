@@ -8,10 +8,13 @@ import seaborn as sns
 from datetime import datetime
 import sys
 
+relevant_events_path = "/Users/user/Documents/University/Workshop/features_mimic.csv"
+folds_path = "/Users/user/Documents/University/Workshop/folds_mimic_model_a.csv"
 
 class DB:
-    def __init__(self, path: str):
-        self.relevant_events_data = pd.read_csv(path)
+    def __init__(self, data_path="/Users/user/Documents/University/Workshop/features_mimic.csv",folds_path="/Users/user/Documents/University/Workshop/folds_mimic_model_a.csv"):
+        self.relevant_events_data = pd.read_csv(data_path)
+        self.folds_data = pd.read_csv(folds_path)
 
     def get_hadm_id_list(self) -> list:
         """
@@ -68,5 +71,23 @@ class DB:
         for member in members:
             values.append(relevant_rows.iloc[0][member])
         return tuple(values)
+    def get_folds(self):
+        """
+        Returns a dictionary of size 5 containing all folds for the cross validation
+        :return:
+        """
+        res = {}
+        for row in self.folds_data.iterrows():
+            identifier = row[1]["identifier"]
+            fold = "fold_"+str(row[1]["fold"])
+            print(fold)
+            identifier = identifier.split('-')
+            hadm_id = identifier[1]
+            try:
+                res[fold].append(hadm_id)
+            except KeyError:
+                res.update({fold:[hadm_id]})
+        return res
+
 
 
