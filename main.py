@@ -3,6 +3,7 @@ from feature import Feature
 import pandas as pd
 from patient import Patient
 from sklearn.impute import KNNImputer
+from sklearn.ensemble import RandomForestClassifier
 import numpy as np
 from xgboost import XGBClassifier
 import matplotlib.pyplot as plt
@@ -33,7 +34,7 @@ def create_patient_list(db):
         patient = Patient(hadm_id, estimated_age, gender, ethnicity, transfers_before_target, insurance, diagnosis, symptoms, target, event_list, boolean_features)
         patient_list.append(patient)
         i += 1
-    return patient_list  # Needs to be indented out
+    return patient_list
 
 
 def get_features_for_removal(threshold: float, patient_list: list, db):
@@ -75,41 +76,110 @@ def remove_features_by_threshold(threshold: float, patient_list: list, db):
                 del patient.events[feature]
     return patient_list
 
-def get_top_50_features_xgb(labels_vector,feature_importance:list):
+
+def get_top_K_features_xgb(labels_vector, feature_importance: list, k=50):
     indices = []
     list_cpy = feature_importance.copy()
-    for i in range(50):
+    for i in range(k):
         index = np.argmax(list_cpy)
         indices.append(index)
         list_cpy.pop(index)
 
     #Print list of features, can be removed
-    print("Top 50 features according to XGB:")
+    print("Top %s features according to XGB:" % k)
     for i in indices:
-        print("Feature: %s, Importance: %s"%(labels_vector[i],feature_importance[i]))
+        print("Feature: %s, Importance: %s" % (labels_vector[i], feature_importance[i]))
     return indices
 
-def main():
+
+def create_vector_of_important_features(data, features: list):
+    """
+    Given the top K important features, remove unimportant features.
+    :param features:
+    :param data: Vectors of features
+    :param featurs: top K important features, given by their index
+    :return: Set of vectors conatining only relevant features
+    """
+    new_training_data = []
+    for vector in data:
+        new_vector = []
+        for index in features:
+            new_vector.append(vector[index])
+        new_training_data.append(new_vector)
+    new_training_data = np.asarray(new_training_data)
+    return new_training_data
+
+
+def split_data(data, labels):
+    """
+    Splits the data into Traning data and test data. Same for the labels.
+    The split is currently done hard coded and set to 70% of the data.
+
+    :param data: Array of vectors
+    :param labels: Binary vector
+    :return: X_train,y_train,X_test,y_test - traning and test data and labels.
+    """
+
+    # Doing this so i can randomize the data without losing relation to labels
+    joined_data = []
     X_train = []
     y_train = []
+    X_test = []
+    y_test = []
+    pos = []
+    neg = []
+    data_len = len(data)
+    for i in range(data_len):
+        joined_data.append((data[i], labels[i]))
+    np.random.shuffle(joined_data)
+    for vector in joined_data:
+        if(vector[1] == 0):
+            neg.append(vector)
+        else:
+            pos.append(vector)
+    pos_split_index = int(len(pos)*0.7)
+    neg_split_index = int(len(neg) * 0.7)
+    train = neg[:neg_split_index] + pos[:pos_split_index]
+    test = neg[neg_split_index:] + pos[pos_split_index:]
+    # train = joined_data[:int(len(joined_data)*0.7)]
+    # test = joined_data[int(len(joined_data)*0.7):]
+    for vector in train:
+        X_train.append(list(vector[0]))
+        y_train.append(vector[1])
+    for vector in test:
+        X_test.append(list(vector[0]))
+        y_test.append(vector[1])
+    return X_train,y_train,X_test,y_test
+
+
+def main():
+    data = []
+    targets = []
     # db = DB("C:/tools/boolean_features.csv", "C:/tools/extra_features.csv", "C:/tools/feature_mimic_cohort.csv")
     db = DB()
     folds = db.get_folds()
-    print(folds)
     patient_list = create_patient_list(db)
     patient_list = remove_features_by_threshold(threshold, patient_list, db)
     print(patient_list[0].events)
     for patient in patient_list:
-        y_train.append(patient.target)
+        targets.append(patient.target)
     labels_vector = patient_list[0].create_labels_vector()
     for patient in patient_list:
         vector = patient.create_vector_from_event_list()
-        X_train.append(vector)
-    imputer = KNNImputer(n_neighbors=2, weights="uniform")
-    X_train = (imputer.fit_transform(X_train))
+        data.append(vector)
+    imputer = KNNImputer(n_neighbors=10, weights="uniform")
+    data = (imputer.fit_transform(data))
     model = XGBClassifier()
-    model.fit(X_train, y_train)
-    top_50_xgb = get_top_50_features_xgb(labels_vector,model.feature_importances_.tolist())
+    model.fit(data, targets)
+    top_K_xgb = get_top_K_features_xgb(labels_vector, model.feature_importances_.tolist(),k=50)
+    data = create_vector_of_important_features(data, top_K_xgb)
+    X_train,y_train,X_test,y_test = split_data(data, targets)
+    print(X_train,y_train)
+    clf_forest = RandomForestClassifier()
+    clf_forest.fit(X_train,y_train)
+    for i in range(len(X_test)):
+        val = clf_forest.predict([X_test[i]])
+        print("Predicted: %s. Actual: %s"%(val,y_test[i]))
 
 
 if __name__ == "__main__":
