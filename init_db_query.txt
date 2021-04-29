@@ -1,5 +1,5 @@
 /* Set deafult path for MIMIC III Tables */
-set search_path to mimiciii;
+/* set search_path to public; */
 
 ---------------------------------------------------------
 ----------- MODEL A - Data Loading   --------------------
@@ -16,7 +16,7 @@ CREATE TABLE model_a_mimic_cohort (
   target VARCHAR(50)
 );
 COPY model_a_mimic_cohort 
-FROM 'C:\Temp\model_a_mimic_cohort.csv'
+FROM 'C:/tools/model_a_mimic_cohort.csv'
 DELIMITER ','
 CSV HEADER;
 							   
@@ -35,7 +35,7 @@ CREATE TABLE model_b_mimic_cohort (
   target VARCHAR(50)
 );
 COPY model_b_mimic_cohort 
-FROM 'C:\Temp\model_b_mimic_cohort.csv'
+FROM 'C:/tools/model_b_mimic_cohort.csv'
 DELIMITER ','
 CSV HEADER;
 
@@ -54,12 +54,12 @@ insert into cohort_relevant_features (item_id , _table)
 values
     (50889, 'labevents'),
     (51256, 'labevents'),
-    (51279  'labevents'),
+    (51279,  'labevents'),
     (50811 ,'labevents'),
     (51221 , 'labevents'),
     (51250 , 'labevents'),
     (51248 , 'labevents'),
-    (51249  'labevents'),
+    (51249 , 'labevents'),
     (51277 , 'labevents'),
     (51244 , 'labevents'),
     (51254 , 'labevents'),
@@ -200,6 +200,7 @@ values
     (51533 , 'labevents')
 ;
 
+/* ---------- BOOLEAN FEATURES ---------- */
 
 drop table if exists boolean_features;
 create table boolean_features (itemid int, linksto varchar(50), category varchar(100));
@@ -222,7 +223,7 @@ insert into boolean_features select itemid, linksto, category from d_items where
 ) and linksto = 'chartevents';
 
 insert into cohort_relevant_features select itemid, linksto from boolean_features;
-COPY boolean_features To '/boolean_features_mimic.csv' With CSV DELIMITER ',' HEADER;
+COPY boolean_features To 'C:/tools/boolean_features_mimic.csv' With CSV DELIMITER ',' HEADER;
 							   
 -----------------------------------------------------
 ----------- (5) MERGE FEATURES & COHORT -------------
@@ -297,7 +298,7 @@ CREATE TABLE relevant_events as(
 	FROM 
 		all_relevant_lab_features			
 		INNER JOIN (select identifier, target, target_time, admittime from model_a_mimic_cohort) _tmp2 using (identifier)
-		INNER JOIN (select subject_id,gender, dob from mimiciii.patients where subject_id in (
+		INNER JOIN (select subject_id,gender, dob from patients where subject_id in (
 										select CAST (subject_id as INTEGER) 
 										from model_a_mimic_cohort)) as t3 	
 					using (subject_id)
@@ -308,7 +309,7 @@ CREATE TABLE relevant_events as(
 );
 
 /* (5_e) save table to CSV file*/
-COPY relevant_events To '/feature_mimic_cohortddd.csv' With CSV DELIMITER ',' HEADER;
+COPY relevant_events To 'C:/tools/feature_mimic_cohort.csv' With CSV DELIMITER ',' HEADER;
 
 
 

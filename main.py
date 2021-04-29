@@ -26,9 +26,11 @@ def create_patient_list(db):
     for hadm_id in hadm_id_list:
         if i == 500:
             break
-        estimated_age, ethnicity, gender, target = db.get_metadata_by_hadm_id(hadm_id)
+        transfers_before_target, ethnicity, insurance, diagnosis, symptoms = db.get_extra_features_by_hadm_id(hadm_id)
+        estimated_age, gender, target = db.get_metadata_by_hadm_id(hadm_id)
         event_list = db.get_events_by_hadm_id(hadm_id)
-        patient = Patient(hadm_id, estimated_age, gender, ethnicity, target, event_list)
+        boolean_features = db.get_boolean_features_by_hadm_id(hadm_id)
+        patient = Patient(hadm_id, estimated_age, gender, ethnicity, transfers_before_target, insurance, diagnosis, symptoms, target, event_list, boolean_features)
         patient_list.append(patient)
         i += 1
     return patient_list  # Needs to be indented out
@@ -86,13 +88,16 @@ def get_top_50_features_xgb(labels_vector,feature_importance:list):
     for i in indices:
         print("Feature: %s, Importance: %s"%(labels_vector[i],feature_importance[i]))
     return indices
+
 def main():
     X_train = []
     y_train = []
+    # db = DB("C:/tools/boolean_features.csv", "C:/tools/extra_features.csv", "C:/tools/feature_mimic_cohort.csv")
     db = DB()
     folds = db.get_folds()
     print(folds)
     patient_list = create_patient_list(db)
+    return
     patient_list = remove_features_by_threshold(threshold, patient_list, db)
     print(patient_list[0].events)
     for patient in patient_list:
@@ -106,7 +111,6 @@ def main():
     model = XGBClassifier()
     model.fit(X_train, y_train)
     top_50_xgb = get_top_50_features_xgb(labels_vector,model.feature_importances_.tolist())
-
 
 
 if __name__ == "__main__":

@@ -6,19 +6,23 @@ import numpy as np
 class Patient:
     estimated_age = None
     gender = None
-    ethnicity = None
     target = None
 
-    def __init__(self, hadm_id, estimated_age, gender, ethnicity, target,events_list):
+    def __init__(self, hadm_id, estimated_age, gender, ethnicity, transfers_before_target, insurance, diagnosis, symptoms, target, events_list, boolean_features):
         self.hadm_id = hadm_id
         self.estimated_age = estimated_age
         self.gender = gender
         self.ethnicity = ethnicity
+        self.transfers_before_target = transfers_before_target
+        self.insurance = insurance
+        self.diagnosis = diagnosis
+        self.symptoms = symptoms
         if target == "negative":
             self.target = 0
         else:
             self.target = 1
         self.events = events_list
+        self.boolean_features = boolean_features
 
     def get_feature_from_events(self, label: str or int) -> List[Feature]:
         pass
