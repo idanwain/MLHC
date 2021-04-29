@@ -97,7 +97,6 @@ def main():
     folds = db.get_folds()
     print(folds)
     patient_list = create_patient_list(db)
-    return
     patient_list = remove_features_by_threshold(threshold, patient_list, db)
     print(patient_list[0].events)
     for patient in patient_list:
