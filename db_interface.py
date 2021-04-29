@@ -80,7 +80,6 @@ class DB:
         for row in self.folds_data.iterrows():
             identifier = row[1]["identifier"]
             fold = "fold_"+str(row[1]["fold"])
-            print(fold)
             identifier = identifier.split('-')
             hadm_id = identifier[1]
             try:
