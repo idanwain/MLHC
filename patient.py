@@ -28,11 +28,12 @@ class Patient:
         pass
 
 
-    def create_vector_from_event_list(self):
-        event_list_vector = []
+    def create_vector_for_patient(self):
+        features_vector = []
         for label in self.events:
-            event_list_vector += self.get_essence_values_for_label(label)
-        return event_list_vector
+            features_vector += self.get_essence_values_for_label(label)
+        features_vector += self.create_vector_for_boolean_features()
+        return features_vector
 
 
     def get_essence_values_for_label(self,label):
@@ -74,4 +75,8 @@ class Patient:
         ret_vecotr = []
         for label in self.events:
             ret_vecotr.extend([label + "_avg",label + "_max",label + "_min",label + "_latest",label + "_amount",])
+        ret_vecotr.extend(list(self.boolean_features.keys()))
         return ret_vecotr
+
+    def create_vector_for_boolean_features(self):
+        return list(self.boolean_features.values())

@@ -23,6 +23,7 @@ class DB:
         self.extra_features_data = pd.read_csv(extra_features_path)
         self.relevant_events_data = pd.read_csv(data_path)
         self.folds_data = pd.read_csv(folds_path)
+        self.available_labels_in_events = []
 
     def get_hadm_id_list(self) -> list:
         """
@@ -41,12 +42,15 @@ class DB:
         Returns a list with all distinct labels
         :return: labels list
         """
-        print("Fetching labels")
         distinct_labels = []
-        for label in self.relevant_events_data["label"]:
-            if (label not in distinct_labels):
-                distinct_labels.append(label)
-        return distinct_labels
+        if(len(self.available_labels_in_events) == 0):
+            for label in self.relevant_events_data["label"]:
+                if (label not in distinct_labels):
+                    distinct_labels.append(label)
+            self.available_labels_in_events = distinct_labels
+            return distinct_labels
+        else:
+            return self.available_labels_in_events
 
     def get_events_by_hadm_id(self, hadm_id: str) -> Dict[str, List[Feature]]:
         """
@@ -118,5 +122,30 @@ class DB:
                 category = self.boolean_features.loc[lambda df: df['itemid'] == event[1]['itemid'], :]
                 res[list(category['category'])[0]] = 1
         return res
+
+    def create_patient_list(self):
+        """
+        Creates and returns list of all patients
+        :return: list of patients
+        """
+        print("Building patient list from MIMIC...")
+        hadm_id_list = self.get_hadm_id_list()
+        patient_list = []
+        i = 0
+        for hadm_id in hadm_id_list:
+            if i == 1500:
+                break
+            transfers_before_target, ethnicity, insurance, diagnosis, symptoms = self.get_extra_features_by_hadm_id(
+                hadm_id)
+            estimated_age, gender, target = self.get_metadata_by_hadm_id(hadm_id)
+            event_list = self.get_events_by_hadm_id(hadm_id)
+            boolean_features = self.get_boolean_features_by_hadm_id(hadm_id)
+            patient = Patient(hadm_id, estimated_age, gender, ethnicity, transfers_before_target, insurance, diagnosis,
+                              symptoms, target, event_list, boolean_features)
+            patient_list.append(patient)
+            i += 1
+        print("Done")
+        return patient_list
+
 
 
