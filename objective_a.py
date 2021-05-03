@@ -149,11 +149,21 @@ def calc_metrics(y_test, y_score):
     return roc,pr
 
 
-def main(db, threshold=0.5, n_neighbors=10, xgb_k=50):
+def main():
+
+    ### Hyperparameters ###
+
+    threshold = 0.5     # Minimum appearance for feature to be included
+    n_neighbors = 10    # Neighbors amount for kNN
+    xgb_k = 50    # Amount of features to return by XG
+
     ### Data preprocessing - cleaning, imputation and vector creation ###
     start_time = time.time()
     data = []
     targets = []
+    db = DbMimic('/Users/user/Documents/University/Workshop/boolean_features_mimic.csv',
+            '/Users/user/Documents/University/Workshop/extra_features.csv')
+    folds = db.get_folds()
     patient_list = db.create_patient_list()
     patient_list = remove_features_by_threshold(threshold, patient_list, db)
     for patient in patient_list:
