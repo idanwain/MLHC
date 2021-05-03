@@ -1,0 +1,109 @@
+/* Set deafult path for eICU Tables */
+set search_path to eicu;
+
+---------------------------------------------------------
+----------- MODEL A - Data Loading   --------------------
+---------------------------------------------------------
+
+/*Create a table for MODEL A the data and load it based on model_a_eicu_cohort.csv file*/
+DROP TABLE IF EXISTS model_a_eicu_cohort;
+CREATE TABLE model_a_eicu_cohort (
+	patienthealthsystemstayid INTEGER,
+	patientUnitStayID  INTEGER,
+	admittime INTEGER,
+	icu_time INTEGER,
+	target_time INTEGER,
+	target VARCHAR(50)
+);
+COPY model_a_eicu_cohort
+FROM 'C:/tools/model_a_eicu_cohort.csv'
+DELIMITER ','
+CSV HEADER
+;
+
+------------------------------------------------
+----------- (2) FEATURES FOR COHORT ------------
+------------------------------------------------
+/* (1_a) Create tables of all relevant rows from lab table for patients of the cohort */
+
+DROP TABLE IF EXISTS _relevantFeatures;
+CREATE TABLE _relevantFeatures as (
+	SELECT *
+	FROM eicu.lab as MICROLAB
+
+	/* Specific lab tests*/
+	WHERE MICROLAB.labname IN (
+		/* Complete Blood Count: */
+		-- Not AVAILEBLE ::C-Reactive Protein
+		'-polys', --Neturophils
+		'RBC', --Red Blood Cells
+		'Hgb', --Hemoglobin
+		'Hct', --Hematocrit
+		'MCV',
+		'MCH',
+		'MCHC',
+		'RDW',
+		'-lymphs', -- Lymphocytes
+		'-monos', -- Monocytes
+		'-eos', -- Eosinophils
+		'-basos', -- Basophils
+		'platelets x 1000', -- Platelet Count
+
+		/* Basic Metabolic Panel: */
+		'potassium',
+		'sodium',
+		'creatinine',
+		'chloride',
+		'BUN', --::Urea Nitrogen
+		'bicarbonate',
+		'anion gap',
+		'glucose',
+		'magnesium',
+		'calcium', --::Calcium, Total
+		'phosphate',
+		'pH',
+
+		/* Blood Gases: */
+		'Base Excess',
+		'Total CO2', -- Calculated Total CO2
+		'paO2', -- pO2
+		'paCO2', -- pCO2
+
+		/* Cauglation Panel: */
+		'PTT',
+		'PT - INR',
+		'PT'
+	)
+
+	/* Take a subset of the relevant patientUnitStayIDs for the patients in model_a_eicu_cohort */
+	AND
+		MICROLAB.patientUnitStayID in (
+			SELECT DISTINCT patientUnitStayID
+			FROM patient as PAT
+			WHERE PAT.patienthealthsystemstayid IN (
+				SELECT DISTINCT patienthealthsystemstayid
+				FROM patient as PAT
+				WHERE PAT.patientUnitStayID IN(
+					SELECT DISTINCT patientUnitStayID FROM model_a_eicu_cohort
+				)
+			)
+		)
+);
+
+/* (1_b) Create table of all relevant rows from labs that occuredt before target time */
+
+DROP TABLE IF EXISTS relevant_labevents_for_cohort;
+CREATE TABLE relevant_labevents_for_cohort as (
+	SELECT 	temp_lab.*,
+			PAT.patienthealthsystemstayid,
+			cohort.target_time,
+			(temp_lab.labresultrevisedoffset - PAT.hospitalAdmitOffset)/60 as lab_time,
+			cohort.target
+	FROM _relevantFeatures as temp_lab
+	LEFT JOIN patient as PAT USING (patientUnitStayID)
+	LEFT JOIN model_a_eicu_cohort as cohort USING (patienthealthsystemstayid)
+	WHERE cohort.target_time > ((temp_lab.labresultrevisedoffset - PAT.hospitalAdmitOffset)/60)
+);
+
+/* (1_c) save table to CSV file */
+COPY relevant_labevents_for_cohort To 'C:/tools/feature_eicu_cohort.csv' With CSV DELIMITER ',' HEADER;

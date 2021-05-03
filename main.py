@@ -12,7 +12,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 from datetime import datetime
 import sys
-from db_interface import DB
+from db_interface_mimic import DbMimic
 
 
 def get_features_for_removal(threshold: float, patient_list: list, db):
@@ -160,7 +160,7 @@ def main():
     start_time = time.time()
     data = []
     targets = []
-    db = DB('/Users/user/Documents/University/Workshop/boolean_features_mimic.csv',
+    db = DbMimic('/Users/user/Documents/University/Workshop/boolean_features_mimic.csv',
             '/Users/user/Documents/University/Workshop/extra_features.csv')
     # db = DB()
     folds = db.get_folds()

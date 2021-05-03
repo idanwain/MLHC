@@ -12,7 +12,7 @@ relevant_events_path = "/Users/user/Documents/University/Workshop/features_mimic
 folds_path = "/Users/user/Documents/University/Workshop/folds_mimic_model_a.csv"
 
 
-class DB:
+class DbMimic:
     def __init__(self,
                  boolean_features_path,
                  extra_features_path,
