@@ -1,7 +1,7 @@
 from typing import Dict, List
 from feature import Feature
 import pandas as pd
-from patient import Patient
+from patient_eicu import PatientEicu
 import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
@@ -52,17 +52,17 @@ class DbEicu:
         self.relevant_events_data = pd.read_csv(data_path)
         self.available_labels_in_events = []
 
-    def get_patient_unit_stay_id_list(self) -> list:
+    def get_patient_health_system_stay_id_list(self) -> list:
         """
-        Returns a list with all distinct hadm_id
-        :return: hadm_id list
+        Returns a list with all distinct patient_health_system_stay_id
+        :return: patient_health_system_stay_id list
         """
         print("Fetching all admission id's")
-        patient_unit_stay_id_list = []
-        for id in self.relevant_events_data["patientUnitStayID"]:
-            if id not in patient_unit_stay_id_list:
-                patient_unit_stay_id_list.append(id)
-        return patient_unit_stay_id_list
+        patient_health_system_stay_id_list = []
+        for id in self.relevant_events_data["patienthealthsystemstayid"]:
+            if id not in patient_health_system_stay_id_list:
+                patient_health_system_stay_id_list.append(id)
+        return patient_health_system_stay_id_list
 
     def get_labels(self) -> list:
         """
@@ -71,7 +71,7 @@ class DbEicu:
         """
         distinct_labels = []
         if(len(self.available_labels_in_events) == 0):
-            for label in self.relevant_events_data["label"]:
+            for label in self.relevant_events_data["labname"]:
                 if (label not in distinct_labels):
                     distinct_labels.append(label)
             self.available_labels_in_events = distinct_labels
@@ -79,76 +79,36 @@ class DbEicu:
         else:
             return self.available_labels_in_events
 
-    def get_events_by_hadm_id(self, hadm_id: str) -> Dict[str, List[Feature]]:
+    def get_events_by_patient_health_system_stay_id(self, patient_health_system_stay_id: str) -> Dict[str, List[Feature]]:
         """
         Creates a dictionary of labels and thier values, with a given hadm_id
-        :param hadm_id: used to identify the patient
+        :param patient_health_system_stay_id: used to identify the patient
         :return: dictionary of labels and their values (value = Feature object)
         """
         patient_dict = {}
-        relevant_rows = self.relevant_events_data.loc[lambda df: df['hadm_id'] == hadm_id, :]
+        relevant_rows = self.relevant_events_data.loc[lambda df: df['patienthealthsystemstayid'] == patient_health_system_stay_id, :]
         labels = self.get_labels()
         for label in labels:
             patient_dict[label] = []
         for row in relevant_rows.iterrows():
-            label = row[1]["label"]
-            time = datetime.strptime(row[1]["charttime"], '%Y-%m-%d %H:%M:%S')
-            value = row[1]["valuenum"]
-            unit_of_measuere = row[1]["valueuom"]
+            label = row[1]["labname"]
+            time = row[1]["lab_time"]
+            value = row[1]["labresult"] if row[1]["labresult"] else row[1]["labresulttext"]
+            unit_of_measuere = row[1]["labmeasurenamesystem"] if row[1]["labmeasurenamesystem"] else row[1]["labmeasurenameinterface"]
             feature = Feature(time=time, value=value, uom=unit_of_measuere)
             patient_dict[label].append(feature)
         return patient_dict
 
-    def get_metadata_by_hadm_id(self, hadm_id: str):
+    def get_target_by_patient_health_system_stay_id(self, patient_health_system_stay_id: str):
         """
         Returns a tuple of values which are used as metadata given an hadm_id. Values can be found in Patient object.
-        :param hadm_id: id of patient
+        :param patient_health_system_stay_id: id of patient
         :return: tuple of metadata values
         """
-        members = [attr for attr in dir(Patient) if not callable(getattr(Patient, attr)) and not attr.startswith("__")]
-        values = []
-        relevant_rows = self.relevant_events_data.loc[lambda df: df['hadm_id'] == hadm_id, :]
-        for member in members:
-            values.append(relevant_rows.iloc[0][member])
-        return tuple(values)
+        relevant_rows = self.relevant_events_data.loc[lambda df: df['patienthealthsystemstayid'] == patient_health_system_stay_id, :]
+        return relevant_rows.iloc[0]['target']
 
-    def get_extra_features_by_hadm_id(self, hadm_id: str):
-        """
-        Returns a tuple of values which are used as extra features given an hadm_id. Values can be found in Patient object.
-        :param hadm_id: id of patient
-        :return: tuple of metadata values
-        """
-        relevant_row = self.extra_features_data.loc[lambda df: df['hadm_id'] == hadm_id, :]
-        for row in relevant_row.iterrows():
-            vals = list(row[1])
-            vals.pop(0)
-            return tuple(vals)
 
-    def get_folds(self):
-        """
-        Returns a dictionary of size 5 containing all folds for the cross validation
-        :return:
-        """
-        res = {}
-        for row in self.folds_data.iterrows():
-            identifier = row[1]["identifier"]
-            fold = "fold_" + str(row[1]["fold"])
-            identifier = identifier.split('-')
-            hadm_id = identifier[1]
-            try:
-                res[fold].append(hadm_id)
-            except KeyError:
-                res.update({fold: [hadm_id]})
-        return res
-
-    def get_boolean_features_by_hadm_id(self, hadm_id):
-        res = {key: 0 for key in self.boolean_features['category']}
-        relevant_rows = self.relevant_events_data.loc[lambda df: df['hadm_id'] == hadm_id, :]
-        for event in relevant_rows.iterrows():
-            if event[1]['itemid'] in list(self.boolean_features['itemid']):
-                category = self.boolean_features.loc[lambda df: df['itemid'] == event[1]['itemid'], :]
-                res[list(category['category'])[0]] = 1
-        return res
 
     def create_patient_list(self):
         """
@@ -156,19 +116,15 @@ class DbEicu:
         :return: list of patients
         """
         print("Building patient list from MIMIC...")
-        hadm_id_list = self.get_hadm_id_list()
+        patient_health_system_stay_id_list = self.get_patient_health_system_stay_id_list()
         patient_list = []
         i = 0
-        for hadm_id in hadm_id_list:
+        for patient_health_system_stay_id in patient_health_system_stay_id_list:
             if i == 1500:
                 break
-            transfers_before_target, ethnicity, insurance, diagnosis, symptoms = self.get_extra_features_by_hadm_id(
-                hadm_id)
-            estimated_age, gender, target = self.get_metadata_by_hadm_id(hadm_id)
-            event_list = self.get_events_by_hadm_id(hadm_id)
-            boolean_features = self.get_boolean_features_by_hadm_id(hadm_id)
-            patient = Patient(hadm_id, estimated_age, gender, ethnicity, transfers_before_target, insurance, diagnosis,
-                              symptoms, target, event_list, boolean_features)
+            target = self.get_target_by_patient_health_system_stay_id(patient_health_system_stay_id)
+            event_list = self.get_events_by_patient_health_system_stay_id(patient_health_system_stay_id)
+            patient = PatientEicu(patient_health_system_stay_id, target, event_list)
             patient_list.append(patient)
             i += 1
         print("Done")

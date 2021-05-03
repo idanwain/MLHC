@@ -1,7 +1,8 @@
 from typing import Dict, List
+from db_interface_eicu import DbEicu
 from feature import Feature
 import pandas as pd
-from patient import Patient
+from patient_mimic import PatientMimic
 from sklearn.impute import KNNImputer
 from sklearn.ensemble import RandomForestClassifier
 import numpy as np

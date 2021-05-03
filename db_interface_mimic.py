@@ -1,7 +1,7 @@
 from typing import Dict, List
 from feature import Feature
 import pandas as pd
-from patient import Patient
+from patient_mimic import PatientMimic
 import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
@@ -78,7 +78,7 @@ class DbMimic:
         :param hadm_id: id of patient
         :return: tuple of metadata values
         """
-        members = [attr for attr in dir(Patient) if not callable(getattr(Patient, attr)) and not attr.startswith("__")]
+        members = [attr for attr in dir(PatientMimic) if not callable(getattr(PatientMimic, attr)) and not attr.startswith("__")]
         values = []
         relevant_rows = self.relevant_events_data.loc[lambda df: df['hadm_id'] == hadm_id, :]
         for member in members:
@@ -140,8 +140,8 @@ class DbMimic:
             estimated_age, gender, target = self.get_metadata_by_hadm_id(hadm_id)
             event_list = self.get_events_by_hadm_id(hadm_id)
             boolean_features = self.get_boolean_features_by_hadm_id(hadm_id)
-            patient = Patient(hadm_id, estimated_age, gender, ethnicity, transfers_before_target, insurance, diagnosis,
-                              symptoms, target, event_list, boolean_features)
+            patient = PatientMimic(hadm_id, estimated_age, gender, ethnicity, transfers_before_target, insurance, diagnosis,
+                                   symptoms, target, event_list, boolean_features)
             patient_list.append(patient)
             i += 1
         print("Done")
