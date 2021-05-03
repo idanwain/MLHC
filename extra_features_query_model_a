@@ -264,4 +264,7 @@ alter table extra_features drop column id;
 
 update extra_features set transfers_before_target = 0 where transfers_before_target is null;
 
-COPY extra_features To '/Users/user/Documents/University/Workshop/extra_features_model_a.csv' With CSV DELIMITER ',' HEADER;
+COPY extra_features To
+/* '/Users/user/Documents/University/Workshop/extra_features_model_a.csv' */
+'C:/tools/extra_features_model_a.csv'
+With CSV DELIMITER ',' HEADER;

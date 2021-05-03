@@ -16,7 +16,8 @@ CREATE TABLE model_a_mimic_cohort (
   target VARCHAR(50)
 );
 COPY model_a_mimic_cohort 
-FROM '/Users/user/Documents/University/Workshop/model_a_mimic_cohort.csv'
+/* FROM '/Users/user/Documents/University/Workshop/model_a_mimic_cohort.csv' */
+FROM 'C:/tools/model_a_mimic_cohort.csv'
 DELIMITER ','
 CSV HEADER;
 							   
@@ -35,7 +36,8 @@ CREATE TABLE model_b_mimic_cohort (
   target VARCHAR(50)
 );
 COPY model_b_mimic_cohort 
-FROM '/Users/user/Documents/University/Workshop/model_b_mimic_cohort.csv'
+/* FROM '/Users/user/Documents/University/Workshop/model_b_mimic_cohort.csv' */
+FROM 'C:/tools/model_b_mimic_cohort.csv'
 DELIMITER ','
 CSV HEADER;
 
@@ -223,7 +225,10 @@ insert into boolean_features select itemid, linksto, category from d_items where
 ) and linksto = 'chartevents';
 
 insert into cohort_relevant_features select itemid, linksto from boolean_features;
-COPY boolean_features To '/Users/user/Documents/University/Workshop/boolean_features_mimic_model_a.csv' With CSV DELIMITER ',' HEADER;
+COPY boolean_features To
+/* '/Users/user/Documents/University/Workshop/boolean_features_mimic_model_a.csv' */
+'C:/tools/boolean_features_mimic_model_a.csv'
+With CSV DELIMITER ',' HEADER;
 							   
 -----------------------------------------------------
 ----------- (5) MERGE FEATURES & COHORT -------------
@@ -309,8 +314,7 @@ CREATE TABLE relevant_events as(
 );
 
 /* (5_e) save table to CSV file*/
-COPY relevant_events To '/Users/user/Documents/University/Workshop/feature_mimic_cohort_model_a.csv' With CSV DELIMITER ',' HEADER;
-
-
-
-
+COPY relevant_events To
+/* '/Users/user/Documents/University/Workshop/feature_mimic_cohort_model_a.csv' */
+'C:/tools/feature_mimic_cohort_model_a.csv'
+With CSV DELIMITER ',' HEADER;
