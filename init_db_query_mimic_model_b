@@ -223,7 +223,7 @@ insert into boolean_features select itemid, linksto, category from d_items where
 ) and linksto = 'chartevents';
 
 insert into cohort_relevant_features select itemid, linksto from boolean_features;
-COPY boolean_features To '/Users/user/Documents/University/Workshop/boolean_features_mimic.csv' With CSV DELIMITER ',' HEADER;
+COPY boolean_features To '/Users/user/Documents/University/Workshop/boolean_features_mimic_model_b.csv' With CSV DELIMITER ',' HEADER;
 
 -----------------------------------------------------
 ----------- (5) MERGE FEATURES & COHORT -------------
