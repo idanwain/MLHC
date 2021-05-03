@@ -1,0 +1,316 @@
+/* Set deafult path for MIMIC III Tables */
+/* set search_path to public; */
+
+---------------------------------------------------------
+----------- MODEL A - Data Loading   --------------------
+---------------------------------------------------------
+/*Create a table for MODEL A the data and load it based on mimic_cohort.csv file*/
+DROP TABLE IF EXISTS model_a_mimic_cohort;
+CREATE TABLE model_a_mimic_cohort (
+  identifier VARCHAR(50),
+  subject_id VARCHAR(50),
+  hadm_id VARCHAR(50),
+  admittime TIMESTAMP,
+  icu_time TIMESTAMP,
+  target_time TIMESTAMP,
+  target VARCHAR(50)
+);
+COPY model_a_mimic_cohort
+FROM 'C:/tools/model_a_mimic_cohort.csv'
+DELIMITER ','
+CSV HEADER;
+
+---------------------------------------------------------
+----------- MODEL B - Data Loading   ---------------------
+---------------------------------------------------------
+/*Create a table for MODEL A the data and load it based on mimic_model_b_cohort.csv file*/
+DROP TABLE IF EXISTS model_b_mimic_cohort;
+CREATE TABLE model_b_mimic_cohort (
+  identifier VARCHAR(50),
+  subject_id VARCHAR(50),
+  hadm_id VARCHAR(50),
+  admittime TIMESTAMP,
+  icu_time TIMESTAMP,
+  target_time TIMESTAMP,
+  target VARCHAR(50)
+);
+COPY model_b_mimic_cohort
+FROM 'C:/tools/model_b_mimic_cohort.csv'
+DELIMITER ','
+CSV HEADER;
+
+---------------------------------------------------------
+--------------- Relevant Features   ---------------------
+---------------------------------------------------------
+
+DROP TABLE IF EXISTS cohort_relevant_features;
+create table cohort_relevant_features(
+item_id INT,
+_table TEXT
+);
+
+/* (4_b) Inset to the table all the IDs of the relevant features.*/
+insert into cohort_relevant_features (item_id , _table)
+values
+    (50889, 'labevents'),
+    (51256, 'labevents'),
+    (51279,  'labevents'),
+    (50811 ,'labevents'),
+    (51221 , 'labevents'),
+    (51250 , 'labevents'),
+    (51248 , 'labevents'),
+    (51249 , 'labevents'),
+    (51277 , 'labevents'),
+    (51244 , 'labevents'),
+    (51254 , 'labevents'),
+    (51200, 'labevents'),
+    (51146 , 'labevents'),
+    (51265 , 'labevents'),
+    (50971 , 'labevents'),
+    (50983 , 'labevents'),
+    (50912 , 'labevents'),
+    (50902 , 'labevents'),
+    (51006 , 'labevents'),
+    (50882 , 'labevents'),
+    (50868 , 'labevents'),
+    (50931 , 'labevents'),
+    (50960 , 'labevents'),
+    (50893 , 'labevents'),
+    (50970 , 'labevents'),
+    (50820 , 'labevents'),
+    (50802 , 'labevents'),
+    (50804 , 'labevents'),
+    (50821 , 'labevents'),
+    (50818 , 'labevents'),
+    (51275 , 'labevents'),
+    (51237 , 'labevents'),
+    (51274 , 'labevents'),
+    (223762 , 'chartevents'),
+    (676 , 'chartevents'),
+    (220045 , 'chartevents'),
+    (211 , 'chartevents'),
+    (220277 , 'chartevents'),
+    (646 , 'chartevents'),
+    (22018,  'chartevents'),
+    (456 , 'chartevents'),
+    (225199 , 'procedureevents_mv'),
+    (225202 , 'procedureevents_mv'),
+    (225203 , 'procedureevents_mv'),
+    (225204 , 'procedureevents_mv'),
+    (225205 , 'procedureevents_mv'),
+    (227194 , 'procedureevents_mv'),
+    (228286 , 'procedureevents_mv'),
+    (221223 , 'procedureevents_mv'),
+    (225399 , 'procedureevents_mv'),
+    (225400 , 'procedureevents_mv'),
+    (225402 , 'procedureevents_mv'),
+    (228169 , 'procedureevents_mv'),
+    (224263 , 'procedureevents_mv'),
+    (224264 , 'procedureevents_mv'),
+    (224267 , 'procedureevents_mv'),
+    (224268 , 'procedureevents_mv'),
+    (224269 , 'procedureevents_mv'),
+    (224270 , 'procedureevents_mv'),
+    (224272 , 'procedureevents_mv'),
+    (224273 , 'procedureevents_mv'),
+    (224274 , 'procedureevents_mv'),
+    (224275 , 'procedureevents_mv'),
+    (224276 , 'procedureevents_mv'),
+    (224277 , 'procedureevents_mv'),
+    (225468 , 'procedureevents_mv'),
+    (225477 , 'procedureevents_mv'),
+    (225479 , 'procedureevents_mv'),
+    (225428 , 'procedureevents_mv'),
+    (225429 , 'procedureevents_mv'),
+    (225430 , 'procedureevents_mv'),
+    (225433 , 'procedureevents_mv'),
+    (225434 , 'procedureevents_mv'),
+    (225436 , 'procedureevents_mv'),
+    (225439 , 'procedureevents_mv'),
+    (225441 , 'procedureevents_mv'),
+    (225442 , 'procedureevents_mv'),
+    (225445 , 'procedureevents_mv'),
+    (225446 , 'procedureevents_mv'),
+    (225447 , 'procedureevents_mv'),
+    (225448 , 'procedureevents_mv'),
+    (225449 , 'procedureevents_mv'),
+    (225450,  'procedureevents_mv'),
+    (225789 , 'procedureevents_mv'),
+    (225792 , 'procedureevents_mv'),
+    (225794 , 'procedureevents_mv'),
+    (225802 , 'procedureevents_mv'),
+    (225803 , 'procedureevents_mv'),
+    (225805 , 'procedureevents_mv'),
+    (225809 , 'procedureevents_mv'),
+    (227550 , 'procedureevents_mv'),
+    (227551 , 'procedureevents_mv'),
+    (225761 , 'procedureevents_mv'),
+    (224385 , 'procedureevents_mv'),
+    (225752 , 'procedureevents_mv'),
+    (227711 , 'procedureevents_mv'),
+    (227712 , 'procedureevents_mv'),
+    (227713 , 'procedureevents_mv'),
+    (227714 , 'procedureevents_mv'),
+    (224560 , 'procedureevents_mv'),
+    (224566 , 'procedureevents_mv'),
+    (226124 , 'procedureevents_mv'),
+    (227719 , 'procedureevents_mv'),
+    (228201 , 'procedureevents_mv'),
+    (228202 , 'procedureevents_mv'),
+    (225955 , 'procedureevents_mv'),
+    (226236 , 'procedureevents_mv'),
+    (226237 , 'procedureevents_mv'),
+    (226474 , 'procedureevents_mv'),
+    (226475 , 'procedureevents_mv'),
+    (226476 , 'procedureevents_mv'),
+    (226477 , 'procedureevents_mv'),
+    (225315 , 'procedureevents_mv'),
+    ( 861 , 'chartevents'),
+    (1127 , 'chartevents'),
+    (1542 , 'chartevents'),
+    (3780 , 'chartevents'),
+    (4200 , 'chartevents'),
+    (30021 , 'inputevents_cv'),
+    (45532 , 'inputevents_cv'),
+    (220546 , 'chartevents'),
+    (220955 , 'inputevents_mv'),
+    (220967 , 'inputevents_mv'),
+    (220968 , 'inputevents_mv'),
+    (220980 , 'inputevents_mv'),
+    (226780 , 'chartevents'),
+    (227062 , 'chartevents'),
+    (227063 , 'chartevents'),
+    (51349 , 'labevents'),
+    (51363 , 'labevents'),
+    (51384 , 'labevents'),
+    (51439 , 'labevents'),
+    (51458 , 'labevents'),
+    (50813 , 'labevents'),
+    (50843 , 'labevents'),
+    (50872 , 'labevents'),
+    (50954 , 'labevents'),
+    (51015 , 'labevents'),
+    (51054 , 'labevents'),
+    (51128 , 'labevents'),
+    (51232 , 'labevents'),
+    (51300 , 'labevents'),
+    (51516 , 'labevents'),
+    (51517 , 'labevents'),
+    (51518 , 'labevents'),
+    (51533 , 'labevents')
+;
+
+/* ---------- BOOLEAN FEATURES ---------- */
+
+drop table if exists boolean_features;
+create table boolean_features (itemid int, linksto varchar(50), category varchar(100));
+insert into boolean_features select itemid, linksto, category from d_items where category in
+(
+'Access Lines - Invasive',
+'Lumbar Puncture',
+'Impella',
+'Arterial Line Insertion',
+'IABP',
+'Intubation',
+'Thoracentesis',
+'Dialysis',
+'Access Lines - Peripheral',
+'PA Line Insertion',
+'Tandem Heart',
+'PICC Line Insertion',
+'CVL Insertion',
+'Paracentesis'
+) and linksto = 'chartevents';
+
+insert into cohort_relevant_features select itemid, linksto from boolean_features;
+COPY boolean_features To 'C:/tools/boolean_features_mimic.csv' With CSV DELIMITER ',' HEADER;
+
+-----------------------------------------------------
+----------- (5) MERGE FEATURES & COHORT -------------
+-----------------------------------------------------
+
+DROP TABLE IF EXISTS relevant_labevents_for_cohort;
+CREATE TABLE relevant_labevents_for_cohort as (
+	select subject_id||'-'||hadm_id as identifier, subject_id, hadm_id, itemid, charttime, valuenum, valueuom, label
+	from labevents join (select itemid, label from d_labitems) as t1 using (itemid)
+	where subject_id||'-'||hadm_id in (select identifier from model_b_mimic_cohort)
+	AND itemid in (select item_id from cohort_relevant_features where _table='labevents')
+);
+
+
+DROP TABLE IF EXISTS relevant_chartevents_for_cohort;
+CREATE TABLE relevant_chartevents_for_cohort as (
+	select subject_id||'-'||hadm_id as identifier, subject_id, hadm_id, itemid, charttime, valuenum, valueuom, label
+	from chartevents join (select itemid, label from d_items) as t1 using (itemid)
+	where subject_id||'-'||hadm_id in (select identifier from model_b_mimic_cohort)
+		AND itemid in (select item_id from cohort_relevant_features where _table='chartevents')
+);
+
+DROP TABLE IF EXISTS relevant_procedure_for_cohort;
+CREATE TABLE relevant_procedure_for_cohort as (
+	select subject_id||'-'||hadm_id as identifier, subject_id, hadm_id, itemid, starttime as charttime, value as valuenum, valueuom, label
+	from procedureevents_mv join (select itemid, label from d_items) as t1 using (itemid)
+	where subject_id||'-'||hadm_id in (select identifier from model_b_mimic_cohort)
+		AND itemid in (select item_id from cohort_relevant_features where _table='procedureevents_mv')
+);
+
+DROP TABLE IF EXISTS relevant_inputs_mv_for_cohort;
+CREATE TABLE relevant_inputs_mv_for_cohort as (
+	select subject_id||'-'||hadm_id as identifier, subject_id, hadm_id, itemid, starttime as charttime, amount as valuenum, amountuom as valueuom, label
+	from inputevents_mv join (select itemid, label from d_items) as t1 using (itemid)
+	where subject_id||'-'||hadm_id in (select identifier from model_b_mimic_cohort)
+		AND itemid in (select item_id from cohort_relevant_features where _table='inputevents_mv')
+);
+
+
+DROP TABLE IF EXISTS relevant_inputs_cv_for_cohort;
+CREATE TABLE relevant_inputs_cv_for_cohort as (
+	select subject_id||'-'||hadm_id as identifier, subject_id, hadm_id, itemid, charttime, amount as valuenum, amountuom as valueuom, label
+	from inputevents_cv join (select itemid, label from d_items) as t1 using (itemid)
+	where subject_id||'-'||hadm_id in (select identifier from model_b_mimic_cohort)
+		AND itemid in (select item_id from cohort_relevant_features where _table='inputevents_cv')
+);
+
+/* (5_c) Create a unified table of feature from the tables created above:*/
+DROP TABLE IF EXISTS all_relevant_lab_features;
+CREATE TABLE all_relevant_lab_features as (
+	select * from
+	relevant_chartevents_for_cohort
+	union
+	(select * from relevant_labevents_for_cohort)
+	union
+	(select * from relevant_procedure_for_cohort)
+	union
+	(select * from relevant_inputs_mv_for_cohort)
+	union
+	(select * from relevant_inputs_cv_for_cohort)
+);
+
+/* (5_d) Create a table of relevant events (features) received near when the target (culture) was received */
+DROP TABLE IF EXISTS relevant_events;
+CREATE TABLE relevant_events as(
+	SELECT
+			*,
+			date_part('year', admittime) - date_part('year', dob) as estimated_age,
+			round(CAST((extract(epoch from target_time - all_relevant_lab_features.charttime) / 3600.0) as numeric),2) as hours_from_charttime_time_to_targettime,
+			round(CAST((extract(epoch from charttime - admittime) / 3600.0 ) as numeric),2) as hours_from_admittime_to_charttime,
+			round(CAST((extract(epoch from target_time - admittime) / 3600.0) as numeric),2) as hours_from_admittime_to_targettime
+	FROM
+		all_relevant_lab_features
+		INNER JOIN (select identifier, target, target_time, admittime from model_b_mimic_cohort) _tmp2 using (identifier)
+		INNER JOIN (select subject_id,gender, dob from patients where subject_id in (
+										select CAST (subject_id as INTEGER)
+										from model_b_mimic_cohort)) as t3
+					using (subject_id)
+	WHERE
+		 identifier in (select identifier from model_b_mimic_cohort)
+	AND
+		(extract(epoch from target_time - all_relevant_lab_features.charttime)) > 0
+);
+
+/* (5_e) save table to CSV file*/
+COPY relevant_events To 'C:/tools/feature_mimic_cohort_model_b.csv' With CSV DELIMITER ',' HEADER;
+
+
+
+
