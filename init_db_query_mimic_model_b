@@ -1,5 +1,6 @@
 /* Set deafult path for MIMIC III Tables */
 /* set search_path to public; */
+SET datestyle = dmy;
 
 ---------------------------------------------------------
 ----------- MODEL A - Data Loading   --------------------
