@@ -1,5 +1,3 @@
-from typing import List
-from feature import Feature
 import sys
 import numpy as np
 
@@ -13,12 +11,11 @@ class PatientEicu:
             self.target = 1
         self.events = events_list
 
-    def get_feature_from_events(self, label: str or int) -> List[Feature]:
-        pass
-
-    def create_vector_for_patient(self):
+    def create_vector_for_patient(self, labels=None, objective_c=False):
+        if labels is None:
+            labels = self.events
         features_vector = []
-        for label in self.events:
+        for label in labels:
             features_vector += self.get_essence_values_for_label(label)
         # features_vector += self.create_vector_for_boolean_features()
         return features_vector
@@ -42,25 +39,26 @@ class PatientEicu:
             "Date": 0,
             "Value": 0
         }
-        label_vector = []
         number_of_samples = len(self.events[label])
         if number_of_samples == 0:
             return [np.nan] * 4 + [0]
         for feature in self.events[label]:
-            avg_val += feature.value
-            if feature.value > max_val:
-                max_val = feature.value
-            if feature.value < min_val:
-                min_val = feature.value
+            val = float(feature.value)
+            avg_val += val
+            if val > max_val:
+                max_val = val
+            if val < min_val:
+                min_val = val
             if feature.time > latest_sample["Date"]:
                 latest_sample["Date"] = feature.time
-                latest_sample["Value"] = feature.value
-            label_vector.extend([label + "_avg", label + "_max", label + "_min", label + "_latest", label + "_amount"])
+                latest_sample["Value"] = val
         return [(avg_val/number_of_samples), max_val, min_val, latest_sample["Value"], number_of_samples]
 
-    def create_labels_vector(self):
+    def create_labels_vector(self, labels=None, objective_c=False):
+        if labels is None:
+            labels = self.events
         ret_vector = []
-        for label in self.events:
+        for label in labels:
             ret_vector.extend([label + "_avg", label + "_max", label + "_min", label + "_latest", label + "_amount"])
         # ret_vector.extend(list(self.boolean_features.keys()))
         return ret_vector

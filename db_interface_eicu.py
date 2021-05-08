@@ -2,11 +2,6 @@ from typing import Dict, List
 from feature import Feature
 import pandas as pd
 from patient_eicu import PatientEicu
-import numpy as np
-import matplotlib.pyplot as plt
-import seaborn as sns
-from datetime import datetime
-import sys
 
 eicu_to_mimic_mapping = {
     '-polys': 'Neturophils' ,
@@ -72,6 +67,7 @@ class DbEicu:
         distinct_labels = []
         if(len(self.available_labels_in_events) == 0):
             for label in self.relevant_events_data["labname"]:
+                label = eicu_to_mimic_mapping[label]
                 if (label not in distinct_labels):
                     distinct_labels.append(label)
             self.available_labels_in_events = distinct_labels
@@ -96,7 +92,7 @@ class DbEicu:
             value = row[1]["labresult"] if row[1]["labresult"] else row[1]["labresulttext"]
             unit_of_measuere = row[1]["labmeasurenamesystem"] if row[1]["labmeasurenamesystem"] else row[1]["labmeasurenameinterface"]
             feature = Feature(time=time, value=value, uom=unit_of_measuere)
-            patient_dict[label].append(feature)
+            patient_dict[eicu_to_mimic_mapping[label]].append(feature)
         return patient_dict
 
     def get_target_by_patient_health_system_stay_id(self, patient_health_system_stay_id: str):
@@ -115,7 +111,7 @@ class DbEicu:
         Creates and returns list of all patients
         :return: list of patients
         """
-        print("Building patient list from MIMIC...")
+        print("Building patient list from EICU...")
         patient_health_system_stay_id_list = self.get_patient_health_system_stay_id_list()
         patient_list = []
         i = 0

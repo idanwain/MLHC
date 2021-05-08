@@ -26,15 +26,14 @@ class PatientMimic:
         self.events = events_list
         self.boolean_features = boolean_features
 
-    def get_feature_from_events(self, label: str or int) -> List[Feature]:
-        pass
-
-
-    def create_vector_for_patient(self):
+    def create_vector_for_patient(self, labels=None, objective_c=False):
+        if labels is None:
+            labels = self.events
         features_vector = []
-        for label in self.events:
+        for label in labels:
             features_vector += self.get_essence_values_for_label(label)
-        features_vector += self.create_vector_for_boolean_features()
+        if not objective_c:
+            features_vector += self.create_vector_for_boolean_features()
         return features_vector
 
 
@@ -57,10 +56,9 @@ class PatientMimic:
             "Date": datetime.datetime.now(),
             "Value": 0
         }
-        label_vector = []
         number_of_samples = len(self.events[label])
-        if(number_of_samples == 0):
-            return [np.nan] *4 + [0]
+        if number_of_samples == 0:
+            return [np.nan] * 4 + [0]
         for feature in self.events[label]:
             avg_val += feature.value
             if feature.value > max_val:
@@ -70,14 +68,16 @@ class PatientMimic:
             if feature.time > latest_sample["Date"]:
                 latest_sample["Date"] = feature.time
                 latest_sample["Value"] = feature.value
-            label_vector.extend([label + "_avg",label + "_max",label + "_min",label + "_latest",label + "_amount"])
-        return [(avg_val/number_of_samples),max_val,min_val,latest_sample["Value"],number_of_samples]
+        return [(avg_val/number_of_samples), max_val, min_val, latest_sample["Value"], number_of_samples]
 
-    def create_labels_vector(self):
+    def create_labels_vector(self, labels=None, objective_c=False):
+        if labels is None:
+            labels = self.events
         ret_vecotr = []
-        for label in self.events:
-            ret_vecotr.extend([label + "_avg",label + "_max",label + "_min",label + "_latest",label + "_amount",])
-        ret_vecotr.extend(list(self.boolean_features.keys()))
+        for label in labels:
+            ret_vecotr.extend([label + "_avg", label + "_max", label + "_min", label + "_latest", label + "_amount"])
+        if not objective_c:
+            ret_vecotr.extend(list(self.boolean_features.keys()))
         return ret_vecotr
 
     def create_vector_for_boolean_features(self):

@@ -1,6 +1,9 @@
 import numpy as np
 from sklearn import metrics
 
+import db_interface_mimic
+from db_interface_eicu import DbEicu
+
 
 def get_features_for_removal(threshold: float, patient_list: list, db):
     """
@@ -43,6 +46,8 @@ def remove_features_by_threshold(threshold: float, patient_list: list, db):
 
 
 def get_top_K_features_xgb(labels_vector, feature_importance: list, k=50):
+    if k > len(labels_vector):
+        k = len(labels_vector)
     indices = []
     list_cpy = feature_importance.copy()
     for i in range(k):
@@ -133,3 +138,10 @@ def calc_metrics(y_test, y_score):
     precision,recall,thresholds = metrics.precision_recall_curve(y_test,y_score)
     pr = metrics.auc(recall,precision)
     return roc,pr
+
+
+def get_essence_label_vector(labels):
+    ret_vector = []
+    for label in labels:
+        ret_vector.extend([label + "_avg", label + "_max", label + "_min", label + "_latest", label + "_amount"])
+    return ret_vector

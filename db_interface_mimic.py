@@ -2,14 +2,48 @@ from typing import Dict, List
 from feature import Feature
 import pandas as pd
 from patient_mimic import PatientMimic
-import numpy as np
-import matplotlib.pyplot as plt
-import seaborn as sns
 from datetime import datetime
-import sys
 
 relevant_events_path = "/Users/user/Documents/University/Workshop/features_mimic.csv"
 folds_path = "/Users/user/Documents/University/Workshop/folds_mimic_model_a.csv"
+
+mimic_to_eicu_mapping = {
+    'Neturophils': '-polys',
+    'Red Blood Cells': 'RBC',
+    'Hemoglobin': 'Hgb',
+    'Hematocrit': 'Hct',
+    'MCV': 'MCV',
+    'MCH': 'MCH',
+    'MCHC': 'MCHC',
+    'RDW': 'RDW',
+    'Lymphocytes': '-lymphs',
+    'Monocytes': '-monos',
+    'Eosinophils': '-eos',
+    'Basophils': '-basos',
+    'Platelet Count': 'platelets x 1000',
+
+    'Potassium': 'potassium',
+    'Sodium': 'sodium',
+    'Creatinine': 'creatinine',
+    'Chloride': 'chloride',
+    'Urea Nitrogen': 'BUN',
+    'Bicarbonate': 'bicarbonate',
+    'Anion Gap': 'anion gap',
+    'Glucose': 'glucose',
+    'Magnesium': 'magnesium',
+    'Calcium, Total': 'calcium',
+    'Phosphate': 'phosphate',
+    'pH': 'pH',
+
+    'Base Excess': 'Base Excess',
+    'Calculated Total CO2': 'Total CO2',
+    'pO2': 'paO2',
+    'pCO2': 'paCO2',
+
+    'PTT': 'PTT',
+    'INR(PT)': 'PT - INR',
+    'PT': 'PT'
+}
 
 
 class DbMimic:
