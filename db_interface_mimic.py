@@ -133,8 +133,8 @@ class DbMimic:
         patient_list = []
         i = 0
         for hadm_id in hadm_id_list:
-            if i == 1500:
-                break
+            # if i == 1000:
+            #     break
             transfers_before_target, ethnicity, insurance, diagnosis, symptoms = self.get_extra_features_by_hadm_id(
                 hadm_id)
             estimated_age, gender, target = self.get_metadata_by_hadm_id(hadm_id)

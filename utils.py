@@ -1,5 +1,6 @@
 import numpy as np
 from sklearn import metrics
+import logging
 
 
 def get_features_for_removal(threshold: float, patient_list: list, db):
@@ -45,15 +46,20 @@ def remove_features_by_threshold(threshold: float, patient_list: list, db):
 def get_top_K_features_xgb(labels_vector, feature_importance: list, k=50):
     indices = []
     list_cpy = feature_importance.copy()
+    feature_amount = len(list_cpy)
+    if (feature_amount < k):
+        log_dict(msg="No %s features in XGB. using %s features instead" % (k, feature_amount))
+        print(list_cpy)
+        k = feature_amount
     for i in range(k):
         index = np.argmax(list_cpy)
         indices.append(index)
         list_cpy.pop(index)
 
     # Print list of features, can be removed
-    print("Top %s features according to XGB:" % k)
-    for i in indices:
-        print("Feature: %s, Importance: %s" % (labels_vector[i], feature_importance[i]))
+    # print("Top %s features according to XGB:" % k)
+    # for i in indices:
+    #     print("Feature: %s, Importance: %s" % (labels_vector[i], feature_importance[i]))
     return indices
 
 
@@ -117,6 +123,52 @@ def split_data(data, labels, ratio):
     return X_train, y_train, X_test, y_test
 
 
+def split_data_by_folds(data, labels, folds, test_fold, removal_factor=1):
+    X_train = []
+    y_train = []
+    X_test = []
+    y_test = []
+    indices_for_removal = []
+    counter = 0
+    data_len = len(data)
+    for i in range(data_len):
+        curr_fold = folds[i]
+        if (curr_fold == test_fold):
+            X_test.append(data[i])
+            y_test.append(labels[i])
+        else:
+            X_train.append(data[i])
+            y_train.append(labels[i])
+    X_train_len = len(X_train)
+    # print("Y len: %s. X len: %s" %(len(y_train),X_train_len))
+    for i in range(X_train_len):
+        if y_train[i] == 0:
+            indices_for_removal.append(i)
+            counter += 1
+        if (counter == int(X_train_len * removal_factor)):
+            break;
+
+    X_train_removed = []
+    y_train_removed = []
+    for i in range(X_train_len):
+        if i not in indices_for_removal:
+            X_train_removed.append(X_train[i])
+            y_train_removed.append(y_train[i])
+
+    X_train = X_train_removed
+    y_train = y_train_removed
+    tot_zero = 0
+    tot_one = 1
+    for i in range(len(y_train)):
+        if (y_train[i] == 0):
+            tot_zero += 1
+        else:
+            tot_one += 1
+    # print("Ratio: %s"%(tot_zero/tot_one))
+    # print("Y len: %s. X len: %s" %(len(y_train),len(X_train)))
+    return X_train, y_train, X_test, y_test
+
+
 def calc_error(clf, X_test, y_test):
     tot = 0
     for i in range(len(X_test)):
@@ -130,6 +182,14 @@ def calc_error(clf, X_test, y_test):
 def calc_metrics(y_test, y_score):
     fpr, tpr, thresholds = metrics.roc_curve(y_test, y_score)
     roc = metrics.auc(fpr, tpr)
-    precision,recall,thresholds = metrics.precision_recall_curve(y_test,y_score)
-    pr = metrics.auc(recall,precision)
-    return roc,pr
+    precision, recall, thresholds = metrics.precision_recall_curve(y_test, y_score)
+    pr = metrics.auc(recall, precision)
+    return roc, pr
+
+
+def log_dict(vals=None, msg=None, log_path="log_file"):
+    logging.basicConfig(filename=log_path, filemode='a', level=logging.DEBUG)
+    if msg:
+        logging.debug(msg)
+    if vals:
+        logging.debug(str(vals))
