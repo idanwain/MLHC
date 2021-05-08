@@ -47,8 +47,6 @@ def remove_features_by_threshold(threshold: float, patient_list: list, db):
 
 
 def get_top_K_features_xgb(labels_vector, feature_importance: list, k=50):
-    if k > len(labels_vector):
-        k = len(labels_vector)
     indices = []
     list_cpy = feature_importance.copy()
     feature_amount = len(list_cpy)
