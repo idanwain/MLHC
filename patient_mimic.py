@@ -19,7 +19,7 @@ class PatientMimic:
         self.insurance = insurance
         self.diagnosis = diagnosis
         self.symptoms = symptoms
-        if target == "negative":
+        if target == "negative" or target == "Appropriate":
             self.target = 0
         else:
             self.target = 1

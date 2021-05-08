@@ -56,9 +56,9 @@ def get_top_K_features_xgb(labels_vector, feature_importance: list, k=50):
         list_cpy.pop(index)
 
     # Print list of features, can be removed
-    # print("Top %s features according to XGB:" % k)
-    # for i in indices:
-    #     print("Feature: %s, Importance: %s" % (labels_vector[i], feature_importance[i]))å
+    print("Top %s features according to XGB:" % k)
+    for i in indices:
+        print("Feature: %s, Importance: %s" % (labels_vector[i], feature_importance[i]))
     return indices
 
 
