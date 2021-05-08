@@ -4,6 +4,7 @@ import logging
 
 import db_interface_mimic
 from db_interface_eicu import DbEicu
+import matplotlib.pyplot as plt
 
 
 def get_features_for_removal(threshold: float, patient_list: list, db):
@@ -182,11 +183,17 @@ def calc_error(clf, X_test, y_test):
     return (1 - (tot / len(X_test)))
 
 
-def calc_metrics(y_test, y_score):
+def calc_metrics(clf,X_test, y_test,display_plots=False):
+    y_score = clf.predict(X_test)
     fpr, tpr, thresholds = metrics.roc_curve(y_test, y_score)
     roc = metrics.auc(fpr, tpr)
     precision, recall, thresholds = metrics.precision_recall_curve(y_test, y_score)
     pr = metrics.auc(recall, precision)
+    if display_plots:
+        metrics.plot_roc_curve(clf, X_test, y_test)
+        plt.show()
+        disp = metrics.plot_precision_recall_curve(clf,X_test,y_test)
+        disp.plot()
     return roc, pr
 
 
