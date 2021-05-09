@@ -157,7 +157,7 @@ class DbMimic:
                 res[list(category['category'])[0]] = 1
         return res
 
-    def create_patient_list(self, num_of_negatives):
+    def create_patient_list(self, num_of_negatives=0):
         """
         Creates and returns list of all patients
         :return: list of patients

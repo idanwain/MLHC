@@ -1,9 +1,6 @@
 import numpy as np
 from sklearn import metrics
 import logging
-
-import db_interface_mimic
-from db_interface_eicu import DbEicu
 import matplotlib.pyplot as plt
 
 
@@ -183,7 +180,7 @@ def calc_error(clf, X_test, y_test):
     return (1 - (tot / len(X_test)))
 
 
-def calc_metrics(clf,X_test, y_test,display_plots=False):
+def calc_metrics(clf, X_test, y_test, display_plots=False):
     y_score = clf.predict(X_test)
     fpr, tpr, thresholds = metrics.roc_curve(y_test, y_score)
     roc = metrics.auc(fpr, tpr)

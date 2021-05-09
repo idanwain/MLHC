@@ -1,8 +1,3 @@
-from typing import Dict, List
-from db_interface_eicu import DbEicu
-from feature import Feature
-import pandas as pd
-from patient_mimic import PatientMimic
 import itertools
 from sklearn.impute import KNNImputer
 from sklearn.ensemble import RandomForestClassifier
@@ -10,12 +5,6 @@ import numpy as np
 from xgboost import XGBClassifier
 import time
 import copy
-import logging
-from sklearn import metrics
-import matplotlib.pyplot as plt
-import seaborn as sns
-from datetime import datetime
-import sys
 from db_interface_mimic import DbMimic
 import utils
 

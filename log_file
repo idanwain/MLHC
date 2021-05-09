@@ -1,999 +1,781 @@
-DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 10; num_of_negatives= 1139
-DEBUG:root:AUROC: 0.541313559322034
-
-DEBUG:root:AUPR: 0.1736111111111111
-
-DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 10; num_of_negatives= 1039
-DEBUG:root:AUROC: 0.4957627118644068
-
-DEBUG:root:AUPR: 0.031746031746031744
-
-DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 10; num_of_negatives= 939
-DEBUG:root:AUROC: 0.4703389830508475
-
-DEBUG:root:AUPR: 0.031746031746031744
-
-DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 10; num_of_negatives= 839
+DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 10; num_of_negatives= 2539
 DEBUG:root:AUROC: 0.4830508474576271
-
 DEBUG:root:AUPR: 0.031746031746031744
 
-DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 10; num_of_negatives= 739
-DEBUG:root:AUROC: 0.4915254237288136
+DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 10; num_of_negatives= 2439
+DEBUG:root:AUROC: 0.5582627118644068
+DEBUG:root:AUPR: 0.3402777777777778
 
-DEBUG:root:AUPR: 0.031746031746031744
-
-DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 10; num_of_negatives= 639
-DEBUG:root:AUROC: 0.5201271186440678
-
-DEBUG:root:AUPR: 0.13573232323232323
-
-DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 10; num_of_negatives= 539
-DEBUG:root:AUROC: 0.4533898305084746
-
-DEBUG:root:AUPR: 0.031746031746031744
-
-DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 15; num_of_negatives= 1139
-DEBUG:root:AUROC: 0.4957627118644068
-
-DEBUG:root:AUPR: 0.031746031746031744
-
-DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 15; num_of_negatives= 1039
-DEBUG:root:AUROC: 0.4957627118644068
-
-DEBUG:root:AUPR: 0.031746031746031744
-
-DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 15; num_of_negatives= 939
-DEBUG:root:AUROC: 0.4915254237288136
-
-DEBUG:root:AUPR: 0.031746031746031744
-
-DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 15; num_of_negatives= 839
-DEBUG:root:AUROC: 0.524364406779661
-
-DEBUG:root:AUPR: 0.14027777777777778
-
-DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 15; num_of_negatives= 739
-DEBUG:root:AUROC: 0.4957627118644068
-
-DEBUG:root:AUPR: 0.031746031746031744
-
-DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 15; num_of_negatives= 639
-DEBUG:root:AUROC: 0.524364406779661
-
-DEBUG:root:AUPR: 0.14027777777777778
-
-DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 15; num_of_negatives= 539
-DEBUG:root:AUROC: 0.4830508474576271
-
-DEBUG:root:AUPR: 0.031746031746031744
-
-DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 20; num_of_negatives= 1139
+DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 10; num_of_negatives= 2339
 DEBUG:root:AUROC: 0.5540254237288136
-
 DEBUG:root:AUPR: 0.2569444444444444
 
-DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 20; num_of_negatives= 1039
-DEBUG:root:AUROC: 0.4915254237288136
+DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 10; num_of_negatives= 2239
+DEBUG:root:AUROC: 0.5497881355932203
+DEBUG:root:AUPR: 0.2152777777777778
 
+DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 10; num_of_negatives= 2139
+DEBUG:root:AUROC: 0.4957627118644068
 DEBUG:root:AUPR: 0.031746031746031744
 
-DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 20; num_of_negatives= 939
-DEBUG:root:AUROC: 0.5
+DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 10; num_of_negatives= 2039
+DEBUG:root:AUROC: 0.5540254237288136
+DEBUG:root:AUPR: 0.2569444444444444
 
+DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 10; num_of_negatives= 1939
+DEBUG:root:AUROC: 0.5
 DEBUG:root:AUPR: 0.5317460317460317
 
-DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 20; num_of_negatives= 839
-DEBUG:root:AUROC: 0.5370762711864407
+DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 10; num_of_negatives= 1839
+DEBUG:root:AUROC: 0.4957627118644068
+DEBUG:root:AUPR: 0.031746031746031744
 
+DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 10; num_of_negatives= 1739
+DEBUG:root:AUROC: 0.4957627118644068
+DEBUG:root:AUPR: 0.031746031746031744
+
+DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 10; num_of_negatives= 1639
+DEBUG:root:AUROC: 0.5
+DEBUG:root:AUPR: 0.5317460317460317
+
+DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 10; num_of_negatives= 1539
+DEBUG:root:AUROC: 0.5
+DEBUG:root:AUPR: 0.5317460317460317
+
+DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 15; num_of_negatives= 2539
+DEBUG:root:AUROC: 0.4788135593220339
+DEBUG:root:AUPR: 0.031746031746031744
+
+DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 15; num_of_negatives= 2439
+DEBUG:root:AUROC: 0.4957627118644068
+DEBUG:root:AUPR: 0.031746031746031744
+
+DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 15; num_of_negatives= 2339
+DEBUG:root:AUROC: 0.5540254237288136
+DEBUG:root:AUPR: 0.2569444444444444
+
+DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 15; num_of_negatives= 2239
+DEBUG:root:AUROC: 0.4957627118644068
+DEBUG:root:AUPR: 0.031746031746031744
+
+DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 15; num_of_negatives= 2139
+DEBUG:root:AUROC: 0.4915254237288136
+DEBUG:root:AUPR: 0.031746031746031744
+
+DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 15; num_of_negatives= 2039
+DEBUG:root:AUROC: 0.4957627118644068
+DEBUG:root:AUPR: 0.031746031746031744
+
+DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 15; num_of_negatives= 1939
+DEBUG:root:AUROC: 0.5
+DEBUG:root:AUPR: 0.5317460317460317
+
+DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 15; num_of_negatives= 1839
+DEBUG:root:AUROC: 0.4957627118644068
+DEBUG:root:AUPR: 0.031746031746031744
+
+DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 15; num_of_negatives= 1739
+DEBUG:root:AUROC: 0.4957627118644068
+DEBUG:root:AUPR: 0.031746031746031744
+
+DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 15; num_of_negatives= 1639
+DEBUG:root:AUROC: 0.5370762711864407
 DEBUG:root:AUPR: 0.1617063492063492
 
-DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 20; num_of_negatives= 739
+DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 15; num_of_negatives= 1539
 DEBUG:root:AUROC: 0.5
-
 DEBUG:root:AUPR: 0.5317460317460317
 
-DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 20; num_of_negatives= 639
-DEBUG:root:AUROC: 0.5286016949152542
+DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 20; num_of_negatives= 2539
+DEBUG:root:AUROC: 0.4745762711864407
+DEBUG:root:AUPR: 0.031746031746031744
 
+DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 20; num_of_negatives= 2439
+DEBUG:root:AUROC: 0.5540254237288136
+DEBUG:root:AUPR: 0.2569444444444444
+
+DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 20; num_of_negatives= 2339
+DEBUG:root:AUROC: 0.4872881355932203
+DEBUG:root:AUPR: 0.031746031746031744
+
+DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 20; num_of_negatives= 2239
+DEBUG:root:AUROC: 0.4745762711864407
+DEBUG:root:AUPR: 0.031746031746031744
+
+DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 20; num_of_negatives= 2139
+DEBUG:root:AUROC: 0.4915254237288136
+DEBUG:root:AUPR: 0.031746031746031744
+
+DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 20; num_of_negatives= 2039
+DEBUG:root:AUROC: 0.4872881355932203
+DEBUG:root:AUPR: 0.031746031746031744
+
+DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 20; num_of_negatives= 1939
+DEBUG:root:AUROC: 0.4872881355932203
+DEBUG:root:AUPR: 0.031746031746031744
+
+DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 20; num_of_negatives= 1839
+DEBUG:root:AUROC: 0.5
+DEBUG:root:AUPR: 0.5317460317460317
+
+DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 20; num_of_negatives= 1739
+DEBUG:root:AUROC: 0.5582627118644068
+DEBUG:root:AUPR: 0.3402777777777778
+
+DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 20; num_of_negatives= 1639
+DEBUG:root:AUROC: 0.5625
+DEBUG:root:AUPR: 0.5902777777777778
+
+DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 20; num_of_negatives= 1539
+DEBUG:root:AUROC: 0.5
+DEBUG:root:AUPR: 0.5317460317460317
+
+DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 25; num_of_negatives= 2539
+DEBUG:root:AUROC: 0.5529661016949152
+DEBUG:root:AUPR: 0.2014411027568922
+
+DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 25; num_of_negatives= 2439
+DEBUG:root:AUROC: 0.6578389830508475
+DEBUG:root:AUPR: 0.35734126984126985
+
+DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 25; num_of_negatives= 2339
+DEBUG:root:AUROC: 0.4957627118644068
+DEBUG:root:AUPR: 0.031746031746031744
+
+DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 25; num_of_negatives= 2239
+DEBUG:root:AUROC: 0.4788135593220339
+DEBUG:root:AUPR: 0.031746031746031744
+
+DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 25; num_of_negatives= 2139
+DEBUG:root:AUROC: 0.4915254237288136
+DEBUG:root:AUPR: 0.031746031746031744
+
+DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 25; num_of_negatives= 2039
+DEBUG:root:AUROC: 0.4830508474576271
+DEBUG:root:AUPR: 0.031746031746031744
+
+DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 25; num_of_negatives= 1939
+DEBUG:root:AUROC: 0.5
+DEBUG:root:AUPR: 0.5317460317460317
+
+DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 25; num_of_negatives= 1839
+DEBUG:root:AUROC: 0.5
+DEBUG:root:AUPR: 0.5317460317460317
+
+DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 25; num_of_negatives= 1739
+DEBUG:root:AUROC: 0.4957627118644068
+DEBUG:root:AUPR: 0.031746031746031744
+
+DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 25; num_of_negatives= 1639
+DEBUG:root:AUROC: 0.4957627118644068
+DEBUG:root:AUPR: 0.031746031746031744
+
+DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 25; num_of_negatives= 1539
+DEBUG:root:AUROC: 0.5
+DEBUG:root:AUPR: 0.5317460317460317
+
+DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 30; num_of_negatives= 2539
+DEBUG:root:AUROC: 0.4904661016949152
+DEBUG:root:AUPR: 0.11805555555555555
+
+DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 30; num_of_negatives= 2439
+DEBUG:root:AUROC: 0.5328389830508474
+DEBUG:root:AUPR: 0.1527777777777778
+
+DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 30; num_of_negatives= 2339
+DEBUG:root:AUROC: 0.4788135593220339
+DEBUG:root:AUPR: 0.031746031746031744
+
+DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 30; num_of_negatives= 2239
+DEBUG:root:AUROC: 0.4957627118644068
+DEBUG:root:AUPR: 0.031746031746031744
+
+DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 30; num_of_negatives= 2139
+DEBUG:root:AUROC: 0.4872881355932203
+DEBUG:root:AUPR: 0.031746031746031744
+
+DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 30; num_of_negatives= 2039
+DEBUG:root:AUROC: 0.4957627118644068
+DEBUG:root:AUPR: 0.031746031746031744
+
+DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 30; num_of_negatives= 1939
+DEBUG:root:AUROC: 0.4957627118644068
+DEBUG:root:AUPR: 0.031746031746031744
+
+DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 30; num_of_negatives= 1839
+DEBUG:root:AUROC: 0.4957627118644068
+DEBUG:root:AUPR: 0.031746031746031744
+
+DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 30; num_of_negatives= 1739
+DEBUG:root:AUROC: 0.5
+DEBUG:root:AUPR: 0.5317460317460317
+
+DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 30; num_of_negatives= 1639
+DEBUG:root:AUROC: 0.5
+DEBUG:root:AUPR: 0.5317460317460317
+
+DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 30; num_of_negatives= 1539
+DEBUG:root:AUROC: 0.5
+DEBUG:root:AUPR: 0.5317460317460317
+
+DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 35; num_of_negatives= 2539
+DEBUG:root:AUROC: 0.503177966101695
+DEBUG:root:AUPR: 0.1236111111111111
+
+DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 35; num_of_negatives= 2439
+DEBUG:root:AUROC: 0.5826271186440678
+DEBUG:root:AUPR: 0.23214285714285715
+
+DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 35; num_of_negatives= 2339
+DEBUG:root:AUROC: 0.4872881355932203
+DEBUG:root:AUPR: 0.031746031746031744
+
+DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 35; num_of_negatives= 2239
+DEBUG:root:AUROC: 0.4745762711864407
+DEBUG:root:AUPR: 0.031746031746031744
+
+DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 35; num_of_negatives= 2139
+DEBUG:root:AUROC: 0.4915254237288136
+DEBUG:root:AUPR: 0.031746031746031744
+
+DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 35; num_of_negatives= 2039
+DEBUG:root:AUROC: 0.4957627118644068
+DEBUG:root:AUPR: 0.031746031746031744
+
+DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 35; num_of_negatives= 1939
+DEBUG:root:AUROC: 0.5
+DEBUG:root:AUPR: 0.5317460317460317
+
+DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 35; num_of_negatives= 1839
+DEBUG:root:AUROC: 0.5
+DEBUG:root:AUPR: 0.5317460317460317
+
+DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 35; num_of_negatives= 1739
+DEBUG:root:AUROC: 0.5
+DEBUG:root:AUPR: 0.5317460317460317
+
+DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 35; num_of_negatives= 1639
+DEBUG:root:AUROC: 0.4957627118644068
+DEBUG:root:AUPR: 0.031746031746031744
+
+DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 35; num_of_negatives= 1539
+DEBUG:root:AUROC: 0.5
+DEBUG:root:AUPR: 0.5317460317460317
+
+DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 40; num_of_negatives= 2539
+DEBUG:root:AUROC: 0.4947033898305085
+DEBUG:root:AUPR: 0.11968954248366012
+
+DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 40; num_of_negatives= 2439
+DEBUG:root:AUROC: 0.5286016949152542
 DEBUG:root:AUPR: 0.14583333333333331
 
-DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 20; num_of_negatives= 539
-DEBUG:root:AUROC: 0.4830508474576271
-
-DEBUG:root:AUPR: 0.031746031746031744
-
-DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 25; num_of_negatives= 1139
-DEBUG:root:AUROC: 0.5625
-
-DEBUG:root:AUPR: 0.5902777777777778
-
-DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 25; num_of_negatives= 1039
-DEBUG:root:AUROC: 0.545550847457627
-
-DEBUG:root:AUPR: 0.19027777777777777
-
-DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 25; num_of_negatives= 939
-DEBUG:root:AUROC: 0.4915254237288136
-
-DEBUG:root:AUPR: 0.031746031746031744
-
-DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 25; num_of_negatives= 839
-DEBUG:root:AUROC: 0.541313559322034
-
-DEBUG:root:AUPR: 0.1736111111111111
-
-DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 25; num_of_negatives= 739
-DEBUG:root:AUROC: 0.5582627118644068
-
-DEBUG:root:AUPR: 0.3402777777777778
-
-DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 25; num_of_negatives= 639
-DEBUG:root:AUROC: 0.541313559322034
-
-DEBUG:root:AUPR: 0.1736111111111111
-
-DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 25; num_of_negatives= 539
-DEBUG:root:AUROC: 0.4872881355932203
-
-DEBUG:root:AUPR: 0.031746031746031744
-
-DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 30; num_of_negatives= 1139
-DEBUG:root:AUROC: 0.5
-
-DEBUG:root:AUPR: 0.5317460317460317
-
-DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 30; num_of_negatives= 1039
-DEBUG:root:AUROC: 0.4957627118644068
-
-DEBUG:root:AUPR: 0.031746031746031744
-
-DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 30; num_of_negatives= 939
+DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 40; num_of_negatives= 2339
 DEBUG:root:AUROC: 0.4788135593220339
-
 DEBUG:root:AUPR: 0.031746031746031744
 
-DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 30; num_of_negatives= 839
-DEBUG:root:AUROC: 0.545550847457627
-
-DEBUG:root:AUPR: 0.19027777777777777
-
-DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 30; num_of_negatives= 739
-DEBUG:root:AUROC: 0.545550847457627
-
-DEBUG:root:AUPR: 0.19027777777777777
-
-DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 30; num_of_negatives= 639
-DEBUG:root:AUROC: 0.4957627118644068
-
-DEBUG:root:AUPR: 0.031746031746031744
-
-DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 30; num_of_negatives= 539
-DEBUG:root:AUROC: 0.4915254237288136
-
-DEBUG:root:AUPR: 0.031746031746031744
-
-DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 35; num_of_negatives= 1139
-DEBUG:root:AUROC: 0.4957627118644068
-
-DEBUG:root:AUPR: 0.031746031746031744
-
-DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 35; num_of_negatives= 1039
-DEBUG:root:AUROC: 0.5
-
-DEBUG:root:AUPR: 0.5317460317460317
-
-DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 35; num_of_negatives= 939
+DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 40; num_of_negatives= 2239
 DEBUG:root:AUROC: 0.4872881355932203
-
 DEBUG:root:AUPR: 0.031746031746031744
 
-DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 35; num_of_negatives= 839
-DEBUG:root:AUROC: 0.5540254237288136
-
-DEBUG:root:AUPR: 0.2569444444444444
-
-DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 35; num_of_negatives= 739
-DEBUG:root:AUROC: 0.4957627118644068
-
-DEBUG:root:AUPR: 0.031746031746031744
-
-DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 35; num_of_negatives= 639
-DEBUG:root:AUROC: 0.4957627118644068
-
-DEBUG:root:AUPR: 0.031746031746031744
-
-DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 35; num_of_negatives= 539
-DEBUG:root:AUROC: 0.5
-
-DEBUG:root:AUPR: 0.5317460317460317
-
-DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 40; num_of_negatives= 1139
-DEBUG:root:AUROC: 0.4915254237288136
-
-DEBUG:root:AUPR: 0.031746031746031744
-
-DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 40; num_of_negatives= 1039
-DEBUG:root:AUROC: 0.5625
-
-DEBUG:root:AUPR: 0.5902777777777778
-
-DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 40; num_of_negatives= 939
-DEBUG:root:AUROC: 0.545550847457627
-
-DEBUG:root:AUPR: 0.19027777777777777
-
-DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 40; num_of_negatives= 839
-DEBUG:root:AUROC: 0.5540254237288136
-
-DEBUG:root:AUPR: 0.2569444444444444
-
-DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 40; num_of_negatives= 739
-DEBUG:root:AUROC: 0.4957627118644068
-
-DEBUG:root:AUPR: 0.031746031746031744
-
-DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 40; num_of_negatives= 639
-DEBUG:root:AUROC: 0.4745762711864407
-
-DEBUG:root:AUPR: 0.031746031746031744
-
-DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 40; num_of_negatives= 539
-DEBUG:root:AUROC: 0.5
-
-DEBUG:root:AUPR: 0.5317460317460317
-
-DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 45; num_of_negatives= 1139
-DEBUG:root:AUROC: 0.5540254237288136
-
-DEBUG:root:AUPR: 0.2569444444444444
-
-DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 45; num_of_negatives= 1039
-DEBUG:root:AUROC: 0.4957627118644068
-
-DEBUG:root:AUPR: 0.031746031746031744
-
-DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 45; num_of_negatives= 939
-DEBUG:root:AUROC: 0.5497881355932203
-
-DEBUG:root:AUPR: 0.2152777777777778
-
-DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 45; num_of_negatives= 839
+DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 40; num_of_negatives= 2139
 DEBUG:root:AUROC: 0.4872881355932203
-
 DEBUG:root:AUPR: 0.031746031746031744
 
-DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 45; num_of_negatives= 739
-DEBUG:root:AUROC: 0.5
+DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 40; num_of_negatives= 2039
+DEBUG:root:AUROC: 0.4915254237288136
+DEBUG:root:AUPR: 0.031746031746031744
 
+DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 40; num_of_negatives= 1939
+DEBUG:root:AUROC: 0.4915254237288136
+DEBUG:root:AUPR: 0.031746031746031744
+
+DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 40; num_of_negatives= 1839
+DEBUG:root:AUROC: 0.4957627118644068
+DEBUG:root:AUPR: 0.031746031746031744
+
+DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 40; num_of_negatives= 1739
+DEBUG:root:AUROC: 0.4957627118644068
+DEBUG:root:AUPR: 0.031746031746031744
+
+DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 40; num_of_negatives= 1639
+DEBUG:root:AUROC: 0.4957627118644068
+DEBUG:root:AUPR: 0.031746031746031744
+
+DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 40; num_of_negatives= 1539
+DEBUG:root:AUROC: 0.5
 DEBUG:root:AUPR: 0.5317460317460317
 
-DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 45; num_of_negatives= 639
-DEBUG:root:AUROC: 0.4915254237288136
+DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 45; num_of_negatives= 2539
+DEBUG:root:AUROC: 0.5158898305084746
+DEBUG:root:AUPR: 0.13194444444444442
 
-DEBUG:root:AUPR: 0.031746031746031744
+DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 45; num_of_negatives= 2439
+DEBUG:root:AUROC: 0.5286016949152542
+DEBUG:root:AUPR: 0.14583333333333331
 
-DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 45; num_of_negatives= 539
+DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 45; num_of_negatives= 2339
 DEBUG:root:AUROC: 0.4872881355932203
-
 DEBUG:root:AUPR: 0.031746031746031744
 
-DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 50; num_of_negatives= 1139
-DEBUG:root:AUROC: 0.4915254237288136
-
-DEBUG:root:AUPR: 0.031746031746031744
-
-DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 50; num_of_negatives= 1039
-DEBUG:root:AUROC: 0.4957627118644068
-
-DEBUG:root:AUPR: 0.031746031746031744
-
-DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 50; num_of_negatives= 939
-DEBUG:root:AUROC: 0.5497881355932203
-
-DEBUG:root:AUPR: 0.2152777777777778
-
-DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 50; num_of_negatives= 839
-DEBUG:root:AUROC: 0.5540254237288136
-
-DEBUG:root:AUPR: 0.2569444444444444
-
-DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 50; num_of_negatives= 739
-DEBUG:root:AUROC: 0.5625
-
-DEBUG:root:AUPR: 0.5902777777777778
-
-DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 50; num_of_negatives= 639
-DEBUG:root:AUROC: 0.5
-
-DEBUG:root:AUPR: 0.5317460317460317
-
-DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 50; num_of_negatives= 539
-DEBUG:root:AUROC: 0.4957627118644068
-
-DEBUG:root:AUPR: 0.031746031746031744
-
-DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 55; num_of_negatives= 1139
-DEBUG:root:AUROC: 0.5
-
-DEBUG:root:AUPR: 0.5317460317460317
-
-DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 55; num_of_negatives= 1039
-DEBUG:root:AUROC: 0.5
-
-DEBUG:root:AUPR: 0.5317460317460317
-
-DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 55; num_of_negatives= 939
-DEBUG:root:AUROC: 0.4957627118644068
-
-DEBUG:root:AUPR: 0.031746031746031744
-
-DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 55; num_of_negatives= 839
-DEBUG:root:AUROC: 0.5497881355932203
-
-DEBUG:root:AUPR: 0.2152777777777778
-
-DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 55; num_of_negatives= 739
-DEBUG:root:AUROC: 0.4915254237288136
-
-DEBUG:root:AUPR: 0.031746031746031744
-
-DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 55; num_of_negatives= 639
-DEBUG:root:AUROC: 0.4872881355932203
-
-DEBUG:root:AUPR: 0.031746031746031744
-
-DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 55; num_of_negatives= 539
-DEBUG:root:AUROC: 0.4957627118644068
-
-DEBUG:root:AUPR: 0.031746031746031744
-
-DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 60; num_of_negatives= 1139
-DEBUG:root:AUROC: 0.5
-
-DEBUG:root:AUPR: 0.5317460317460317
-
-DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 60; num_of_negatives= 1039
-DEBUG:root:AUROC: 0.5
-
-DEBUG:root:AUPR: 0.5317460317460317
-
-DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 60; num_of_negatives= 939
-DEBUG:root:AUROC: 0.4915254237288136
-
-DEBUG:root:AUPR: 0.031746031746031744
-
-DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 60; num_of_negatives= 839
-DEBUG:root:AUROC: 0.5540254237288136
-
-DEBUG:root:AUPR: 0.2569444444444444
-
-DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 60; num_of_negatives= 739
-DEBUG:root:AUROC: 0.5
-
-DEBUG:root:AUPR: 0.5317460317460317
-
-DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 60; num_of_negatives= 639
-DEBUG:root:AUROC: 0.4872881355932203
-
-DEBUG:root:AUPR: 0.031746031746031744
-
-DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 60; num_of_negatives= 539
+DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 45; num_of_negatives= 2239
 DEBUG:root:AUROC: 0.4830508474576271
-
 DEBUG:root:AUPR: 0.031746031746031744
 
-DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 65; num_of_negatives= 1139
-DEBUG:root:AUROC: 0.4915254237288136
-
-DEBUG:root:AUPR: 0.031746031746031744
-
-DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 65; num_of_negatives= 1039
-DEBUG:root:AUROC: 0.5582627118644068
-
-DEBUG:root:AUPR: 0.3402777777777778
-
-DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 65; num_of_negatives= 939
-DEBUG:root:AUROC: 0.4915254237288136
-
-DEBUG:root:AUPR: 0.031746031746031744
-
-DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 65; num_of_negatives= 839
-DEBUG:root:AUROC: 0.5540254237288136
-
-DEBUG:root:AUPR: 0.2569444444444444
-
-DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 65; num_of_negatives= 739
-DEBUG:root:AUROC: 0.4872881355932203
-
-DEBUG:root:AUPR: 0.031746031746031744
-
-DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 65; num_of_negatives= 639
-DEBUG:root:AUROC: 0.4915254237288136
-
-DEBUG:root:AUPR: 0.031746031746031744
-
-DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 65; num_of_negatives= 539
-DEBUG:root:AUROC: 0.4872881355932203
-
-DEBUG:root:AUPR: 0.031746031746031744
-
-DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 70; num_of_negatives= 1139
-DEBUG:root:AUROC: 0.5582627118644068
-
-DEBUG:root:AUPR: 0.3402777777777778
-
-DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 70; num_of_negatives= 1039
-DEBUG:root:AUROC: 0.4915254237288136
-
-DEBUG:root:AUPR: 0.031746031746031744
-
-DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 70; num_of_negatives= 939
-DEBUG:root:AUROC: 0.4872881355932203
-
-DEBUG:root:AUPR: 0.031746031746031744
-
-DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 70; num_of_negatives= 839
-DEBUG:root:AUROC: 0.4915254237288136
-
-DEBUG:root:AUPR: 0.031746031746031744
-
-DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 70; num_of_negatives= 739
-DEBUG:root:AUROC: 0.5625
-
-DEBUG:root:AUPR: 0.5902777777777778
-
-DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 70; num_of_negatives= 639
-DEBUG:root:AUROC: 0.5540254237288136
-
-DEBUG:root:AUPR: 0.2569444444444444
-
-DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 70; num_of_negatives= 539
-DEBUG:root:AUROC: 0.4872881355932203
-
-DEBUG:root:AUPR: 0.031746031746031744
-
-DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 75; num_of_negatives= 1139
-DEBUG:root:AUROC: 0.5
-
-DEBUG:root:AUPR: 0.5317460317460317
-
-DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 75; num_of_negatives= 1039
-DEBUG:root:AUROC: 0.5
-
-DEBUG:root:AUPR: 0.5317460317460317
-
-DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 75; num_of_negatives= 939
-DEBUG:root:AUROC: 0.4872881355932203
-
-DEBUG:root:AUPR: 0.031746031746031744
-
-DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 75; num_of_negatives= 839
-DEBUG:root:AUROC: 0.5540254237288136
-
-DEBUG:root:AUPR: 0.2569444444444444
-
-DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 75; num_of_negatives= 739
-DEBUG:root:AUROC: 0.5
-
-DEBUG:root:AUPR: 0.5317460317460317
-
-DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 75; num_of_negatives= 639
-DEBUG:root:AUROC: 0.4872881355932203
-
-DEBUG:root:AUPR: 0.031746031746031744
-
-DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 75; num_of_negatives= 539
-DEBUG:root:AUROC: 0.5582627118644068
-
-DEBUG:root:AUPR: 0.3402777777777778
-
-DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 80; num_of_negatives= 1139
-DEBUG:root:AUROC: 0.4915254237288136
-
-DEBUG:root:AUPR: 0.031746031746031744
-
-DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 80; num_of_negatives= 1039
-DEBUG:root:AUROC: 0.5
-
-DEBUG:root:AUPR: 0.5317460317460317
-
-DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 80; num_of_negatives= 939
+DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 45; num_of_negatives= 2139
 DEBUG:root:AUROC: 0.4957627118644068
-
 DEBUG:root:AUPR: 0.031746031746031744
 
-DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 80; num_of_negatives= 839
-DEBUG:root:AUROC: 0.5
-
-DEBUG:root:AUPR: 0.5317460317460317
-
-DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 80; num_of_negatives= 739
-DEBUG:root:AUROC: 0.5
-
-DEBUG:root:AUPR: 0.5317460317460317
-
-DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 80; num_of_negatives= 639
-DEBUG:root:AUROC: 0.4745762711864407
-
-DEBUG:root:AUPR: 0.031746031746031744
-
-DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 80; num_of_negatives= 539
-DEBUG:root:AUROC: 0.5540254237288136
-
-DEBUG:root:AUPR: 0.2569444444444444
-
-DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 85; num_of_negatives= 1139
-DEBUG:root:AUROC: 0.4915254237288136
-
-DEBUG:root:AUPR: 0.031746031746031744
-
-DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 85; num_of_negatives= 1039
-DEBUG:root:AUROC: 0.4957627118644068
-
-DEBUG:root:AUPR: 0.031746031746031744
-
-DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 85; num_of_negatives= 939
-DEBUG:root:AUROC: 0.545550847457627
-
-DEBUG:root:AUPR: 0.19027777777777777
-
-DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 85; num_of_negatives= 839
+DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 45; num_of_negatives= 2039
 DEBUG:root:AUROC: 0.5582627118644068
-
 DEBUG:root:AUPR: 0.3402777777777778
 
-DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 85; num_of_negatives= 739
+DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 45; num_of_negatives= 1939
+DEBUG:root:AUROC: 0.4957627118644068
+DEBUG:root:AUPR: 0.031746031746031744
+
+DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 45; num_of_negatives= 1839
+DEBUG:root:AUROC: 0.4957627118644068
+DEBUG:root:AUPR: 0.031746031746031744
+
+DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 45; num_of_negatives= 1739
+DEBUG:root:AUROC: 0.4915254237288136
+DEBUG:root:AUPR: 0.031746031746031744
+
+DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 45; num_of_negatives= 1639
+DEBUG:root:AUROC: 0.5
+DEBUG:root:AUPR: 0.5317460317460317
+
+DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 45; num_of_negatives= 1539
+DEBUG:root:AUROC: 0.5
+DEBUG:root:AUPR: 0.5317460317460317
+
+DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 50; num_of_negatives= 2539
+DEBUG:root:AUROC: 0.5233050847457628
+DEBUG:root:AUPR: 0.18727106227106227
+
+DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 50; num_of_negatives= 2439
 DEBUG:root:AUROC: 0.5497881355932203
-
 DEBUG:root:AUPR: 0.2152777777777778
 
-DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 85; num_of_negatives= 639
-DEBUG:root:AUROC: 0.4915254237288136
-
+DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 50; num_of_negatives= 2339
+DEBUG:root:AUROC: 0.4830508474576271
 DEBUG:root:AUPR: 0.031746031746031744
 
-DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 85; num_of_negatives= 539
-DEBUG:root:AUROC: 0.5370762711864407
+DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 50; num_of_negatives= 2239
+DEBUG:root:AUROC: 0.4872881355932203
+DEBUG:root:AUPR: 0.031746031746031744
 
+DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 50; num_of_negatives= 2139
+DEBUG:root:AUROC: 0.4957627118644068
+DEBUG:root:AUPR: 0.031746031746031744
+
+DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 50; num_of_negatives= 2039
+DEBUG:root:AUROC: 0.4830508474576271
+DEBUG:root:AUPR: 0.031746031746031744
+
+DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 50; num_of_negatives= 1939
+DEBUG:root:AUROC: 0.4830508474576271
+DEBUG:root:AUPR: 0.031746031746031744
+
+DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 50; num_of_negatives= 1839
+DEBUG:root:AUROC: 0.5497881355932203
+DEBUG:root:AUPR: 0.2152777777777778
+
+DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 50; num_of_negatives= 1739
+DEBUG:root:AUROC: 0.4957627118644068
+DEBUG:root:AUPR: 0.031746031746031744
+
+DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 50; num_of_negatives= 1639
+DEBUG:root:AUROC: 0.5625
+DEBUG:root:AUPR: 0.5902777777777778
+
+DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 50; num_of_negatives= 1539
+DEBUG:root:AUROC: 0.5625
+DEBUG:root:AUPR: 0.5902777777777778
+
+DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 55; num_of_negatives= 2539
+DEBUG:root:AUROC: 0.5116525423728814
+DEBUG:root:AUPR: 0.12873931623931623
+
+DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 55; num_of_negatives= 2439
+DEBUG:root:AUROC: 0.5158898305084746
+DEBUG:root:AUPR: 0.13194444444444442
+
+DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 55; num_of_negatives= 2339
+DEBUG:root:AUROC: 0.4788135593220339
+DEBUG:root:AUPR: 0.031746031746031744
+
+DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 55; num_of_negatives= 2239
+DEBUG:root:AUROC: 0.4745762711864407
+DEBUG:root:AUPR: 0.031746031746031744
+
+DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 55; num_of_negatives= 2139
+DEBUG:root:AUROC: 0.4915254237288136
+DEBUG:root:AUPR: 0.031746031746031744
+
+DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 55; num_of_negatives= 2039
+DEBUG:root:AUROC: 0.4872881355932203
+DEBUG:root:AUPR: 0.031746031746031744
+
+DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 55; num_of_negatives= 1939
+DEBUG:root:AUROC: 0.4872881355932203
+DEBUG:root:AUPR: 0.031746031746031744
+
+DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 55; num_of_negatives= 1839
+DEBUG:root:AUROC: 0.4957627118644068
+DEBUG:root:AUPR: 0.031746031746031744
+
+DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 55; num_of_negatives= 1739
+DEBUG:root:AUROC: 0.4957627118644068
+DEBUG:root:AUPR: 0.031746031746031744
+
+DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 55; num_of_negatives= 1639
+DEBUG:root:AUROC: 0.4957627118644068
+DEBUG:root:AUPR: 0.031746031746031744
+
+DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 55; num_of_negatives= 1539
+DEBUG:root:AUROC: 0.5
+DEBUG:root:AUPR: 0.5317460317460317
+
+DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 60; num_of_negatives= 2539
+DEBUG:root:AUROC: 0.4989406779661017
+DEBUG:root:AUPR: 0.12152777777777778
+
+DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 60; num_of_negatives= 2439
+DEBUG:root:AUROC: 0.5953389830508475
+DEBUG:root:AUPR: 0.25992063492063494
+
+DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 60; num_of_negatives= 2339
+DEBUG:root:AUROC: 0.541313559322034
+DEBUG:root:AUPR: 0.1736111111111111
+
+DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 60; num_of_negatives= 2239
+DEBUG:root:AUROC: 0.4745762711864407
+DEBUG:root:AUPR: 0.031746031746031744
+
+DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 60; num_of_negatives= 2139
+DEBUG:root:AUROC: 0.4957627118644068
+DEBUG:root:AUPR: 0.031746031746031744
+
+DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 60; num_of_negatives= 2039
+DEBUG:root:AUROC: 0.5
+DEBUG:root:AUPR: 0.5317460317460317
+
+DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 60; num_of_negatives= 1939
+DEBUG:root:AUROC: 0.4957627118644068
+DEBUG:root:AUPR: 0.031746031746031744
+
+DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 60; num_of_negatives= 1839
+DEBUG:root:AUROC: 0.4915254237288136
+DEBUG:root:AUPR: 0.031746031746031744
+
+DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 60; num_of_negatives= 1739
+DEBUG:root:AUROC: 0.4915254237288136
+DEBUG:root:AUPR: 0.031746031746031744
+
+DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 60; num_of_negatives= 1639
+DEBUG:root:AUROC: 0.5582627118644068
+DEBUG:root:AUPR: 0.3402777777777778
+
+DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 60; num_of_negatives= 1539
+DEBUG:root:AUROC: 0.5
+DEBUG:root:AUPR: 0.5317460317460317
+
+DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 65; num_of_negatives= 2539
+DEBUG:root:AUROC: 0.5328389830508474
+DEBUG:root:AUPR: 0.1527777777777778
+
+DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 65; num_of_negatives= 2439
+DEBUG:root:AUROC: 0.5656779661016949
+DEBUG:root:AUPR: 0.2113095238095238
+
+DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 65; num_of_negatives= 2339
+DEBUG:root:AUROC: 0.4957627118644068
+DEBUG:root:AUPR: 0.031746031746031744
+
+DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 65; num_of_negatives= 2239
+DEBUG:root:AUROC: 0.4830508474576271
+DEBUG:root:AUPR: 0.031746031746031744
+
+DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 65; num_of_negatives= 2139
+DEBUG:root:AUROC: 0.5
+DEBUG:root:AUPR: 0.5317460317460317
+
+DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 65; num_of_negatives= 2039
+DEBUG:root:AUROC: 0.5582627118644068
+DEBUG:root:AUPR: 0.3402777777777778
+
+DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 65; num_of_negatives= 1939
+DEBUG:root:AUROC: 0.4915254237288136
+DEBUG:root:AUPR: 0.031746031746031744
+
+DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 65; num_of_negatives= 1839
+DEBUG:root:AUROC: 0.4957627118644068
+DEBUG:root:AUPR: 0.031746031746031744
+
+DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 65; num_of_negatives= 1739
+DEBUG:root:AUROC: 0.5582627118644068
+DEBUG:root:AUPR: 0.3402777777777778
+
+DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 65; num_of_negatives= 1639
+DEBUG:root:AUROC: 0.4915254237288136
+DEBUG:root:AUPR: 0.031746031746031744
+
+DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 65; num_of_negatives= 1539
+DEBUG:root:AUROC: 0.5
+DEBUG:root:AUPR: 0.5317460317460317
+
+DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 70; num_of_negatives= 2539
+DEBUG:root:AUROC: 0.5826271186440678
+DEBUG:root:AUPR: 0.23214285714285715
+
+DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 70; num_of_negatives= 2439
+DEBUG:root:AUROC: 0.5370762711864407
 DEBUG:root:AUPR: 0.1617063492063492
 
-DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 90; num_of_negatives= 1139
-DEBUG:root:AUROC: 0.4915254237288136
-
-DEBUG:root:AUPR: 0.031746031746031744
-
-DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 90; num_of_negatives= 1039
-DEBUG:root:AUROC: 0.4957627118644068
-
-DEBUG:root:AUPR: 0.031746031746031744
-
-DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 90; num_of_negatives= 939
-DEBUG:root:AUROC: 0.545550847457627
-
-DEBUG:root:AUPR: 0.19027777777777777
-
-DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 90; num_of_negatives= 839
-DEBUG:root:AUROC: 0.4957627118644068
-
-DEBUG:root:AUPR: 0.031746031746031744
-
-DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 90; num_of_negatives= 739
-DEBUG:root:AUROC: 0.5
-
-DEBUG:root:AUPR: 0.5317460317460317
-
-DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 90; num_of_negatives= 639
-DEBUG:root:AUROC: 0.4915254237288136
-
-DEBUG:root:AUPR: 0.031746031746031744
-
-DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 90; num_of_negatives= 539
-DEBUG:root:AUROC: 0.4915254237288136
-
-DEBUG:root:AUPR: 0.031746031746031744
-
-DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 95; num_of_negatives= 1139
-DEBUG:root:AUROC: 0.5
-
-DEBUG:root:AUPR: 0.5317460317460317
-
-DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 95; num_of_negatives= 1039
-DEBUG:root:AUROC: 0.5
-
-DEBUG:root:AUPR: 0.5317460317460317
-
-DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 95; num_of_negatives= 939
-DEBUG:root:AUROC: 0.4957627118644068
-
-DEBUG:root:AUPR: 0.031746031746031744
-
-DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 95; num_of_negatives= 839
-DEBUG:root:AUROC: 0.4915254237288136
-
-DEBUG:root:AUPR: 0.031746031746031744
-
-DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 95; num_of_negatives= 739
-DEBUG:root:AUROC: 0.5
-
-DEBUG:root:AUPR: 0.5317460317460317
-
-DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 95; num_of_negatives= 639
-DEBUG:root:AUROC: 0.4872881355932203
-
-DEBUG:root:AUPR: 0.031746031746031744
-
-DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 95; num_of_negatives= 539
-DEBUG:root:AUROC: 0.4915254237288136
-
-DEBUG:root:AUPR: 0.031746031746031744
-
-DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 6; xgb_k= 10; num_of_negatives= 1139
-DEBUG:root:AUROC: 0.5
-
-DEBUG:root:AUPR: 0.5317460317460317
-
-DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 6; xgb_k= 10; num_of_negatives= 1039
-DEBUG:root:AUROC: 0.4830508474576271
-
-DEBUG:root:AUPR: 0.031746031746031744
-
-DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 6; xgb_k= 10; num_of_negatives= 939
-DEBUG:root:AUROC: 0.4872881355932203
-
-DEBUG:root:AUPR: 0.031746031746031744
-
-DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 6; xgb_k= 10; num_of_negatives= 839
-DEBUG:root:AUROC: 0.5625
-
-DEBUG:root:AUPR: 0.5902777777777778
-
-DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 6; xgb_k= 10; num_of_negatives= 739
-DEBUG:root:AUROC: 0.5625
-
-DEBUG:root:AUPR: 0.5902777777777778
-
-DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 6; xgb_k= 10; num_of_negatives= 639
-DEBUG:root:AUROC: 0.4915254237288136
-
-DEBUG:root:AUPR: 0.031746031746031744
-
-DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 6; xgb_k= 10; num_of_negatives= 539
+DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 70; num_of_negatives= 2339
 DEBUG:root:AUROC: 0.4745762711864407
-
 DEBUG:root:AUPR: 0.031746031746031744
 
-DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 6; xgb_k= 15; num_of_negatives= 1139
-DEBUG:root:AUROC: 0.4915254237288136
-
-DEBUG:root:AUPR: 0.031746031746031744
-
-DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 6; xgb_k= 15; num_of_negatives= 1039
-DEBUG:root:AUROC: 0.4788135593220339
-
-DEBUG:root:AUPR: 0.031746031746031744
-
-DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 6; xgb_k= 15; num_of_negatives= 939
-DEBUG:root:AUROC: 0.4872881355932203
-
-DEBUG:root:AUPR: 0.031746031746031744
-
-DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 6; xgb_k= 15; num_of_negatives= 839
-DEBUG:root:AUROC: 0.5
-
-DEBUG:root:AUPR: 0.5317460317460317
-
-DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 6; xgb_k= 15; num_of_negatives= 739
+DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 70; num_of_negatives= 2239
 DEBUG:root:AUROC: 0.4745762711864407
-
 DEBUG:root:AUPR: 0.031746031746031744
 
-DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 6; xgb_k= 15; num_of_negatives= 639
-DEBUG:root:AUROC: 0.5
-
-DEBUG:root:AUPR: 0.5317460317460317
-
-DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 6; xgb_k= 15; num_of_negatives= 539
-DEBUG:root:AUROC: 0.4830508474576271
-
-DEBUG:root:AUPR: 0.031746031746031744
-
-DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 6; xgb_k= 20; num_of_negatives= 1139
-DEBUG:root:AUROC: 0.5
-
-DEBUG:root:AUPR: 0.5317460317460317
-
-DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 6; xgb_k= 20; num_of_negatives= 1039
-DEBUG:root:AUROC: 0.5
-
-DEBUG:root:AUPR: 0.5317460317460317
-
-DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 6; xgb_k= 20; num_of_negatives= 939
-DEBUG:root:AUROC: 0.4872881355932203
-
-DEBUG:root:AUPR: 0.031746031746031744
-
-DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 6; xgb_k= 20; num_of_negatives= 839
+DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 70; num_of_negatives= 2139
 DEBUG:root:AUROC: 0.4957627118644068
-
 DEBUG:root:AUPR: 0.031746031746031744
 
-DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 6; xgb_k= 20; num_of_negatives= 739
-DEBUG:root:AUROC: 0.4957627118644068
-
-DEBUG:root:AUPR: 0.031746031746031744
-
-DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 6; xgb_k= 20; num_of_negatives= 639
-DEBUG:root:AUROC: 0.5
-
-DEBUG:root:AUPR: 0.5317460317460317
-
-DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 6; xgb_k= 20; num_of_negatives= 539
-DEBUG:root:AUROC: 0.4830508474576271
-
-DEBUG:root:AUPR: 0.031746031746031744
-
-DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 6; xgb_k= 25; num_of_negatives= 1139
-DEBUG:root:AUROC: 0.4915254237288136
-
-DEBUG:root:AUPR: 0.031746031746031744
-
-DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 6; xgb_k= 25; num_of_negatives= 1039
-DEBUG:root:AUROC: 0.625
-
-DEBUG:root:AUPR: 0.6488095238095238
-
-DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 6; xgb_k= 25; num_of_negatives= 939
-DEBUG:root:AUROC: 0.5
-
-DEBUG:root:AUPR: 0.5317460317460317
-
-DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 6; xgb_k= 25; num_of_negatives= 839
-DEBUG:root:AUROC: 0.4957627118644068
-
-DEBUG:root:AUPR: 0.031746031746031744
-
-DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 6; xgb_k= 25; num_of_negatives= 739
-DEBUG:root:AUROC: 0.4830508474576271
-
-DEBUG:root:AUPR: 0.031746031746031744
-
-DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 6; xgb_k= 25; num_of_negatives= 639
-DEBUG:root:AUROC: 0.5370762711864407
-
-DEBUG:root:AUPR: 0.1617063492063492
-
-DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 6; xgb_k= 25; num_of_negatives= 539
+DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 70; num_of_negatives= 2039
 DEBUG:root:AUROC: 0.541313559322034
-
 DEBUG:root:AUPR: 0.1736111111111111
 
-DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 6; xgb_k= 30; num_of_negatives= 1139
-DEBUG:root:AUROC: 0.5
-
-DEBUG:root:AUPR: 0.5317460317460317
-
-DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 6; xgb_k= 30; num_of_negatives= 1039
-DEBUG:root:AUROC: 0.4872881355932203
-
-DEBUG:root:AUPR: 0.031746031746031744
-
-DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 6; xgb_k= 30; num_of_negatives= 939
+DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 70; num_of_negatives= 1939
 DEBUG:root:AUROC: 0.4915254237288136
-
 DEBUG:root:AUPR: 0.031746031746031744
 
-DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 6; xgb_k= 30; num_of_negatives= 839
-DEBUG:root:AUROC: 0.5
-
-DEBUG:root:AUPR: 0.5317460317460317
-
-DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 6; xgb_k= 30; num_of_negatives= 739
-DEBUG:root:AUROC: 0.4915254237288136
-
-DEBUG:root:AUPR: 0.031746031746031744
-
-DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 6; xgb_k= 30; num_of_negatives= 639
+DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 70; num_of_negatives= 1839
 DEBUG:root:AUROC: 0.4957627118644068
-
 DEBUG:root:AUPR: 0.031746031746031744
 
-DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 6; xgb_k= 30; num_of_negatives= 539
-DEBUG:root:AUROC: 0.4703389830508475
-
+DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 70; num_of_negatives= 1739
+DEBUG:root:AUROC: 0.4872881355932203
 DEBUG:root:AUPR: 0.031746031746031744
 
-DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 6; xgb_k= 35; num_of_negatives= 1139
-DEBUG:root:AUROC: 0.5
-
-DEBUG:root:AUPR: 0.5317460317460317
-
-DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 6; xgb_k= 35; num_of_negatives= 1039
-DEBUG:root:AUROC: 0.5582627118644068
-
-DEBUG:root:AUPR: 0.3402777777777778
-
-DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 6; xgb_k= 35; num_of_negatives= 939
+DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 70; num_of_negatives= 1639
 DEBUG:root:AUROC: 0.4915254237288136
-
 DEBUG:root:AUPR: 0.031746031746031744
 
-DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 6; xgb_k= 35; num_of_negatives= 839
-DEBUG:root:AUROC: 0.5
-
-DEBUG:root:AUPR: 0.5317460317460317
-
-DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 6; xgb_k= 35; num_of_negatives= 739
+DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 70; num_of_negatives= 1539
 DEBUG:root:AUROC: 0.4915254237288136
-
 DEBUG:root:AUPR: 0.031746031746031744
 
-DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 6; xgb_k= 35; num_of_negatives= 639
+DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 75; num_of_negatives= 2539
+DEBUG:root:AUROC: 0.603813559322034
+DEBUG:root:AUPR: 0.29166666666666663
+
+DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 75; num_of_negatives= 2439
+DEBUG:root:AUROC: 0.545550847457627
+DEBUG:root:AUPR: 0.19027777777777777
+
+DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 75; num_of_negatives= 2339
+DEBUG:root:AUROC: 0.545550847457627
+DEBUG:root:AUPR: 0.19027777777777777
+
+DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 75; num_of_negatives= 2239
 DEBUG:root:AUROC: 0.5497881355932203
-
 DEBUG:root:AUPR: 0.2152777777777778
 
-DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 6; xgb_k= 35; num_of_negatives= 539
+DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 75; num_of_negatives= 2139
 DEBUG:root:AUROC: 0.4830508474576271
-
 DEBUG:root:AUPR: 0.031746031746031744
 
-DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 6; xgb_k= 40; num_of_negatives= 1139
-DEBUG:root:AUROC: 0.5
+DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 75; num_of_negatives= 2039
+DEBUG:root:AUROC: 0.4788135593220339
+DEBUG:root:AUPR: 0.031746031746031744
 
+DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 75; num_of_negatives= 1939
+DEBUG:root:AUROC: 0.5
 DEBUG:root:AUPR: 0.5317460317460317
 
-DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 6; xgb_k= 40; num_of_negatives= 1039
-DEBUG:root:AUROC: 0.4915254237288136
-
-DEBUG:root:AUPR: 0.031746031746031744
-
-DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 6; xgb_k= 40; num_of_negatives= 939
-DEBUG:root:AUROC: 0.4872881355932203
-
-DEBUG:root:AUPR: 0.031746031746031744
-
-DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 6; xgb_k= 40; num_of_negatives= 839
+DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 75; num_of_negatives= 1839
 DEBUG:root:AUROC: 0.5
-
 DEBUG:root:AUPR: 0.5317460317460317
 
-DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 6; xgb_k= 40; num_of_negatives= 739
-DEBUG:root:AUROC: 0.4915254237288136
-
-DEBUG:root:AUPR: 0.031746031746031744
-
-DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 6; xgb_k= 40; num_of_negatives= 639
-DEBUG:root:AUROC: 0.4872881355932203
-
-DEBUG:root:AUPR: 0.031746031746031744
-
-DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 6; xgb_k= 40; num_of_negatives= 539
-DEBUG:root:AUROC: 0.4491525423728814
-
-DEBUG:root:AUPR: 0.031746031746031744
-
-DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 6; xgb_k= 45; num_of_negatives= 1139
-DEBUG:root:AUROC: 0.5
-
-DEBUG:root:AUPR: 0.5317460317460317
-
-DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 6; xgb_k= 45; num_of_negatives= 1039
-DEBUG:root:AUROC: 0.5582627118644068
-
-DEBUG:root:AUPR: 0.3402777777777778
-
-DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 6; xgb_k= 45; num_of_negatives= 939
-DEBUG:root:AUROC: 0.4915254237288136
-
-DEBUG:root:AUPR: 0.031746031746031744
-
-DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 6; xgb_k= 45; num_of_negatives= 839
-DEBUG:root:AUROC: 0.5
-
-DEBUG:root:AUPR: 0.5317460317460317
-
-DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 6; xgb_k= 45; num_of_negatives= 739
-DEBUG:root:AUROC: 0.5582627118644068
-
-DEBUG:root:AUPR: 0.3402777777777778
-
-DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 6; xgb_k= 45; num_of_negatives= 639
+DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 75; num_of_negatives= 1739
 DEBUG:root:AUROC: 0.5497881355932203
-
 DEBUG:root:AUPR: 0.2152777777777778
 
-DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 6; xgb_k= 45; num_of_negatives= 539
-DEBUG:root:AUROC: 0.524364406779661
+DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 75; num_of_negatives= 1639
+DEBUG:root:AUROC: 0.4915254237288136
+DEBUG:root:AUPR: 0.031746031746031744
 
-DEBUG:root:AUPR: 0.14027777777777778
-
-DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 6; xgb_k= 50; num_of_negatives= 1139
+DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 75; num_of_negatives= 1539
 DEBUG:root:AUROC: 0.5
-
 DEBUG:root:AUPR: 0.5317460317460317
 
-DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 6; xgb_k= 50; num_of_negatives= 1039
-DEBUG:root:AUROC: 0.5
+DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 80; num_of_negatives= 2539
+DEBUG:root:AUROC: 0.5953389830508475
+DEBUG:root:AUPR: 0.25992063492063494
 
-DEBUG:root:AUPR: 0.5317460317460317
+DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 80; num_of_negatives= 2439
+DEBUG:root:AUROC: 0.5995762711864406
+DEBUG:root:AUPR: 0.27380952380952384
 
-DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 6; xgb_k= 50; num_of_negatives= 939
+DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 80; num_of_negatives= 2339
 DEBUG:root:AUROC: 0.4872881355932203
-
 DEBUG:root:AUPR: 0.031746031746031744
 
-DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 6; xgb_k= 50; num_of_negatives= 839
+DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 80; num_of_negatives= 2239
+DEBUG:root:AUROC: 0.4788135593220339
+DEBUG:root:AUPR: 0.031746031746031744
+
+DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 80; num_of_negatives= 2139
+DEBUG:root:AUROC: 0.4915254237288136
+DEBUG:root:AUPR: 0.031746031746031744
+
+DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 80; num_of_negatives= 2039
+DEBUG:root:AUROC: 0.4915254237288136
+DEBUG:root:AUPR: 0.031746031746031744
+
+DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 80; num_of_negatives= 1939
+DEBUG:root:AUROC: 0.5
+DEBUG:root:AUPR: 0.5317460317460317
+
+DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 80; num_of_negatives= 1839
 DEBUG:root:AUROC: 0.4957627118644068
-
 DEBUG:root:AUPR: 0.031746031746031744
 
-DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 6; xgb_k= 50; num_of_negatives= 739
-DEBUG:root:AUROC: 0.4830508474576271
-
+DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 80; num_of_negatives= 1739
+DEBUG:root:AUROC: 0.4915254237288136
 DEBUG:root:AUPR: 0.031746031746031744
 
-DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 6; xgb_k= 50; num_of_negatives= 639
+DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 80; num_of_negatives= 1639
+DEBUG:root:AUROC: 0.4872881355932203
+DEBUG:root:AUPR: 0.031746031746031744
+
+DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 80; num_of_negatives= 1539
+DEBUG:root:AUROC: 0.5
+DEBUG:root:AUPR: 0.5317460317460317
+
+DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 85; num_of_negatives= 2539
+DEBUG:root:AUROC: 0.5074152542372882
+DEBUG:root:AUPR: 0.1259920634920635
+
+DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 85; num_of_negatives= 2439
+DEBUG:root:AUROC: 0.5116525423728814
+DEBUG:root:AUPR: 0.12873931623931623
+
+DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 85; num_of_negatives= 2339
+DEBUG:root:AUROC: 0.5328389830508474
+DEBUG:root:AUPR: 0.1527777777777778
+
+DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 85; num_of_negatives= 2239
+DEBUG:root:AUROC: 0.4872881355932203
+DEBUG:root:AUPR: 0.031746031746031744
+
+DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 85; num_of_negatives= 2139
+DEBUG:root:AUROC: 0.4957627118644068
+DEBUG:root:AUPR: 0.031746031746031744
+
+DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 85; num_of_negatives= 2039
+DEBUG:root:AUROC: 0.5497881355932203
+DEBUG:root:AUPR: 0.2152777777777778
+
+DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 85; num_of_negatives= 1939
 DEBUG:root:AUROC: 0.5540254237288136
-
 DEBUG:root:AUPR: 0.2569444444444444
 
-DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 6; xgb_k= 50; num_of_negatives= 539
-DEBUG:root:AUROC: 0.4872881355932203
-
-DEBUG:root:AUPR: 0.031746031746031744
-
-DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 6; xgb_k= 55; num_of_negatives= 1139
+DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 85; num_of_negatives= 1839
 DEBUG:root:AUROC: 0.4957627118644068
-
 DEBUG:root:AUPR: 0.031746031746031744
 
-DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 6; xgb_k= 55; num_of_negatives= 1039
-DEBUG:root:AUROC: 0.4957627118644068
+DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 85; num_of_negatives= 1739
+DEBUG:root:AUROC: 0.5582627118644068
+DEBUG:root:AUPR: 0.3402777777777778
 
-DEBUG:root:AUPR: 0.031746031746031744
+DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 85; num_of_negatives= 1639
+DEBUG:root:AUROC: 0.5540254237288136
+DEBUG:root:AUPR: 0.2569444444444444
 
-DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 6; xgb_k= 55; num_of_negatives= 939
-DEBUG:root:AUROC: 0.4872881355932203
-
-DEBUG:root:AUPR: 0.031746031746031744
-
-DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 6; xgb_k= 55; num_of_negatives= 839
-DEBUG:root:AUROC: 0.5
-
-DEBUG:root:AUPR: 0.5317460317460317
-
-DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 6; xgb_k= 55; num_of_negatives= 739
-DEBUG:root:AUROC: 0.4957627118644068
-
-DEBUG:root:AUPR: 0.031746031746031744
-
-DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 6; xgb_k= 55; num_of_negatives= 639
-DEBUG:root:AUROC: 0.5625
-
-DEBUG:root:AUPR: 0.5902777777777778
-
-DEBUG:root:AUROC: 0.4872881355932203
-
-DEBUG:root:AUPR: 0.031746031746031744
-
-DEBUG:root:AUROC: 0.4957627118644068
-
-DEBUG:root:AUPR: 0.031746031746031744
-
+DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 85; num_of_negatives= 1539
 DEBUG:root:AUROC: 0.4915254237288136
-
 DEBUG:root:AUPR: 0.031746031746031744
 
-DEBUG:root:AUROC: 0.5
+DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 90; num_of_negatives= 2539
+DEBUG:root:AUROC: 0.4947033898305085
+DEBUG:root:AUPR: 0.11968954248366012
 
-DEBUG:root:AUPR: 0.5317460317460317
+DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 90; num_of_negatives= 2439
+DEBUG:root:AUROC: 0.5783898305084746
+DEBUG:root:AUPR: 0.2257326007326007
 
+DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 90; num_of_negatives= 2339
+DEBUG:root:AUROC: 0.5286016949152542
+DEBUG:root:AUPR: 0.14583333333333331
+
+DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 90; num_of_negatives= 2239
+DEBUG:root:AUROC: 0.4830508474576271
+DEBUG:root:AUPR: 0.031746031746031744
+
+DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 90; num_of_negatives= 2139
+DEBUG:root:AUROC: 0.4872881355932203
+DEBUG:root:AUPR: 0.031746031746031744
+
+DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 90; num_of_negatives= 2039
+DEBUG:root:AUROC: 0.545550847457627
+DEBUG:root:AUPR: 0.19027777777777777
+
+DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 90; num_of_negatives= 1939
+DEBUG:root:AUROC: 0.4872881355932203
+DEBUG:root:AUPR: 0.031746031746031744
+
+DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 90; num_of_negatives= 1839
+DEBUG:root:AUROC: 0.4872881355932203
+DEBUG:root:AUPR: 0.031746031746031744
+
+DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 90; num_of_negatives= 1739
 DEBUG:root:AUROC: 0.4957627118644068
-
 DEBUG:root:AUPR: 0.031746031746031744
 
+DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 90; num_of_negatives= 1639
 DEBUG:root:AUROC: 0.5
-
 DEBUG:root:AUPR: 0.5317460317460317
 
+DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 90; num_of_negatives= 1539
+DEBUG:root:AUROC: 0.5
+DEBUG:root:AUPR: 0.5317460317460317
+
+DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 95; num_of_negatives= 2539
+DEBUG:root:AUROC: 0.5360169491525424
+DEBUG:root:AUPR: 0.19228778467908902
+
+DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 95; num_of_negatives= 2439
+DEBUG:root:AUROC: 0.5286016949152542
+DEBUG:root:AUPR: 0.14583333333333331
+
+DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 95; num_of_negatives= 2339
+DEBUG:root:AUROC: 0.4576271186440678
+DEBUG:root:AUPR: 0.031746031746031744
+
+DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 95; num_of_negatives= 2239
+DEBUG:root:AUROC: 0.545550847457627
+DEBUG:root:AUPR: 0.19027777777777777
+
+DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 95; num_of_negatives= 2139
+DEBUG:root:AUROC: 0.4745762711864407
+DEBUG:root:AUPR: 0.031746031746031744
+
+DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 95; num_of_negatives= 2039
+DEBUG:root:AUROC: 0.5
+DEBUG:root:AUPR: 0.5317460317460317
+
+DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 95; num_of_negatives= 1939
+DEBUG:root:AUROC: 0.4872881355932203
+DEBUG:root:AUPR: 0.031746031746031744
+
+DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 95; num_of_negatives= 1839
+DEBUG:root:AUROC: 0.5540254237288136
+DEBUG:root:AUPR: 0.2569444444444444
+
+DEBUG:root:Configuration: threshold= 0.0; n_neighbors= 1; xgb_k= 95; num_of_negatives= 1739
