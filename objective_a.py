@@ -83,7 +83,7 @@ def main(threshold_vals, kNN_vals, XGB_vals, removal_vals):
             clf_forest.fit(X_train, y_train)
 
             ### Performance assement ##
-            roc_val, pr_val = utils.calc_metrics(y_test, clf_forest.predict(X_test))
+            roc_val, pr_val = utils.calc_metrics(clf_forest,X_test,y_test,display_plots=True)
             auroc_vals.append(roc_val)
             aupr_vals.append(pr_val)
 
@@ -105,4 +105,6 @@ if __name__ == "__main__":
         removal_vals.append(10 / (10 + i))
     for i in range(1, 6):
         threshold_vals.append(0.1*i)
-    main(threshold_vals, kNN_vals, XGB_vals, removal_vals)
+    #main(threshold_vals, kNN_vals, XGB_vals, removal_vals)
+    main([0.2], [3], [52], [10/11])
+
