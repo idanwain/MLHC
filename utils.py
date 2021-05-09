@@ -203,3 +203,17 @@ def log_dict(vals=None, msg=None, log_path="log_file"):
         logging.debug(msg)
     if vals:
         logging.debug(str(vals))
+
+
+def remove_features_by_intersected_list(final_list, patient_list):
+    """
+    Removes all features that doesn't apear in final_list
+    :param final_list: final list of intersected features
+    :param patient_list: list of patients
+    :return: list of patients after removing irrelevant features
+    """
+    for patient in patient_list:
+        for feature in patient.events.copy():
+            if feature not in final_list:
+                del patient.events[feature]
+    return patient_list
