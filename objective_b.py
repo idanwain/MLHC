@@ -8,6 +8,8 @@ from sklearn.ensemble import RandomForestClassifier
 import numpy as np
 from xgboost import XGBClassifier
 import time
+import itertools
+import copy
 from sklearn import metrics
 import matplotlib.pyplot as plt
 import seaborn as sns
@@ -20,56 +22,90 @@ import utils
 
 
 
-def main():
-
-    ### Hyperparameters ###
-
-    threshold = 0.2     # Minimum appearance for feature to be included
-    n_neighbors = 5    # Neighbors amount for kNN
-    xgb_k = 50    # Amount of features to return by XG
-
-    ### Data preprocessing - cleaning, imputation and vector creation ###
-    data = []
-    targets = []
+def main(threshold_vals, kNN_vals, XGB_vals, removal_vals):
     db = DbMimic('/Users/user/Documents/University/Workshop/boolean_features_mimic_model_b.csv',
-            '/Users/user/Documents/University/Workshop/extra_features_model_b.csv',
-            data_path='/Users/user/Documents/University/Workshop/feature_mimic_cohort_model_b.csv')
-    patient_list = db.create_patient_list()
-    print(len(patient_list))
-    patient_list = utils.remove_features_by_threshold(threshold, patient_list, db)
-    for patient in patient_list:
-        targets.append(patient.target)
-    labels_vector = patient_list[0].create_labels_vector()
-    for patient in patient_list:
-        vector = patient.create_vector_for_patient()
-        print(patient.boolean_features)
-        data.append(vector)
-    imputer = KNNImputer(n_neighbors=n_neighbors, weights="uniform")
-    data = (imputer.fit_transform(data))
+                 '/Users/user/Documents/University/Workshop/extra_features_model_b.csv',
+                 data_path='/Users/user/Documents/University/Workshop/feature_mimic_cohort_model_b.csv',
+                 folds_path="/Users/user/Documents/University/Workshop/folds_mimic_model_b.csv")
 
-    ### Feature selection ###
-    model = XGBClassifier()
-    model.fit(data, targets)
-    top_K_xgb = utils.get_top_K_features_xgb(labels_vector, model.feature_importances_.tolist(), k=xgb_k)
-    data = utils.create_vector_of_important_features(data, top_K_xgb)
+    folds = db.get_folds()
+    patient_list_base = db.create_patient_list()
 
-    ### Model fitting ###
-    X_train, y_train, X_test, y_test = utils.split_data(data, targets, 1)
-    clf_forest = RandomForestClassifier()
-    clf_forest.fit(X_train, y_train)
-    # for i in range(len(X_test)):
-    #     val = clf_forest.predict([X_test[i]])
-    #     print("Predicted: %s. Actual: %s" % (val, y_test[i]))
-    # print("[Sanity] Predicted: %s. Actual: %s" % (clf_forest.predict([(X_train[-1])]), y_train[-1]))
-    # print("Running time: %s" % (time.time() - start_time))
+    for product in itertools.product(kNN_vals, XGB_vals, threshold_vals, removal_vals):
+        start_time = time.time()
+        data = []
+        targets = []
+        folds_indices = []
+        auroc_vals = []
+        aupr_vals = []
+        patient_list = copy.deepcopy(patient_list_base)
 
-    ### Performance assement ###
-    # err = calc_error(clf_forest, X_test, y_test)
-    roc_val,pr_val = utils.calc_metrics(y_test, clf_forest.predict(X_test))
-    print("AUROC: %s" % roc_val)
-    print("AUPR: %s\n" % pr_val)
+        ### Hyperparameters ###
+        threshold = product[2]  # Minimum appearance for feature to be included
+        n_neighbors = product[0]  # Neighbors amount for kNN
+        xgb_k = product[1]  # Amount of features to return by XGB
+        removal_factor = product[3]  # How many negative samples we remove from the training set.
+        config = {
+            "Threshold": threshold,
+            "kNN": n_neighbors,
+            "k_XGB": xgb_k,
+            "Removal factor": removal_factor
+        }
+        utils.log_dict(vals=config, msg="Configuration:")
 
+        patient_list = utils.remove_features_by_threshold(threshold, patient_list, db)
+        for patient in patient_list:
+            targets.append(patient.target)
+            for fold in folds:
+                if str(patient.hadm_id) in (folds[fold]):
+                    folds_indices.append(fold)
+
+        labels_vector = patient_list[0].create_labels_vector()
+        for patient in patient_list:
+            vector = patient.create_vector_for_patient()
+            data.append(vector)
+
+        ### Data imputation ###
+        imputer = KNNImputer(n_neighbors=n_neighbors, weights="uniform")
+        data = (imputer.fit_transform(data))
+
+        for test_fold in folds:
+            ### Data split ###
+            X_train, y_train, X_test, y_test = utils.split_data_by_folds(data, targets, folds_indices, test_fold,
+                                                                         removal_factor)
+
+            ### Feature selection ###
+            model = XGBClassifier()
+            model.fit(np.asarray(X_train), y_train)
+            top_K_xgb = utils.get_top_K_features_xgb(labels_vector, model.feature_importances_.tolist(), k=xgb_k)
+            X_train = utils.create_vector_of_important_features(X_train, top_K_xgb)
+            X_test = utils.create_vector_of_important_features(X_test, top_K_xgb)
+
+            ### Model fitting ###
+            clf_forest = RandomForestClassifier()
+            clf_forest.fit(X_train, y_train)
+
+            ### Performance assement ##
+            roc_val, pr_val = utils.calc_metrics(clf_forest, X_test, y_test, display_plots=True)
+            auroc_vals.append(roc_val)
+            aupr_vals.append(pr_val)
+
+        ### Log results ###
+        utils.log_dict(vals={"AUROC_AVG": np.average(auroc_vals), "AUPR_AVG": np.average(aupr_vals),
+                             "AUROC_STD": np.std(auroc_vals), "AUPR_STD": np.std(aupr_vals)}, msg="Run results:")
+        utils.log_dict(msg="Running time: " + str(time.time() - start_time))
 
 
 if __name__ == "__main__":
-    main()
+    threshold_vals = []
+    kNN_vals = []
+    XGB_vals = []
+    removal_vals = []
+    for i in range(1, 11):
+        kNN_vals.append(i)
+        XGB_vals.append(40 + (i * 2))
+    for i in range(1, 3):
+        removal_vals.append(10 / (10 + i))
+    for i in range(0, 6):
+        threshold_vals.append(0.1 * i)
+    main([0.1], [7], [46], [0.5])
