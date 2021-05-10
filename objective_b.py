@@ -19,14 +19,22 @@ from db_interface_mimic import DbMimic
 import utils
 
 
-
+user = 'idan'
+boolean_features_path = 'C:/tools/boolean_features_mimic_model_b.csv' if user == 'idan' \
+    else '/Users/user/Documents/University/Workshop/boolean_features_mimic_model_b.csv'
+extra_features_path = 'C:/tools/extra_features_model_b.csv' if user == 'idan' \
+    else '/Users/user/Documents/University/Workshop/extra_features_model_b.csv'
+data_path_mimic = 'C:/tools/feature_mimic_cohort_model_b.csv' if user == 'idan' \
+    else '/Users/user/Documents/University/Workshop/feature_mimic_cohort_model_b.csv'
+folds_path = 'C:/tools/feature_mimic_cohort_model_b.csv' if user == 'idan' \
+    else '/Users/user/Documents/University/Workshop/feature_mimic_cohort_model_b.csv'
 
 
 def main(threshold_vals, kNN_vals, XGB_vals, removal_vals):
-    db = DbMimic('/Users/user/Documents/University/Workshop/boolean_features_mimic_model_b.csv',
-                 '/Users/user/Documents/University/Workshop/extra_features_model_b.csv',
-                 data_path='/Users/user/Documents/University/Workshop/feature_mimic_cohort_model_b.csv',
-                 folds_path="/Users/user/Documents/University/Workshop/folds_mimic_model_b.csv")
+    db = DbMimic(boolean_features_path,
+                 extra_features_path,
+                 data_path=data_path_mimic,
+                 folds_path=folds_path)
 
     folds = db.get_folds()
     patient_list_base = db.create_patient_list()
@@ -94,7 +102,6 @@ def main(threshold_vals, kNN_vals, XGB_vals, removal_vals):
         utils.log_dict(vals={"AUROC_AVG": np.average(auroc_vals), "AUPR_AVG": np.average(aupr_vals),
                              "AUROC_STD": np.std(auroc_vals), "AUPR_STD": np.std(aupr_vals)}, msg="Run results:")
         utils.log_dict(msg="Running time: " + str(time.time() - start_time))
-
 
 if __name__ == "__main__":
     threshold_vals = []

@@ -107,13 +107,13 @@ if __name__ == "__main__":
 
     import numpy as np
     for t in np.arange(0.0, 0.6, 0.1):
-        for n in range(1, 100, 5):
+        for n in range(10, 100, 5):
             for k in range(10, 100, 5):
                 for non in range(400, 1500, 100):
                     utils.log_dict(
-                        msg=f"Configuration: threshold= {t}; n_neighbors= {n}; xgb_k= {k}; num_of_negatives= {2939 - non}")
+                        msg=f"Configuration: threshold= {t}; n_neighbors= {n}; xgb_k= {k}; num_of_negatives= {non}")
                     print(
-                        f"Configuration: threshold= {t}; n_neighbors= {n}; xgb_k= {k}; num_of_negatives= {2939 - non}")
+                        f"Configuration: threshold= {t}; n_neighbors= {n}; xgb_k= {k}; num_of_negatives= {non}")
                     patient_list_mimic_temp = copy.deepcopy(patient_list_mimic_base)
                     counter = 0
                     patient_list_mimic = []

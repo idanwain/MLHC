@@ -1,7 +1,8 @@
 import numpy as np
+from matplotlib import pyplot
 from sklearn import metrics
 import logging
-import matplotlib.pyplot as plt
+from sklearn.metrics import roc_auc_score, roc_curve, precision_recall_curve, f1_score, auc
 
 counter = 1
 def get_features_for_removal(threshold: float, patient_list: list, db):
@@ -178,23 +179,49 @@ def calc_error(clf, X_test, y_test):
     return (1 - (tot / len(X_test)))
 
 
-def calc_metrics(clf,X_test, y_test,display_plots=False):
+def calc_metrics(clf, X_test, y_test, display_plots=False):
     global counter
-    y_score = clf.predict(X_test)
-    fpr, tpr, thresholds = metrics.roc_curve(y_test, y_score)
-    roc = metrics.auc(fpr, tpr)
-    precision, recall, thresholds = metrics.precision_recall_curve(y_test, y_score)
-    pr = metrics.auc(recall, precision)
-    if display_plots:
-        metrics.plot_roc_curve(clf, X_test, y_test)
-        # plt.show()
-        # plt.savefig("/Users/user/Documents/University/Workshop/graphs for milestone 2/" + str(counter) + "_AUROC model a.png")
-        counter += 1
-        print(pr)
-        disp = metrics.plot_precision_recall_curve(clf,X_test,y_test)
-        disp.plot()
-        plt.show()
-    return roc, pr
+    y_score = clf.predict_proba(X_test)
+    y_score = y_score[:, 1]
+    ns_probs = [0 for _ in range(len(y_test))]
+    fpr, tpr, _ = metrics.roc_curve(y_test, y_score)
+    ns_auc = roc_auc_score(y_test, ns_probs)
+    lr_auc1 = roc_auc_score(y_test, y_score)
+    print('No Skill: ROC AUC=%.3f' % (ns_auc))
+    print('Logistic: ROC AUC=%.3f' % (lr_auc1))
+    ns_fpr, ns_tpr, _ = roc_curve(y_test, ns_probs)
+    lr_fpr, lr_tpr, _ = roc_curve(y_test, y_score)
+    pyplot.plot(ns_fpr, ns_tpr, linestyle='--', label='No Skill')
+    pyplot.plot(lr_fpr, lr_tpr, marker='.', label='Logistic')
+    # axis labels
+    pyplot.xlabel('False Positive Rate')
+    pyplot.ylabel('True Positive Rate')
+    # show the legend
+    pyplot.legend()
+    # show the plot
+    pyplot.show()
+
+    y_score = clf.predict_proba(X_test)
+    y_score = y_score[:, 1]
+    yhat = clf.predict(X_test)
+    lr_precision, lr_recall, _ = precision_recall_curve(y_test, y_score)
+    lr_f1, lr_auc2 = f1_score(y_test, yhat), auc(lr_recall, lr_precision)
+    # summarize scores
+    print('Logistic: f1=%.3f auc=%.3f' % (lr_f1, lr_auc2))
+    # plot the precision-recall curves
+    positives = len(list(filter(lambda x: x == 1, y_test)))
+    no_skill = positives / len(y_test)
+    pyplot.plot([0, 1], [no_skill, no_skill], linestyle='--', label='No Skill')
+    pyplot.plot(lr_recall, lr_precision, marker='.', label='Logistic')
+    # axis labels
+    pyplot.xlabel('Recall')
+    pyplot.ylabel('Precision')
+    # show the legend
+    pyplot.legend()
+    # show the plot
+    pyplot.show()
+
+    return lr_auc1, lr_auc2
 
 
 def get_essence_label_vector(labels):
