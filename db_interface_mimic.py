@@ -157,7 +157,7 @@ class DbMimic:
                 res[list(category['category'])[0]] = 1
         return res
 
-    def create_patient_list(self):
+    def create_patient_list(self, num_of_negatives=0):
         """
         Creates and returns list of all patients
         :return: list of patients
@@ -166,12 +166,17 @@ class DbMimic:
         hadm_id_list = self.get_hadm_id_list()
         patient_list = []
         i = 0
+        counter = 0
         for hadm_id in hadm_id_list:
-            # if i == 1000:
+            # if i == num_of_patients:
             #     break
+            estimated_age, gender, target = self.get_metadata_by_hadm_id(hadm_id)
+            if target == 'negative':
+                counter += 1
+            if target == 'negative' and counter < num_of_negatives:
+                continue
             transfers_before_target, ethnicity, insurance, diagnosis, symptoms = self.get_extra_features_by_hadm_id(
                 hadm_id)
-            estimated_age, gender, target = self.get_metadata_by_hadm_id(hadm_id)
             event_list = self.get_events_by_hadm_id(hadm_id)
             boolean_features = self.get_boolean_features_by_hadm_id(hadm_id)
             patient = PatientMimic(hadm_id, estimated_age, gender, ethnicity, transfers_before_target, insurance, diagnosis,

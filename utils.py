@@ -1,9 +1,6 @@
 import numpy as np
 from sklearn import metrics
 import logging
-
-import db_interface_mimic
-from db_interface_eicu import DbEicu
 import matplotlib.pyplot as plt
 
 
@@ -183,7 +180,7 @@ def calc_error(clf, X_test, y_test):
     return (1 - (tot / len(X_test)))
 
 
-def calc_metrics(clf,X_test, y_test,display_plots=False):
+def calc_metrics(clf, X_test, y_test, display_plots=False):
     y_score = clf.predict(X_test)
     fpr, tpr, thresholds = metrics.roc_curve(y_test, y_score)
     roc = metrics.auc(fpr, tpr)
@@ -210,3 +207,17 @@ def log_dict(vals=None, msg=None, log_path="log_file"):
         logging.debug(msg)
     if vals:
         logging.debug(str(vals))
+
+
+def remove_features_by_intersected_list(final_list, patient_list):
+    """
+    Removes all features that doesn't apear in final_list
+    :param final_list: final list of intersected features
+    :param patient_list: list of patients
+    :return: list of patients after removing irrelevant features
+    """
+    for patient in patient_list:
+        for feature in patient.events.copy():
+            if feature not in final_list:
+                del patient.events[feature]
+    return patient_list
