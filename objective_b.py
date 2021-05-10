@@ -6,19 +6,28 @@ import utils
 
 
 def main():
-
     ### Hyperparameters ###
 
-    threshold = 0.2     # Minimum appearance for feature to be included
-    n_neighbors = 5    # Neighbors amount for kNN
-    xgb_k = 50    # Amount of features to return by XG
+    threshold = 0.2  # Minimum appearance for feature to be included
+    n_neighbors = 5  # Neighbors amount for kNN
+    xgb_k = 50  # Amount of features to return by XG
 
     ### Data preprocessing - cleaning, imputation and vector creation ###
     data = []
     targets = []
-    db = DbMimic('/Users/user/Documents/University/Workshop/boolean_features_mimic_model_b.csv',
-            '/Users/user/Documents/University/Workshop/extra_features_model_b.csv',
-            data_path='/Users/user/Documents/University/Workshop/feature_mimic_cohort_model_b.csv')
+    user = 'idan'
+    boolean_features_path = 'C:/tools/boolean_features_mimic_model_b.csv' if user == 'idan' \
+        else '/Users/user/Documents/University/Workshop/boolean_features_mimic_model_b.csv'
+    extra_features_path = 'C:/tools/extra_features_model_b.csv' if user == 'idan' \
+        else '/Users/user/Documents/University/Workshop/extra_features_model_b.csv'
+    data_path_mimic = 'C:/tools/feature_mimic_cohort_model_b.csv' if user == 'idan' \
+        else '/Users/user/Documents/University/Workshop/feature_mimic_cohort_model_b.csv'
+    folds_path = 'C:/tools/feature_mimic_cohort_model_b.csv' if user == 'idan' \
+        else '/Users/user/Documents/University/Workshop/feature_mimic_cohort_model_b.csv'
+    db = DbMimic(boolean_features_path,
+                 extra_features_path,
+                 data_path=data_path_mimic,
+                 folds_path=folds_path)
     patient_list = db.create_patient_list()
     print(len(patient_list))
     patient_list = utils.remove_features_by_threshold(threshold, patient_list, db)
@@ -50,10 +59,9 @@ def main():
 
     ### Performance assement ###
     # err = calc_error(clf_forest, X_test, y_test)
-    roc_val,pr_val = utils.calc_metrics(y_test, clf_forest.predict(X_test))
+    roc_val, pr_val = utils.calc_metrics(clf_forest, X_test, y_test, True)
     print("AUROC: %s" % roc_val)
     print("AUPR: %s\n" % pr_val)
-
 
 
 if __name__ == "__main__":
