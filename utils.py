@@ -3,7 +3,7 @@ from sklearn import metrics
 import logging
 import matplotlib.pyplot as plt
 
-
+counter = 1
 def get_features_for_removal(threshold: float, patient_list: list, db):
     """
     Returns a list of features to be removed.
@@ -57,10 +57,10 @@ def get_top_K_features_xgb(labels_vector, feature_importance: list, k=50):
         indices.append(index)
         list_cpy.pop(index)
 
-    # Print list of features, can be removed
-    # print("Top %s features according to XGB:" % k)
-    # for i in indices:
-    #     print("Feature: %s, Importance: %s" % (labels_vector[i], feature_importance[i]))
+    #Print list of features, can be removed
+    print("Top %s features according to XGB:" % k)
+    for i in indices:
+        print("Feature: %s, Importance: %s" % (labels_vector[i], feature_importance[i]))
     return indices
 
 
@@ -141,12 +141,11 @@ def split_data_by_folds(data, labels, folds, test_fold, removal_factor=1):
             X_train.append(data[i])
             y_train.append(labels[i])
     X_train_len = len(X_train)
-    # print("Y len: %s. X len: %s" %(len(y_train),X_train_len))
     for i in range(X_train_len):
         if y_train[i] == 0:
             indices_for_removal.append(i)
             counter += 1
-        if (counter == int(X_train_len * removal_factor)):
+        if counter >= int(X_train_len * removal_factor):
             break;
 
     X_train_removed = []
@@ -165,8 +164,7 @@ def split_data_by_folds(data, labels, folds, test_fold, removal_factor=1):
             tot_zero += 1
         else:
             tot_one += 1
-    # print("Ratio: %s"%(tot_zero/tot_one))
-    # print("Y len: %s. X len: %s" %(len(y_train),len(X_train)))
+    print("Ratio: %s"%(tot_zero/tot_one))
     return X_train, y_train, X_test, y_test
 
 
@@ -180,7 +178,8 @@ def calc_error(clf, X_test, y_test):
     return (1 - (tot / len(X_test)))
 
 
-def calc_metrics(clf, X_test, y_test, display_plots=False):
+def calc_metrics(clf,X_test, y_test,display_plots=False):
+    global counter
     y_score = clf.predict(X_test)
     fpr, tpr, thresholds = metrics.roc_curve(y_test, y_score)
     roc = metrics.auc(fpr, tpr)
@@ -188,9 +187,13 @@ def calc_metrics(clf, X_test, y_test, display_plots=False):
     pr = metrics.auc(recall, precision)
     if display_plots:
         metrics.plot_roc_curve(clf, X_test, y_test)
-        plt.show()
+        # plt.show()
+        # plt.savefig("/Users/user/Documents/University/Workshop/graphs for milestone 2/" + str(counter) + "_AUROC model a.png")
+        counter += 1
+        print(pr)
         disp = metrics.plot_precision_recall_curve(clf,X_test,y_test)
         disp.plot()
+        plt.show()
     return roc, pr
 
 

@@ -4,8 +4,6 @@ import pandas as pd
 from patient_mimic import PatientMimic
 from datetime import datetime
 
-relevant_events_path = "/Users/user/Documents/University/Workshop/features_mimic.csv"
-folds_path = "/Users/user/Documents/University/Workshop/folds_mimic_model_a.csv"
 
 mimic_to_eicu_mapping = {
     'Neturophils': '-polys',

@@ -38,6 +38,8 @@ def main(threshold_vals, kNN_vals, XGB_vals, removal_vals):
         }
         utils.log_dict(vals=config, msg="Configuration:")
 
+        ### Data cleaning ###
+
         patient_list = utils.remove_features_by_threshold(threshold, patient_list, db)
         for patient in patient_list:
             targets.append(patient.target)
@@ -58,7 +60,6 @@ def main(threshold_vals, kNN_vals, XGB_vals, removal_vals):
             ### Data split ###
             X_train, y_train, X_test, y_test = utils.split_data_by_folds(data, targets, folds_indices, test_fold,
                                                                          removal_factor)
-            print(len(X_train))
 
             ### Feature selection ###
             model = XGBClassifier()
@@ -95,5 +96,5 @@ if __name__ == "__main__":
     for i in range(1, 6):
         threshold_vals.append(0.1*i)
     #main(threshold_vals, kNN_vals, XGB_vals, removal_vals)
-    main([0.2], [3], [52], [10/11])
+    main([0.1], [1], [46], [10/11])
 
