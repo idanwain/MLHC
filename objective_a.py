@@ -8,11 +8,27 @@ import copy
 from db_interface_mimic import DbMimic
 import utils
 
+user = 'idan'
+boolean_features_path = 'C:/tools/boolean_features_mimic_model_a.csv' if user == 'idan' \
+    else '/Users/user/Documents/University/Workshop/boolean_features_mimic_model_a.csv'
+extra_features_path = 'C:/tools/extra_features_model_a.csv' if user == 'idan' \
+    else '/Users/user/Documents/University/Workshop/extra_features_model_a.csv'
+data_path_mimic = 'C:/tools/feature_mimic_cohort_model_a.csv' if user == 'idan' \
+    else '/Users/user/Documents/University/Workshop/feature_mimic_cohort_model_a.csv'
+folds_path = 'C:/tools/folds_mimic_model_a.csv' if user == 'idan' \
+    else '/Users/user/Documents/University/Workshop/folds_mimic_model_a.csv'
+
+counter = 1
+
 
 def main(threshold_vals, kNN_vals, XGB_vals, removal_vals):
+    global counter
     ## Init ###
-    db = DbMimic('/Users/user/Documents/University/Workshop/boolean_features_mimic_model_a.csv',
-                 '/Users/user/Documents/University/Workshop/extra_features_model_a.csv')
+    db = DbMimic(boolean_features_path,
+                 extra_features_path,
+                 data_path_mimic,
+                 folds_path
+                 )
     folds = db.get_folds()
     patient_list_base = db.create_patient_list()
 
@@ -72,13 +88,22 @@ def main(threshold_vals, kNN_vals, XGB_vals, removal_vals):
             clf_forest.fit(X_train, y_train)
 
             ### Performance assement ##
-            roc_val, pr_val = utils.calc_metrics(clf_forest,X_test,y_test,display_plots=True)
-            auroc_vals.append(roc_val)
-            aupr_vals.append(pr_val)
+            roc_val, ns_fpr, ns_tpr, lr_fpr, lr_tpr = utils.calc_metrics_roc(clf_forest, X_test, y_test,
+                                                                             display_plots=True)
+            pr_val, no_skill, lr_recall, lr_precision = utils.calc_metrics_pr(clf_forest, X_test, y_test,
+                                                                              display_plots=True)
+            auroc_vals.append([roc_val, ns_fpr, ns_tpr, lr_fpr, lr_tpr])
+            aupr_vals.append([pr_val, no_skill, lr_recall, lr_precision])
+
+        utils.plot_graphs(auroc_vals, aupr_vals, counter, 'a')
+
+        counter += 1
 
         ### Log results ###
-        utils.log_dict(vals={"AUROC_AVG": np.average(auroc_vals), "AUPR_AVG": np.average(aupr_vals),
-                             "AUROC_STD": np.std(auroc_vals), "AUPR_STD": np.std(aupr_vals)}, msg="Run results:")
+        utils.log_dict(vals={"AUROC_AVG": np.average([i[0] for i in auroc_vals]),
+                             "AUPR_AVG": np.average([i[0] for i in aupr_vals]),
+                             "AUROC_STD": np.std([i[0] for i in auroc_vals]), "AUPR_STD": [i[0] for i in aupr_vals]},
+                       msg="Run results:")
         utils.log_dict(msg="Running time: " + str(time.time() - start_time))
 
 
@@ -93,7 +118,8 @@ if __name__ == "__main__":
     for i in range(1, 3):
         removal_vals.append(10 / (10 + i))
     for i in range(1, 6):
-        threshold_vals.append(0.1*i)
-    #main(threshold_vals, kNN_vals, XGB_vals, removal_vals)
-    main([0.2], [3], [52], [10/11])
-
+        threshold_vals.append(0.1 * i)
+    # main(threshold_vals, kNN_vals, XGB_vals, removal_vals)
+    for a, b, c, d in itertools.product(threshold_vals, kNN_vals, XGB_vals, removal_vals):
+        main([a], [b], [c], [d])
+    # main([0.2], [3], [52], [10/11])

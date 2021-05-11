@@ -181,48 +181,28 @@ def calc_error(clf, X_test, y_test):
     return (1 - (tot / len(X_test)))
 
 
-def calc_metrics(clf, X_test, y_test, display_plots=False):
+def calc_metrics_roc(clf, X_test, y_test, display_plots=False):
     y_score = clf.predict_proba(X_test)
     y_score = y_score[:, 1]
     ns_probs = [0 for _ in range(len(y_test))]
     fpr, tpr, _ = metrics.roc_curve(y_test, y_score)
-    ns_auc = roc_auc_score(y_test, ns_probs)
-    lr_auc1 = roc_auc_score(y_test, y_score)
-    print('No Skill: ROC AUC=%.3f' % (ns_auc))
-    print('Logistic: ROC AUC=%.3f' % (lr_auc1))
+    lr_auc = roc_auc_score(y_test, y_score)
     ns_fpr, ns_tpr, _ = roc_curve(y_test, ns_probs)
     lr_fpr, lr_tpr, _ = roc_curve(y_test, y_score)
-    pyplot.plot(ns_fpr, ns_tpr, linestyle='--', label='No Skill')
-    pyplot.plot(lr_fpr, lr_tpr, marker='.', label='Logistic')
-    # axis labels
-    pyplot.xlabel('False Positive Rate')
-    pyplot.ylabel('True Positive Rate')
-    # show the legend
-    pyplot.legend()
-    # show the plot
-    pyplot.show()
 
+    return lr_auc, ns_fpr, ns_tpr, lr_fpr, lr_tpr
+
+
+def calc_metrics_pr(clf, X_test, y_test, display_plots=False):
     y_score = clf.predict_proba(X_test)
     y_score = y_score[:, 1]
     yhat = clf.predict(X_test)
     lr_precision, lr_recall, _ = precision_recall_curve(y_test, y_score)
-    lr_f1, lr_auc2 = f1_score(y_test, yhat), auc(lr_recall, lr_precision)
-    # summarize scores
-    print('Logistic: f1=%.3f auc=%.3f' % (lr_f1, lr_auc2))
-    # plot the precision-recall curves
+    lr_f1, lr_auc = f1_score(y_test, yhat), auc(lr_recall, lr_precision)
     positives = len(list(filter(lambda x: x == 1, y_test)))
     no_skill = positives / len(y_test)
-    pyplot.plot([0, 1], [no_skill, no_skill], linestyle='--', label='No Skill')
-    pyplot.plot(lr_recall, lr_precision, marker='.', label='Logistic')
-    # axis labels
-    pyplot.xlabel('Recall')
-    pyplot.ylabel('Precision')
-    # show the legend
-    pyplot.legend()
-    # show the plot
-    pyplot.show()
 
-    return lr_auc1, lr_auc2
+    return lr_auc, no_skill, lr_recall, lr_precision
 
 
 def get_essence_label_vector(labels):
@@ -252,3 +232,29 @@ def remove_features_by_intersected_list(final_list, patient_list):
             if feature not in final_list:
                 del patient.events[feature]
     return patient_list
+
+
+def plot_graphs(auroc_vals, aupr_vals, counter, objective: str):
+    for (roc_val, ns_fpr, ns_tpr, lr_fpr, lr_tpr) in auroc_vals:
+        pyplot.plot(lr_fpr, lr_tpr, marker='.', label="AUROC= %.3f" % (roc_val))
+        # axis labels
+        pyplot.xlabel('False Positive Rate')
+        pyplot.ylabel('True Positive Rate')
+        # show the legend
+        pyplot.legend()
+
+    avg_auc_str = str(np.average([i[0] for i in auroc_vals]))[2:]
+    pyplot.savefig(f"C:/tools/objective_{objective}/{counter}_auc_{avg_auc_str}.png")
+    pyplot.close()
+
+    for (pr_val, no_skill, lr_recall, lr_precision) in aupr_vals:
+        pyplot.plot(lr_recall, lr_precision, marker='.', label="AUPR= %.3f" % (pr_val))
+        # axis labels
+        pyplot.xlabel('Recall')
+        pyplot.ylabel('Precision')
+        # show the legend
+        pyplot.legend()
+        # show the plot
+    avg_aupr_str = str(np.average([i[0] for i in aupr_vals]))[2:]
+    pyplot.savefig(f"C:/tools/objective_{objective}/{counter}_aupr_{avg_aupr_str}.png")
+    pyplot.close()
