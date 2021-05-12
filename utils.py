@@ -4,7 +4,7 @@ from sklearn import metrics
 import logging
 from sklearn.metrics import roc_auc_score, roc_curve, precision_recall_curve, f1_score, auc
 
-counter = 1
+
 def get_features_for_removal(threshold: float, patient_list: list, db):
     """
     Returns a list of features to be removed.
@@ -58,10 +58,10 @@ def get_top_K_features_xgb(labels_vector, feature_importance: list, k=50):
         indices.append(index)
         list_cpy.pop(index)
 
-    #Print list of features, can be removed
-    print("Top %s features according to XGB:" % k)
-    for i in indices:
-        print("Feature: %s, Importance: %s" % (labels_vector[i], feature_importance[i]))
+    # Print list of features, can be removed
+    # print("Top %s features according to XGB:" % k)
+    # for i in indices:
+    #     print("Feature: %s, Importance: %s" % (labels_vector[i], feature_importance[i]))
     return indices
 
 
@@ -142,11 +142,12 @@ def split_data_by_folds(data, labels, folds, test_fold, removal_factor=1):
             X_train.append(data[i])
             y_train.append(labels[i])
     X_train_len = len(X_train)
+    # print("Y len: %s. X len: %s" %(len(y_train),X_train_len))
     for i in range(X_train_len):
         if y_train[i] == 0:
             indices_for_removal.append(i)
             counter += 1
-        if counter >= int(X_train_len * removal_factor):
+        if (counter == int(X_train_len * removal_factor)):
             break;
 
     X_train_removed = []
@@ -165,7 +166,8 @@ def split_data_by_folds(data, labels, folds, test_fold, removal_factor=1):
             tot_zero += 1
         else:
             tot_one += 1
-    print("Ratio: %s"%(tot_zero/tot_one))
+    # print("Ratio: %s"%(tot_zero/tot_one))
+    # print("Y len: %s. X len: %s" %(len(y_train),len(X_train)))
     return X_train, y_train, X_test, y_test
 
 
@@ -179,49 +181,28 @@ def calc_error(clf, X_test, y_test):
     return (1 - (tot / len(X_test)))
 
 
-def calc_metrics(clf, X_test, y_test, display_plots=False):
-    global counter
+def calc_metrics_roc(clf, X_test, y_test, display_plots=False):
     y_score = clf.predict_proba(X_test)
     y_score = y_score[:, 1]
     ns_probs = [0 for _ in range(len(y_test))]
     fpr, tpr, _ = metrics.roc_curve(y_test, y_score)
-    ns_auc = roc_auc_score(y_test, ns_probs)
-    lr_auc1 = roc_auc_score(y_test, y_score)
-    print('No Skill: ROC AUC=%.3f' % (ns_auc))
-    print('Logistic: ROC AUC=%.3f' % (lr_auc1))
+    lr_auc = roc_auc_score(y_test, y_score)
     ns_fpr, ns_tpr, _ = roc_curve(y_test, ns_probs)
     lr_fpr, lr_tpr, _ = roc_curve(y_test, y_score)
-    pyplot.plot(ns_fpr, ns_tpr, linestyle='--', label='No Skill')
-    pyplot.plot(lr_fpr, lr_tpr, marker='.', label='Logistic')
-    # axis labels
-    pyplot.xlabel('False Positive Rate')
-    pyplot.ylabel('True Positive Rate')
-    # show the legend
-    pyplot.legend()
-    # show the plot
-    pyplot.show()
 
+    return lr_auc, ns_fpr, ns_tpr, lr_fpr, lr_tpr
+
+
+def calc_metrics_pr(clf, X_test, y_test, display_plots=False):
     y_score = clf.predict_proba(X_test)
     y_score = y_score[:, 1]
     yhat = clf.predict(X_test)
     lr_precision, lr_recall, _ = precision_recall_curve(y_test, y_score)
-    lr_f1, lr_auc2 = f1_score(y_test, yhat), auc(lr_recall, lr_precision)
-    # summarize scores
-    print('Logistic: f1=%.3f auc=%.3f' % (lr_f1, lr_auc2))
-    # plot the precision-recall curves
+    lr_f1, lr_auc = f1_score(y_test, yhat), auc(lr_recall, lr_precision)
     positives = len(list(filter(lambda x: x == 1, y_test)))
     no_skill = positives / len(y_test)
-    pyplot.plot([0, 1], [no_skill, no_skill], linestyle='--', label='No Skill')
-    pyplot.plot(lr_recall, lr_precision, marker='.', label='Logistic')
-    # axis labels
-    pyplot.xlabel('Recall')
-    pyplot.ylabel('Precision')
-    # show the legend
-    pyplot.legend()
-    # show the plot
-    pyplot.show()
 
-    return lr_auc1, lr_auc2
+    return lr_auc, no_skill, lr_recall, lr_precision
 
 
 def get_essence_label_vector(labels):
@@ -251,3 +232,29 @@ def remove_features_by_intersected_list(final_list, patient_list):
             if feature not in final_list:
                 del patient.events[feature]
     return patient_list
+
+
+def plot_graphs(auroc_vals, aupr_vals, counter, objective: str):
+    for (roc_val, ns_fpr, ns_tpr, lr_fpr, lr_tpr) in auroc_vals:
+        pyplot.plot(lr_fpr, lr_tpr, marker='.', label="AUROC= %.3f" % (roc_val))
+        # axis labels
+        pyplot.xlabel('False Positive Rate')
+        pyplot.ylabel('True Positive Rate')
+        # show the legend
+        pyplot.legend()
+
+    avg_auc_str = str(np.average([i[0] for i in auroc_vals]))[2:]
+    pyplot.savefig(f"C:/tools/objective_{objective}/{counter}_auc_{avg_auc_str}.png")
+    pyplot.close()
+
+    for (pr_val, no_skill, lr_recall, lr_precision) in aupr_vals:
+        pyplot.plot(lr_recall, lr_precision, marker='.', label="AUPR= %.3f" % (pr_val))
+        # axis labels
+        pyplot.xlabel('Recall')
+        pyplot.ylabel('Precision')
+        # show the legend
+        pyplot.legend()
+        # show the plot
+    avg_aupr_str = str(np.average([i[0] for i in aupr_vals]))[2:]
+    pyplot.savefig(f"C:/tools/objective_{objective}/{counter}_aupr_{avg_aupr_str}.png")
+    pyplot.close()
