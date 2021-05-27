@@ -3,7 +3,7 @@ from feature import Feature
 import datetime
 import sys
 import numpy as np
-
+import one_hot_encoding
 
 class PatientMimic:
     estimated_age = None
@@ -34,6 +34,7 @@ class PatientMimic:
             features_vector += self.get_essence_values_for_label(label)
         if not objective_c:
             features_vector += self.create_vector_for_boolean_features()
+            features_vector += self.create_vector_of_categorical_features()
         return features_vector
 
 
@@ -78,7 +79,15 @@ class PatientMimic:
             ret_vecotr.extend([label + "_avg", label + "_max", label + "_min", label + "_latest", label + "_amount"])
         if not objective_c:
             ret_vecotr.extend(list(self.boolean_features.keys()))
+            ret_vecotr.extend(['gender','insurance','ethnicity','transfers','symptoms'])
         return ret_vecotr
 
     def create_vector_for_boolean_features(self):
         return list(self.boolean_features.values())
+
+    def create_vector_of_categorical_features(self):
+        gender_encoding = one_hot_encoding.GENDER_ENCODING[self.gender]
+        insurance_encoding = one_hot_encoding.INSURANCE_ENCODING[self.insurance]
+        ethnicity_encoding = one_hot_encoding.ETHNICITY_ENCODING[self.ethnicity]
+        categorical_vector = gender_encoding + insurance_encoding + ethnicity_encoding + [self.transfers_before_target] + [self.symptoms]
+        return categorical_vector

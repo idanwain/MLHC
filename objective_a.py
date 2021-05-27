@@ -8,7 +8,7 @@ import copy
 from db_interface_mimic import DbMimic
 import utils
 
-user = 'idan'
+user = 'roye'
 boolean_features_path = 'C:/tools/boolean_features_mimic_model_a.csv' if user == 'idan' \
     else '/Users/user/Documents/University/Workshop/boolean_features_mimic_model_a.csv'
 extra_features_path = 'C:/tools/extra_features_model_a.csv' if user == 'idan' \
@@ -74,7 +74,6 @@ def main(threshold_vals, kNN_vals, XGB_vals, removal_vals):
             ### Data split ###
             X_train, y_train, X_test, y_test = utils.split_data_by_folds(data, targets, folds_indices, test_fold,
                                                                          removal_factor)
-            print(len(X_train))
 
             ### Feature selection ###
             model = XGBClassifier()
@@ -102,24 +101,24 @@ def main(threshold_vals, kNN_vals, XGB_vals, removal_vals):
         ### Log results ###
         utils.log_dict(vals={"AUROC_AVG": np.average([i[0] for i in auroc_vals]),
                              "AUPR_AVG": np.average([i[0] for i in aupr_vals]),
-                             "AUROC_STD": np.std([i[0] for i in auroc_vals]), "AUPR_STD": [i[0] for i in aupr_vals]},
+                             "AUROC_STD": np.std([i[0] for i in auroc_vals]), "AUPR_STD":np.std([i[0] for i in aupr_vals])},
                        msg="Run results:")
         utils.log_dict(msg="Running time: " + str(time.time() - start_time))
 
 
 if __name__ == "__main__":
-    threshold_vals = []
-    kNN_vals = []
-    XGB_vals = []
-    removal_vals = []
-    for i in range(1, 11):
-        kNN_vals.append(i)
-        XGB_vals.append(40 + (i * 2))
-    for i in range(1, 3):
-        removal_vals.append(10 / (10 + i))
-    for i in range(1, 6):
-        threshold_vals.append(0.1 * i)
+    # threshold_vals = []
+    # kNN_vals = []
+    # XGB_vals = []
+    # removal_vals = []
+    # for i in range(1, 11):
+    #     kNN_vals.append(i)
+    #     XGB_vals.append(40 + (i * 2))
+    # for i in range(3, 10):
+    #     removal_vals.append(10 / (10 + i))
+    # for i in range(1, 6):
+    #     threshold_vals.append(0.1 * i)
     # main(threshold_vals, kNN_vals, XGB_vals, removal_vals)
-    for a, b, c, d in itertools.product(threshold_vals, kNN_vals, XGB_vals, removal_vals):
-        main([a], [b], [c], [d])
-    # main([0.2], [3], [52], [10/11])
+    # for a, b, c, d in itertools.product(threshold_vals, kNN_vals, XGB_vals, removal_vals):
+    #     main([a], [b], [c], [d])
+    main([0.2], [3], [52], [0.5])

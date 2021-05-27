@@ -18,7 +18,7 @@ import sys
 from db_interface_mimic import DbMimic
 import utils
 
-user = 'idan'
+user = 'roye'
 boolean_features_path = 'C:/tools/boolean_features_mimic_model_b.csv' if user == 'idan' \
     else '/Users/user/Documents/University/Workshop/boolean_features_mimic_model_b.csv'
 extra_features_path = 'C:/tools/extra_features_model_b.csv' if user == 'idan' \
@@ -107,7 +107,7 @@ def main(threshold_vals, kNN_vals, XGB_vals, removal_vals):
         counter += 1
 
         utils.log_dict(vals={"AUROC_AVG": np.average([i[0] for i in auroc_vals]), "AUPR_AVG": np.average([i[0] for i in aupr_vals]),
-                             "AUROC_STD": np.std([i[0] for i in auroc_vals]), "AUPR_STD": [i[0] for i in aupr_vals]}, msg="Run results:")
+                             "AUROC_STD": np.std([i[0] for i in auroc_vals]), "AUPR_STD": np.std([i[0] for i in aupr_vals])}, msg="Run results:")
         utils.log_dict(msg="Running time: " + str(time.time() - start_time))
         return np.average([i[0] for i in auroc_vals]) + np.average([i[0] for i in aupr_vals]), counter - 1
 

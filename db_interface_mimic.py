@@ -163,11 +163,8 @@ class DbMimic:
         print("Building patient list from MIMIC...")
         hadm_id_list = self.get_hadm_id_list()
         patient_list = []
-        i = 0
         counter = 0
         for hadm_id in hadm_id_list:
-            # if i == num_of_patients:
-            #     break
             estimated_age, gender, target = self.get_metadata_by_hadm_id(hadm_id)
             if target == 'negative':
                 counter += 1
@@ -180,7 +177,6 @@ class DbMimic:
             patient = PatientMimic(hadm_id, estimated_age, gender, ethnicity, transfers_before_target, insurance, diagnosis,
                                    symptoms, target, event_list, boolean_features)
             patient_list.append(patient)
-            i += 1
         print("Done")
         return patient_list
 
