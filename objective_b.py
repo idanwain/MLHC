@@ -90,7 +90,7 @@ def main(threshold_vals, kNN_vals, XGB_vals, removal_vals):
             X_train, y_train, X_test, y_test = utils.split_data_by_folds(data, targets, folds_indices, test_fold)
 
             ### Feature selection ###
-            model = XGBClassifier()
+            model = XGBClassifier(use_label_encoder=False)
             model.fit(np.asarray(X_train), y_train)
             top_K_xgb = utils.get_top_K_features_xgb(labels_vector, model.feature_importances_.tolist(), k=xgb_k)
             X_train = utils.create_vector_of_important_features(X_train, top_K_xgb)
@@ -142,7 +142,7 @@ if __name__ == "__main__":
         removal_vals.append(5 / (10 + i))
     for i in range(0, 10):
         threshold_vals.append(0.1 * i)
-    main([0.2],[8],[48],[0])
+    main(threshold_vals,kNN_vals,XGB_vals,removal_vals)
     # for a, b, c, d in itertools.product(threshold_vals, kNN_vals, XGB_vals, removal_vals):
     #     curr_val, run_number = main([a], [b], [c], [d])
     #     if curr_val > best_run_val:
