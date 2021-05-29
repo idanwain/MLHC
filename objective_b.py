@@ -1,10 +1,11 @@
+from collections import Counter
 from typing import Dict, List
 from db_interface_eicu import DbEicu
 from feature import Feature
 import pandas as pd
 from patient_mimic import PatientMimic
 from sklearn.impute import KNNImputer
-from sklearn.ensemble import RandomForestClassifier
+from sklearn.ensemble import RandomForestClassifier,AdaBoostClassifier
 import numpy as np
 from xgboost import XGBClassifier
 import time
@@ -17,6 +18,9 @@ from datetime import datetime
 import sys
 from db_interface_mimic import DbMimic
 import utils
+from imblearn.under_sampling import TomekLinks,ClusterCentroids
+from imblearn.over_sampling import *
+from imblearn.combine import SMOTETomek
 
 user = 'roye'
 boolean_features_path = 'C:/tools/boolean_features_mimic_model_b.csv' if user == 'idan' \
@@ -41,6 +45,7 @@ def main(threshold_vals, kNN_vals, XGB_vals, removal_vals):
 
     folds = db.get_folds()
     patient_list_base = db.create_patient_list()
+    threshold_data = {}
 
     for product in itertools.product(kNN_vals, XGB_vals, threshold_vals, removal_vals):
         start_time = time.time()
@@ -82,8 +87,7 @@ def main(threshold_vals, kNN_vals, XGB_vals, removal_vals):
 
         for test_fold in folds:
             ### Data split ###
-            X_train, y_train, X_test, y_test = utils.split_data_by_folds(data, targets, folds_indices, test_fold,
-                                                                         removal_factor)
+            X_train, y_train, X_test, y_test = utils.split_data_by_folds(data, targets, folds_indices, test_fold)
 
             ### Feature selection ###
             model = XGBClassifier()
@@ -92,8 +96,17 @@ def main(threshold_vals, kNN_vals, XGB_vals, removal_vals):
             X_train = utils.create_vector_of_important_features(X_train, top_K_xgb)
             X_test = utils.create_vector_of_important_features(X_test, top_K_xgb)
 
+
+            ### Class balancing ###
+            # over_balancer = BorderlineSMOTE()
+            # X_train, y_train = over_balancer.fit_resample(X_train, y_train)
+            under_balancer = TomekLinks()
+            X_train, y_train = under_balancer.fit_resample(X_train, y_train)
+            print('Original dataset shape', Counter(y_train))
+            # print('Resample dataset shape', Counter(y_tl))
+
             ### Model fitting ###
-            clf_forest = RandomForestClassifier()
+            clf_forest = AdaBoostClassifier(base_estimator=RandomForestClassifier())
             clf_forest.fit(X_train, y_train)
 
             ### Performance assement ##
@@ -109,24 +122,30 @@ def main(threshold_vals, kNN_vals, XGB_vals, removal_vals):
         utils.log_dict(vals={"AUROC_AVG": np.average([i[0] for i in auroc_vals]), "AUPR_AVG": np.average([i[0] for i in aupr_vals]),
                              "AUROC_STD": np.std([i[0] for i in auroc_vals]), "AUPR_STD": np.std([i[0] for i in aupr_vals])}, msg="Run results:")
         utils.log_dict(msg="Running time: " + str(time.time() - start_time))
-        return np.average([i[0] for i in auroc_vals]) + np.average([i[0] for i in aupr_vals]), counter - 1
-
+    #     if xgb_k not in threshold_data.keys():
+    #         threshold_data[xgb_k] = []
+    #     threshold_data[xgb_k].append(np.average([i[0] for i in auroc_vals]))
+    #     print(threshold_data)
+    #     return np.average([i[0] for i in auroc_vals]) + np.average([i[0] for i in aupr_vals]), counter - 1
+    # utils.plot_hyperparameter(threshold_data,'Thershold')
 
 if __name__ == "__main__":
     threshold_vals = []
     kNN_vals = []
     XGB_vals = []
     removal_vals = []
-    for i in range(1, 11):
-        kNN_vals.append(i)
+    for i in range(9):
         XGB_vals.append(40 + (i * 2))
+    for i in range(1,11):
+        kNN_vals.append(i)
     for i in range(1, 3):
         removal_vals.append(5 / (10 + i))
-    for i in range(0, 6):
+    for i in range(0, 10):
         threshold_vals.append(0.1 * i)
-    for a, b, c, d in itertools.product(threshold_vals, kNN_vals, XGB_vals, removal_vals):
-        curr_val, run_number = main([a], [b], [c], [d])
-        if curr_val > best_run_val:
-            best_run_val = curr_val
-            best_run = run_number
-    utils.log_dict(msg=f"BEST RUN: {best_run}")
+    main([0.2],[8],[48],[0])
+    # for a, b, c, d in itertools.product(threshold_vals, kNN_vals, XGB_vals, removal_vals):
+    #     curr_val, run_number = main([a], [b], [c], [d])
+    #     if curr_val > best_run_val:
+    #         best_run_val = curr_val
+    #         best_run = run_number
+    # utils.log_dict(msg=f"BEST RUN: {best_run}")

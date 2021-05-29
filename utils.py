@@ -125,7 +125,7 @@ def split_data(data, labels, ratio):
     return X_train, y_train, X_test, y_test
 
 
-def split_data_by_folds(data, labels, folds, test_fold, removal_factor=1):
+def split_data_by_folds(data, labels, folds, test_fold, removal_factor=0):
     X_train = []
     y_train = []
     X_test = []
@@ -147,7 +147,7 @@ def split_data_by_folds(data, labels, folds, test_fold, removal_factor=1):
         if y_train[i] == 0:
             indices_for_removal.append(i)
             counter += 1
-        if (counter == int(X_train_len * removal_factor)):
+        if counter >= int(X_train_len * removal_factor):
             break;
 
     X_train_removed = []
@@ -244,17 +244,33 @@ def plot_graphs(auroc_vals, aupr_vals, counter, objective: str):
         pyplot.legend()
 
     avg_auc_str = str(np.average([i[0] for i in auroc_vals]))[2:]
-    pyplot.savefig(f"C:/tools/objective_{objective}/{counter}_auc_{avg_auc_str}.png")
+    pyplot.savefig(f"/Users/user/Documents/University/Workshop/graphs for milestone 2/{objective}_{counter}_auc_{avg_auc_str}.png")
     pyplot.close()
 
     for (pr_val, no_skill, lr_recall, lr_precision) in aupr_vals:
         pyplot.plot(lr_recall, lr_precision, marker='.', label="AUPR= %.3f" % (pr_val))
-        # axis labels
+        # axis labels d
         pyplot.xlabel('Recall')
         pyplot.ylabel('Precision')
         # show the legend
         pyplot.legend()
         # show the plot
     avg_aupr_str = str(np.average([i[0] for i in aupr_vals]))[2:]
-    pyplot.savefig(f"C:/tools/objective_{objective}/{counter}_aupr_{avg_aupr_str}.png")
+    pyplot.savefig(f"/Users/user/Documents/University/Workshop/graphs for milestone 2/{objective}_{counter}_aupr_{avg_aupr_str}.png")
     pyplot.close()
+
+
+def plot_hyperparameter(data:dict,label = ""):
+    x_axis_data = data.keys()
+    y_axis_data = []
+    for value in data:
+        y_axis_data.append(np.average(data[value]))
+    pyplot.plot(x_axis_data,y_axis_data,label=label+" Average")
+    pyplot.show()
+
+    y_axis_data = []
+    for value in data:
+        y_axis_data.append(np.std(data[value]))
+    pyplot.plot(x_axis_data,y_axis_data,label=label+" STD")
+    pyplot.show()
+
