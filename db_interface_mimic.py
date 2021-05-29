@@ -180,5 +180,12 @@ class DbMimic:
         print("Done")
         return patient_list
 
+    def get_distinct_boolean_features(self) -> list:
+        """
+        Returns a list with all distinct labels
+        :return: labels list
+        """
+        return list({key for key in self.boolean_features['category']})
+
 
 

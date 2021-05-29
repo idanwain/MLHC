@@ -1,11 +1,18 @@
 from collections import Counter
 from typing import Dict, List
+from sklearn.linear_model import LogisticRegression
+from sklearn.model_selection import GridSearchCV
+from sklearn.multiclass import OneVsRestClassifier
+from sklearn.naive_bayes import GaussianNB
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.svm import SVC
+from sklearn.tree import DecisionTreeClassifier
 from db_interface_eicu import DbEicu
 from feature import Feature
 import pandas as pd
 from patient_mimic import PatientMimic
 from sklearn.impute import KNNImputer
-from sklearn.ensemble import RandomForestClassifier,AdaBoostClassifier
+from sklearn.ensemble import RandomForestClassifier, AdaBoostClassifier, VotingClassifier, ExtraTreesClassifier
 import numpy as np
 from xgboost import XGBClassifier
 import time
@@ -36,7 +43,7 @@ best_run = -1
 best_run_val = 0
 counter = 1
 
-def main(threshold_vals, kNN_vals, XGB_vals, removal_vals):
+def main(threshold_vals, kNN_vals, XGB_vals, removal_vals, weights):
     global counter
     db = DbMimic(boolean_features_path,
                  extra_features_path,
@@ -47,7 +54,7 @@ def main(threshold_vals, kNN_vals, XGB_vals, removal_vals):
     patient_list_base = db.create_patient_list()
     threshold_data = {}
 
-    for product in itertools.product(kNN_vals, XGB_vals, threshold_vals, removal_vals):
+    for product in itertools.product(kNN_vals, XGB_vals, threshold_vals, removal_vals, weights):
         start_time = time.time()
         data = []
         targets = []
@@ -61,22 +68,29 @@ def main(threshold_vals, kNN_vals, XGB_vals, removal_vals):
         n_neighbors = product[0]  # Neighbors amount for kNN
         xgb_k = product[1]  # Amount of features to return by XGB
         removal_factor = product[3]  # How many negative samples we remove from the training set.
+        weight = product[4]
         config = {
             "Threshold": threshold,
             "kNN": n_neighbors,
             "k_XGB": xgb_k,
-            "Removal factor": removal_factor
+            "Removal factor": removal_factor,
+            'weights': weight
         }
         utils.log_dict(vals=config, msg="Configuration:")
 
-        patient_list = utils.remove_features_by_threshold(threshold, patient_list, db)
+        patient_list, removed_features = utils.remove_features_by_threshold(threshold, patient_list, db)
         for patient in patient_list:
             targets.append(patient.target)
             for fold in folds:
                 if str(patient.hadm_id) in (folds[fold]):
                     folds_indices.append(fold)
 
-        labels_vector = patient_list[0].create_labels_vector()
+        # labels_vector = patient_list[0].create_labels_vector()
+        distinct_boolean_features = (db.get_distinct_boolean_features())
+        distinct_boolean_features.sort()
+        labels_vector = set(db.get_labels()) - set(removed_features)
+        labels_vector = utils.create_labels_vector(labels_vector, distinct_boolean_features)
+
         for patient in patient_list:
             vector = patient.create_vector_for_patient()
             data.append(vector)
@@ -106,12 +120,25 @@ def main(threshold_vals, kNN_vals, XGB_vals, removal_vals):
             # print('Resample dataset shape', Counter(y_tl))
 
             ### Model fitting ###
-            clf_forest = AdaBoostClassifier(base_estimator=RandomForestClassifier())
-            clf_forest.fit(X_train, y_train)
+            clf1 = DecisionTreeClassifier()
+            clf2 = RandomForestClassifier()
+            clf3 = KNeighborsClassifier()
+            clf = VotingClassifier(estimators=[('dt', clf1), ('rf', clf2), ('knn', clf3)], voting='soft', weights=weight)
+            params = {
+                'rf__n_estimators': [50, 175],
+                'rf__random_state': [0, 2],
+                'dt__random_state': [0, 2],
+                'dt__max_depth': [5, 20],
+                'knn__n_neighbors': [7, 12],
+                'knn__leaf_size': [22, 40]
+            }
+            grid = GridSearchCV(estimator=clf, param_grid=params)
+            grid = grid.fit(X_train, y_train)
+            # clf = clf.fit(X_train, y_train)
 
             ### Performance assement ##
-            roc_val, ns_fpr, ns_tpr, lr_fpr, lr_tpr = utils.calc_metrics_roc(clf_forest, X_test, y_test, display_plots=True)
-            pr_val, no_skill, lr_recall, lr_precision = utils.calc_metrics_pr(clf_forest, X_test, y_test, display_plots=True)
+            roc_val, ns_fpr, ns_tpr, lr_fpr, lr_tpr = utils.calc_metrics_roc(grid, X_test, y_test, display_plots=True)
+            pr_val, no_skill, lr_recall, lr_precision = utils.calc_metrics_pr(grid, X_test, y_test, display_plots=True)
             auroc_vals.append([roc_val, ns_fpr, ns_tpr, lr_fpr, lr_tpr])
             aupr_vals.append([pr_val, no_skill, lr_recall, lr_precision])
 
@@ -129,20 +156,22 @@ def main(threshold_vals, kNN_vals, XGB_vals, removal_vals):
     #     return np.average([i[0] for i in auroc_vals]) + np.average([i[0] for i in aupr_vals]), counter - 1
     # utils.plot_hyperparameter(threshold_data,'Thershold')
 
+
 if __name__ == "__main__":
     threshold_vals = []
     kNN_vals = []
     XGB_vals = []
     removal_vals = []
-    for i in range(9):
+    weights = [list(a) for a in list(itertools.product(range(1, 3), range(12, 15), range(1, 3)))]
+    for i in range(3, 9):
         XGB_vals.append(40 + (i * 2))
-    for i in range(1,11):
+    for i in range(7, 15):
         kNN_vals.append(i)
-    for i in range(1, 3):
-        removal_vals.append(5 / (10 + i))
-    for i in range(0, 10):
-        threshold_vals.append(0.1 * i)
-    main([0.2],[8],[48],[0])
+    for i in range(10, 12):
+        removal_vals.append(1 / (10 + i))
+    for i in range(3, 6):
+        threshold_vals.append(0.052 * i)
+    main([0.2], [8], [48], [0.0], [[2, 13, 1]])
     # for a, b, c, d in itertools.product(threshold_vals, kNN_vals, XGB_vals, removal_vals):
     #     curr_val, run_number = main([a], [b], [c], [d])
     #     if curr_val > best_run_val:

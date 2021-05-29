@@ -42,7 +42,7 @@ def remove_features_by_threshold(threshold: float, patient_list: list, db):
         for feature in patient.events.copy():
             if feature in features_to_be_removed:
                 del patient.events[feature]
-    return patient_list
+    return patient_list, features_to_be_removed
 
 
 def get_top_K_features_xgb(labels_vector, feature_importance: list, k=50):
@@ -244,7 +244,8 @@ def plot_graphs(auroc_vals, aupr_vals, counter, objective: str):
         pyplot.legend()
 
     avg_auc_str = str(np.average([i[0] for i in auroc_vals]))[2:]
-    pyplot.savefig(f"/Users/user/Documents/University/Workshop/graphs for milestone 2/{objective}_{counter}_auc_{avg_auc_str}.png")
+    pyplot.savefig(f"C:/tools/objective_{objective}/{counter}_auc_{avg_auc_str}.png")
+    # pyplot.savefig(f"/Users/user/Documents/University/Workshop/graphs for milestone 2/{objective}_{counter}_auc_{avg_auc_str}.png")
     pyplot.close()
 
     for (pr_val, no_skill, lr_recall, lr_precision) in aupr_vals:
@@ -256,7 +257,8 @@ def plot_graphs(auroc_vals, aupr_vals, counter, objective: str):
         pyplot.legend()
         # show the plot
     avg_aupr_str = str(np.average([i[0] for i in aupr_vals]))[2:]
-    pyplot.savefig(f"/Users/user/Documents/University/Workshop/graphs for milestone 2/{objective}_{counter}_aupr_{avg_aupr_str}.png")
+    pyplot.savefig(f"C:/tools/objective_{objective}/{counter}_aupr_{avg_aupr_str}.png")
+    # pyplot.savefig(f"/Users/user/Documents/University/Workshop/graphs for milestone 2/{objective}_{counter}_aupr_{avg_aupr_str}.png")
     pyplot.close()
 
 
@@ -274,3 +276,11 @@ def plot_hyperparameter(data:dict,label = ""):
     pyplot.plot(x_axis_data,y_axis_data,label=label+" STD")
     pyplot.show()
 
+
+def create_labels_vector(features, boolean_features):
+    ret_vecotr = []
+    for label in features:
+        ret_vecotr.extend([label + "_avg", label + "_max", label + "_min", label + "_latest", label + "_amount"])
+    ret_vecotr.extend(boolean_features)
+    ret_vecotr.extend(['gender', 'insurance', 'ethnicity', 'transfers', 'symptoms'])
+    return ret_vecotr

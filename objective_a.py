@@ -54,7 +54,7 @@ def main(threshold_vals, kNN_vals, XGB_vals, removal_vals):
         }
         utils.log_dict(vals=config, msg="Configuration:")
 
-        patient_list = utils.remove_features_by_threshold(threshold, patient_list, db)
+        patient_list, removed_features = utils.remove_features_by_threshold(threshold, patient_list, db)
         for patient in patient_list:
             targets.append(patient.target)
             for fold in folds:

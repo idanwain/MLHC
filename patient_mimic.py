@@ -79,11 +79,11 @@ class PatientMimic:
             ret_vecotr.extend([label + "_avg", label + "_max", label + "_min", label + "_latest", label + "_amount"])
         if not objective_c:
             ret_vecotr.extend(list(self.boolean_features.keys()))
-            ret_vecotr.extend(['gender','insurance','ethnicity','transfers','symptoms'])
+            ret_vecotr.extend(['gender', 'insurance', 'ethnicity', 'transfers', 'symptoms'])
         return ret_vecotr
 
     def create_vector_for_boolean_features(self):
-        return list(self.boolean_features.values())
+        return [self.boolean_features[key] for key in sorted(self.boolean_features)]
 
     def create_vector_of_categorical_features(self):
         gender_encoding = one_hot_encoding.GENDER_ENCODING[self.gender]

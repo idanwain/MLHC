@@ -20,8 +20,8 @@ def get_intersected_features(db_mimic: DbMimic, db_eicu: DbEicu, pl_mimic, pl_ei
     # patient_list_mimic = db_mimic.create_patient_list(num_of_negatives)
     # patient_list_eicu = db_eicu.create_patient_list()
 
-    patient_list_mimic = utils.remove_features_by_threshold(threshold, pl_mimic, db_mimic)
-    patient_list_eicu = utils.remove_features_by_threshold(threshold, pl_eicu, db_eicu)
+    patient_list_mimic, removed_features = utils.remove_features_by_threshold(threshold, pl_mimic, db_mimic)
+    patient_list_eicu, removed_features = utils.remove_features_by_threshold(threshold, pl_eicu, db_eicu)
 
     final_list = intersection([*(patient_list_mimic[0].events)], [*(patient_list_eicu[0].events)])
 
