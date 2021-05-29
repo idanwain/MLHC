@@ -53,6 +53,7 @@ class PatientMimic:
         avg_val = 0
         max_val = -1
         min_val = sys.maxsize
+        raw_data = []
         latest_sample = {
             "Date": datetime.datetime.now(),
             "Value": 0
@@ -61,7 +62,7 @@ class PatientMimic:
         if number_of_samples == 0:
             return [np.nan] * 4 + [0]
         for feature in self.events[label]:
-            avg_val += feature.value
+            raw_data.append(feature.value)
             if feature.value > max_val:
                 max_val = feature.value
             if feature.value < min_val:
@@ -69,7 +70,7 @@ class PatientMimic:
             if feature.time > latest_sample["Date"]:
                 latest_sample["Date"] = feature.time
                 latest_sample["Value"] = feature.value
-        return [(avg_val/number_of_samples), max_val, min_val, latest_sample["Value"], number_of_samples]
+        return [np.average(raw_data), max_val, min_val, latest_sample["Value"], number_of_samples]
 
     def create_labels_vector(self, labels=None, objective_c=False):
         if labels is None:
