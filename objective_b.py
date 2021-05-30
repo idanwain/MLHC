@@ -1,5 +1,4 @@
 from collections import Counter
-from typing import Dict, List
 from sklearn.linear_model import LogisticRegression
 from sklearn.model_selection import GridSearchCV
 from sklearn.multiclass import OneVsRestClassifier
@@ -7,10 +6,6 @@ from sklearn.naive_bayes import GaussianNB
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.svm import SVC
 from sklearn.tree import DecisionTreeClassifier
-from db_interface_eicu import DbEicu
-from feature import Feature
-import pandas as pd
-from patient_mimic import PatientMimic
 from sklearn.impute import KNNImputer
 from sklearn.ensemble import RandomForestClassifier, AdaBoostClassifier, VotingClassifier, ExtraTreesClassifier
 import numpy as np
@@ -18,11 +13,6 @@ from xgboost import XGBClassifier
 import time
 import itertools
 import copy
-from sklearn import metrics
-import matplotlib.pyplot as plt
-import seaborn as sns
-from datetime import datetime
-import sys
 from db_interface_mimic import DbMimic
 import utils
 from imblearn.under_sampling import TomekLinks,ClusterCentroids
@@ -39,9 +29,6 @@ data_path_mimic = 'C:/tools/feature_mimic_cohort_model_b.csv' if user == 'idan' 
 folds_path = 'C:/tools/folds_mimic_model_b.csv' if user == 'idan' \
     else '/Users/user/Documents/University/Workshop/folds_mimic_model_b.csv'
 
-best_run = -1
-best_run_val = 0
-counter = 1
 
 def main(threshold_vals, kNN_vals, XGB_vals, removal_vals, weights):
     global counter
@@ -52,7 +39,6 @@ def main(threshold_vals, kNN_vals, XGB_vals, removal_vals, weights):
 
     folds = db.get_folds()
     patient_list_base = db.create_patient_list()
-    threshold_data = {}
 
     for product in itertools.product(kNN_vals, XGB_vals, threshold_vals, removal_vals, weights):
         start_time = time.time()
@@ -116,8 +102,6 @@ def main(threshold_vals, kNN_vals, XGB_vals, removal_vals, weights):
             # X_train, y_train = over_balancer.fit_resample(X_train, y_train)
             under_balancer = TomekLinks()
             X_train, y_train = under_balancer.fit_resample(X_train, y_train)
-            print('Original dataset shape', Counter(y_train))
-            # print('Resample dataset shape', Counter(y_tl))
 
             ### Model fitting ###
             clf1 = DecisionTreeClassifier()
@@ -134,11 +118,10 @@ def main(threshold_vals, kNN_vals, XGB_vals, removal_vals, weights):
             }
             grid = GridSearchCV(estimator=clf, param_grid=params)
             grid = grid.fit(X_train, y_train)
-            # clf = clf.fit(X_train, y_train)
 
             ### Performance assement ##
-            roc_val, ns_fpr, ns_tpr, lr_fpr, lr_tpr = utils.calc_metrics_roc(grid, X_test, y_test, display_plots=True)
-            pr_val, no_skill, lr_recall, lr_precision = utils.calc_metrics_pr(grid, X_test, y_test, display_plots=True)
+            roc_val, ns_fpr, ns_tpr, lr_fpr, lr_tpr = utils.calc_metrics_roc(grid, X_test, y_test)
+            pr_val, no_skill, lr_recall, lr_precision = utils.calc_metrics_pr(grid, X_test, y_test)
             auroc_vals.append([roc_val, ns_fpr, ns_tpr, lr_fpr, lr_tpr])
             aupr_vals.append([pr_val, no_skill, lr_recall, lr_precision])
 
@@ -149,12 +132,7 @@ def main(threshold_vals, kNN_vals, XGB_vals, removal_vals, weights):
         utils.log_dict(vals={"AUROC_AVG": np.average([i[0] for i in auroc_vals]), "AUPR_AVG": np.average([i[0] for i in aupr_vals]),
                              "AUROC_STD": np.std([i[0] for i in auroc_vals]), "AUPR_STD": np.std([i[0] for i in aupr_vals])}, msg="Run results:")
         utils.log_dict(msg="Running time: " + str(time.time() - start_time))
-    #     if xgb_k not in threshold_data.keys():
-    #         threshold_data[xgb_k] = []
-    #     threshold_data[xgb_k].append(np.average([i[0] for i in auroc_vals]))
-    #     print(threshold_data)
-    #     return np.average([i[0] for i in auroc_vals]) + np.average([i[0] for i in aupr_vals]), counter - 1
-    # utils.plot_hyperparameter(threshold_data,'Thershold')
+        return np.average([i[0] for i in auroc_vals]) + np.average([i[0] for i in aupr_vals]), counter - 1
 
 
 if __name__ == "__main__":
@@ -172,10 +150,3 @@ if __name__ == "__main__":
     for i in range(0, 10):
         threshold_vals.append(0.1 * i)
     main([0.2], [8], [48], [0.0], [[2, 13, 1]])
-    # main(threshold_vals,kNN_vals,XGB_vals,removal_vals)
-    # for a, b, c, d in itertools.product(threshold_vals, kNN_vals, XGB_vals, removal_vals):
-    #     curr_val, run_number = main([a], [b], [c], [d])
-    #     if curr_val > best_run_val:
-    #         best_run_val = curr_val
-    #         best_run = run_number
-    # utils.log_dict(msg=f"BEST RUN: {best_run}")

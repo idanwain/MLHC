@@ -79,8 +79,8 @@ def train_model(clf_forest, data_mimic, targets_mimic):
 def model_assesment(clf_forest, data_eicu, targets_eicu, counter):
     auroc_vals = []
     aupr_vals = []
-    roc_val, ns_fpr, ns_tpr, lr_fpr, lr_tpr = utils.calc_metrics_roc(clf_forest, data_eicu, targets_eicu, display_plots=True)
-    pr_val, no_skill, lr_recall, lr_precision = utils.calc_metrics_pr(clf_forest, data_eicu, targets_eicu, display_plots=True)
+    roc_val, ns_fpr, ns_tpr, lr_fpr, lr_tpr = utils.calc_metrics_roc(clf_forest, data_eicu, targets_eicu)
+    pr_val, no_skill, lr_recall, lr_precision = utils.calc_metrics_pr(clf_forest, data_eicu, targets_eicu)
     auroc_vals.append([roc_val, ns_fpr, ns_tpr, lr_fpr, lr_tpr])
     aupr_vals.append([pr_val, no_skill, lr_recall, lr_precision])
 

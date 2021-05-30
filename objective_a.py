@@ -87,10 +87,8 @@ def main(threshold_vals, kNN_vals, XGB_vals, removal_vals):
             clf_forest.fit(X_train, y_train)
 
             ### Performance assement ##
-            roc_val, ns_fpr, ns_tpr, lr_fpr, lr_tpr = utils.calc_metrics_roc(clf_forest, X_test, y_test,
-                                                                             display_plots=True)
-            pr_val, no_skill, lr_recall, lr_precision = utils.calc_metrics_pr(clf_forest, X_test, y_test,
-                                                                              display_plots=True)
+            roc_val, ns_fpr, ns_tpr, lr_fpr, lr_tpr = utils.calc_metrics_roc(clf_forest, X_test, y_test)
+            pr_val, no_skill, lr_recall, lr_precision = utils.calc_metrics_pr(clf_forest, X_test, y_test)
             auroc_vals.append([roc_val, ns_fpr, ns_tpr, lr_fpr, lr_tpr])
             aupr_vals.append([pr_val, no_skill, lr_recall, lr_precision])
 

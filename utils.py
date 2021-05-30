@@ -3,7 +3,7 @@ from matplotlib import pyplot
 from sklearn import metrics
 import logging
 from sklearn.metrics import roc_auc_score, roc_curve, precision_recall_curve, f1_score, auc
-
+import one_hot_encoding
 
 def get_features_for_removal(threshold: float, patient_list: list, db):
     """
@@ -85,48 +85,6 @@ def create_vector_of_important_features(data, features: list):
     return new_training_data
 
 
-def split_data(data, labels, ratio):
-    """
-    Splits the data into Traning data and test data. Same for the labels.
-    The split is currently done hard coded and set to 70% of the data.
-
-    :param data: Array of vectors
-    :param labels: Binary vector
-    :return: X_train,y_train,X_test,y_test - traning and test data and labels.
-    """
-
-    # Doing this so i can randomize the data without losing relation to labels
-    joined_data = []
-    X_train = []
-    y_train = []
-    X_test = []
-    y_test = []
-    pos = []
-    neg = []
-    data_len = len(data)
-    for i in range(data_len):
-        joined_data.append((data[i], labels[i]))
-    np.random.shuffle(joined_data)
-    for vector in joined_data:
-        if (vector[1] == 0):
-            neg.append(vector)
-        else:
-            pos.append(vector)
-    pos_split_index = int(len(pos) * 0.7)
-    neg_split_index = int((len(neg) * 0.7) / ratio)
-    train = neg[:neg_split_index] + pos[:pos_split_index]
-    test = neg[neg_split_index:] + pos[pos_split_index:]
-    # train = joined_data[:int(len(joined_data)*0.7)]
-    # test = joined_data[int(len(joined_data)*0.7):]
-    for vector in train:
-        X_train.append(list(vector[0]))
-        y_train.append(vector[1])
-    for vector in test:
-        X_test.append(list(vector[0]))
-        y_test.append(vector[1])
-    return X_train, y_train, X_test, y_test
-
-
 def split_data_by_folds(data, labels, folds, test_fold, removal_factor=0):
     X_train = []
     y_train = []
@@ -144,7 +102,6 @@ def split_data_by_folds(data, labels, folds, test_fold, removal_factor=0):
             X_train.append(data[i])
             y_train.append(labels[i])
     X_train_len = len(X_train)
-    # print("Y len: %s. X len: %s" %(len(y_train),X_train_len))
     for i in range(X_train_len):
         if y_train[i] == 0:
             indices_for_removal.append(i)
@@ -168,19 +125,7 @@ def split_data_by_folds(data, labels, folds, test_fold, removal_factor=0):
             tot_zero += 1
         else:
             tot_one += 1
-    # print("Ratio: %s"%(tot_zero/tot_one))
-    # print("Y len: %s. X len: %s" %(len(y_train),len(X_train)))
     return X_train, y_train, X_test, y_test
-
-
-def calc_error(clf, X_test, y_test):
-    tot = 0
-    for i in range(len(X_test)):
-        val = clf.predict([X_test[i]])
-        if (val != y_test[i]):
-            tot += 1
-    print(1 - (tot / len(X_test)))
-    return (1 - (tot / len(X_test)))
 
 
 def calc_metrics_roc(clf, X_test, y_test, display_plots=False):
@@ -264,25 +209,15 @@ def plot_graphs(auroc_vals, aupr_vals, counter, objective: str):
     pyplot.close()
 
 
-def plot_hyperparameter(data: dict, label=""):
-    x_axis_data = data.keys()
-    y_axis_data = []
-    for value in data:
-        y_axis_data.append(np.average(data[value]))
-    pyplot.plot(x_axis_data, y_axis_data, label=label + " Average")
-    pyplot.show()
-
-    y_axis_data = []
-    for value in data:
-        y_axis_data.append(np.std(data[value]))
-    pyplot.plot(x_axis_data, y_axis_data, label=label + " STD")
-    pyplot.show()
-
-
 def create_labels_vector(features, boolean_features):
     ret_vecotr = []
     for label in features:
         ret_vecotr.extend([label + "_avg", label + "_max", label + "_min", label + "_latest", label + "_amount"])
     ret_vecotr.extend(boolean_features)
-    ret_vecotr.extend(['gender', 'insurance', 'ethnicity', 'transfers', 'symptoms'])
+    ret_vecotr += create_labels_for_categorical_features()
     return ret_vecotr
+
+
+def create_labels_for_categorical_features():
+    return [*one_hot_encoding.GENDER_ENCODING.keys()] + [*one_hot_encoding.INSURANCE_ENCODING.keys()] + \
+           [*one_hot_encoding.ETHNICITY_ENCODING.keys()] + ['transfers', 'symptoms']
