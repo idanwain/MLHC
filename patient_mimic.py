@@ -73,17 +73,6 @@ class PatientMimic:
                 latest_sample["Value"] = feature.value
         return [np.average(raw_data), max_val, min_val, latest_sample["Value"], number_of_samples]
 
-    def create_labels_vector(self, labels=None, objective_c=False):
-        if labels is None:
-            labels = self.events
-        ret_vecotr = []
-        for label in labels:
-            ret_vecotr.extend([label + "_avg", label + "_max", label + "_min", label + "_latest", label + "_amount"])
-        if not objective_c:
-            ret_vecotr.extend(list(self.boolean_features.keys()))
-            ret_vecotr += self.create_labels_for_categorical_features()
-        return ret_vecotr
-
     def create_vector_for_boolean_features(self):
         return [self.boolean_features[key] for key in sorted(self.boolean_features)]
 
@@ -94,8 +83,3 @@ class PatientMimic:
         categorical_vector = gender_encoding + insurance_encoding + ethnicity_encoding + [
             self.transfers_before_target] + [self.symptoms]
         return categorical_vector
-
-    def create_labels_for_categorical_features(self): # # This is here until I fix model A and then all labels shit
-        # should be removed from here
-        return [*one_hot_encoding.GENDER_ENCODING.keys()] + [*one_hot_encoding.INSURANCE_ENCODING.keys()] + \
-               [*one_hot_encoding.ETHNICITY_ENCODING.keys()] + ['transfers', 'symptoms']

@@ -61,7 +61,7 @@ def main(threshold_vals, kNN_vals, XGB_vals, removal_vals):
                 if str(patient.hadm_id) in (folds[fold]):
                     folds_indices.append(fold)
 
-        labels_vector = patient_list[0].create_labels_vector()
+        labels_vector = utils.create_labels_vector(db, removed_features)
         for patient in patient_list:
             vector = patient.create_vector_for_patient()
             data.append(vector)

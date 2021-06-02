@@ -61,9 +61,9 @@ def get_top_K_features_xgb(labels_vector, feature_importance: list, k=50):
     #     indices.append(index)
     #     list_cpy.pop(index)
     # Print list of features, can be removed
-    # print("Top %s features according to XGB:" % k)
-    # for i in indices:
-    #     print("Feature: %s, Importance: %s" % ("I am stupid", feature_importance[i]))
+    print("Top %s features according to XGB:" % k)
+    for i in indices:
+        print("Feature: %s, Importance: %s" % (labels_vector[i], feature_importance[i]))
     return indices
 
 
@@ -191,8 +191,8 @@ def plot_graphs(auroc_vals, aupr_vals, counter, objective: str):
         pyplot.legend()
 
     avg_auc_str = str(np.average([i[0] for i in auroc_vals]))[2:]
-    pyplot.savefig(f"C:/tools/objective_{objective}/{counter}_auc_{avg_auc_str}.png")
-    # pyplot.savefig(f"/Users/user/Documents/University/Workshop/graphs for milestone 2/{objective}_{counter}_auc_{avg_auc_str}.png")
+    # pyplot.savefig(f"C:/tools/objective_{objective}/{counter}_auc_{avg_auc_str}.png")
+    pyplot.savefig(f"/Users/user/Documents/University/Workshop/graphs for milestone 2/{objective}_{counter}_auc_{avg_auc_str}.png")
     pyplot.close()
 
     for (pr_val, no_skill, lr_recall, lr_precision) in aupr_vals:
@@ -204,18 +204,21 @@ def plot_graphs(auroc_vals, aupr_vals, counter, objective: str):
         pyplot.legend()
         # show the plot
     avg_aupr_str = str(np.average([i[0] for i in aupr_vals]))[2:]
-    pyplot.savefig(f"C:/tools/objective_{objective}/{counter}_aupr_{avg_aupr_str}.png")
-    # pyplot.savefig(f"/Users/user/Documents/University/Workshop/graphs for milestone 2/{objective}_{counter}_aupr_{avg_aupr_str}.png")
+    # pyplot.savefig(f"C:/tools/objective_{objective}/{counter}_aupr_{avg_aupr_str}.png")
+    pyplot.savefig(f"/Users/user/Documents/University/Workshop/graphs for milestone 2/{objective}_{counter}_aupr_{avg_aupr_str}.png")
     pyplot.close()
 
 
-def create_labels_vector(features, boolean_features):
+def create_labels_vector(db,removed_features):
     ret_vecotr = []
-    for label in features:
+    for label in set(db.get_labels()) - set(removed_features):
         ret_vecotr.extend([label + "_avg", label + "_max", label + "_min", label + "_latest", label + "_amount"])
+    boolean_features = db.get_distinct_boolean_features()
+    boolean_features.sort()
     ret_vecotr.extend(boolean_features)
     ret_vecotr += create_labels_for_categorical_features()
     return ret_vecotr
+
 
 
 def create_labels_for_categorical_features():

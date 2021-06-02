@@ -15,7 +15,7 @@ import itertools
 import copy
 from db_interface_mimic import DbMimic
 import utils
-from imblearn.under_sampling import TomekLinks,ClusterCentroids
+from imblearn.under_sampling import TomekLinks, ClusterCentroids
 from imblearn.over_sampling import *
 from imblearn.combine import SMOTETomek
 
@@ -32,6 +32,7 @@ folds_path = 'C:/tools/folds_mimic_model_b.csv' if user == 'idan' \
 
 def main(threshold_vals, kNN_vals, XGB_vals, removal_vals, weights):
     global counter
+    counter = 0
     db = DbMimic(boolean_features_path,
                  extra_features_path,
                  data_path=data_path_mimic,
@@ -71,12 +72,7 @@ def main(threshold_vals, kNN_vals, XGB_vals, removal_vals, weights):
                 if str(patient.hadm_id) in (folds[fold]):
                     folds_indices.append(fold)
 
-        # labels_vector = patient_list[0].create_labels_vector()
-        distinct_boolean_features = (db.get_distinct_boolean_features())
-        distinct_boolean_features.sort()
-        labels_vector = set(db.get_labels()) - set(removed_features)
-        labels_vector = utils.create_labels_vector(labels_vector, distinct_boolean_features)
-
+        labels_vector = utils.create_labels_vector(db, removed_features)
         for patient in patient_list:
             vector = patient.create_vector_for_patient()
             data.append(vector)
@@ -96,7 +92,6 @@ def main(threshold_vals, kNN_vals, XGB_vals, removal_vals, weights):
             X_train = utils.create_vector_of_important_features(X_train, top_K_xgb)
             X_test = utils.create_vector_of_important_features(X_test, top_K_xgb)
 
-
             ### Class balancing ###
             # over_balancer = BorderlineSMOTE()
             # X_train, y_train = over_balancer.fit_resample(X_train, y_train)
@@ -107,7 +102,8 @@ def main(threshold_vals, kNN_vals, XGB_vals, removal_vals, weights):
             clf1 = DecisionTreeClassifier()
             clf2 = RandomForestClassifier()
             clf3 = KNeighborsClassifier()
-            clf = VotingClassifier(estimators=[('dt', clf1), ('rf', clf2), ('knn', clf3)], voting='soft', weights=weight)
+            clf = VotingClassifier(estimators=[('dt', clf1), ('rf', clf2), ('knn', clf3)], voting='soft',
+                                   weights=weight)
             params = {
                 'rf__n_estimators': [50, 175],
                 'rf__random_state': [0, 2],
@@ -129,8 +125,10 @@ def main(threshold_vals, kNN_vals, XGB_vals, removal_vals, weights):
 
         counter += 1
 
-        utils.log_dict(vals={"AUROC_AVG": np.average([i[0] for i in auroc_vals]), "AUPR_AVG": np.average([i[0] for i in aupr_vals]),
-                             "AUROC_STD": np.std([i[0] for i in auroc_vals]), "AUPR_STD": np.std([i[0] for i in aupr_vals])}, msg="Run results:")
+        utils.log_dict(vals={"AUROC_AVG": np.average([i[0] for i in auroc_vals]),
+                             "AUPR_AVG": np.average([i[0] for i in aupr_vals]),
+                             "AUROC_STD": np.std([i[0] for i in auroc_vals]),
+                             "AUPR_STD": np.std([i[0] for i in aupr_vals])}, msg="Run results:")
         utils.log_dict(msg="Running time: " + str(time.time() - start_time))
         return np.average([i[0] for i in auroc_vals]) + np.average([i[0] for i in aupr_vals]), counter - 1
 
