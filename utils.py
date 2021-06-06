@@ -85,9 +85,9 @@ def create_vector_of_important_features(data, features: list):
 
 
 def split_data_by_folds(data, labels, folds, test_fold, removal_factor=0):
-    x_train = []
+    X_train = []
     y_train = []
-    x_test = []
+    X_test = []
     y_test = []
     indices_for_removal = []
     counter = 0
@@ -95,27 +95,27 @@ def split_data_by_folds(data, labels, folds, test_fold, removal_factor=0):
     for i in range(data_len):
         curr_fold = folds[i]
         if curr_fold == test_fold:
-            x_test.append(data[i])
+            X_test.append(data[i])
             y_test.append(labels[i])
         else:
-            x_train.append(data[i])
+            X_train.append(data[i])
             y_train.append(labels[i])
     X_train_len = len(X_train)
     for i in range(X_train_len):
         if y_train[i] == 0:
             indices_for_removal.append(i)
             counter += 1
-        if counter >= int(x_train_len * removal_factor):
+        if counter >= int(X_train_len * removal_factor):
             break
 
-    x_train_removed = []
+    X_train_removed = []
     y_train_removed = []
-    for i in range(x_train_len):
+    for i in range(X_train_len):
         if i not in indices_for_removal:
-            x_train_removed.append(x_train[i])
+            X_train_removed.append(X_train[i])
             y_train_removed.append(y_train[i])
 
-    x_train = x_train_removed
+    X_train = X_train_removed
     y_train = y_train_removed
     tot_zero = 0
     tot_one = 1
