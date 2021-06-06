@@ -12,8 +12,7 @@ from hyperopt import hp, tpe, fmin, Trials
 from sklearn.ensemble import RandomForestClassifier, AdaBoostClassifier, VotingClassifier, ExtraTreesClassifier
 import numpy as np
 from xgboost import XGBClassifier
-import time
-import itertools
+from functools import partial
 import copy
 from db_interface_mimic import DbMimic
 import utils
@@ -32,9 +31,7 @@ folds_path = 'C:/tools/folds_mimic_model_b.csv' if user == 'idan' \
     else '/Users/user/Documents/University/Workshop/folds_mimic_model_b.csv'
 
 
-def main(params):
-    global counter
-    counter = 0
+def main():
     db = DbMimic(boolean_features_path,
                  extra_features_path,
                  data_path=data_path_mimic,
@@ -42,9 +39,20 @@ def main(params):
 
     folds = db.get_folds()
     patient_list_base = db.create_patient_list()
+    space = {
+        'threshold_vals': hp.uniform('thershold_val', 0.1, 1),
+        'kNN_vals': hp.choice('kNN_vals', range(1, 11)),
+        'XGB_vals': hp.choice('XGB_vals', range(30, 62, 2))
+    }
+    objective_func = partial(objective,patient_list_base=patient_list_base,db=db,folds=folds)
+    trials = Trials()
+    best = fmin(fn=objective_func, space=space, algo=tpe.suggest, max_evals=50, trials=trials, return_argmin=False)
+    print(best)
 
-    # for product in itertools.product(kNN_vals, XGB_vals, threshold_vals, removal_vals, weights):
-    start_time = time.time()
+
+def objective(params,patient_list_base,db,folds):
+    global counter
+    counter = 0
     data = []
     targets = []
     folds_indices = []
@@ -53,11 +61,6 @@ def main(params):
     patient_list = copy.deepcopy(patient_list_base)
 
     ### Hyperparameters ###
-    # threshold = product[2]  # Minimum appearance for feature to be included
-    # n_neighbors = product[0]  # Neighbors amount for kNN
-    # xgb_k = product[1]  # Amount of features to return by XGB
-    # removal_factor = product[3]  # How many negative samples we remove from the training set.
-    # weight = product[4]
     threshold = params['threshold_vals']  # Minimum appearance for feature to be included
     n_neighbors = params['kNN_vals']  # Neighbors amount for kNN
     xgb_k = params['XGB_vals']  # Amount of features to return by XGB
@@ -96,8 +99,8 @@ def main(params):
         model = XGBClassifier(use_label_encoder=False)
         model.fit(np.asarray(X_train), y_train)
         top_K_xgb = utils.get_top_K_features_xgb(labels_vector, model.feature_importances_.tolist(), k=xgb_k)
-        X_train = utils.create_vector_of_important_features(X_train, top_K_xgb)
-        X_test = utils.create_vector_of_important_features(X_test, top_K_xgb)
+        # X_train = utils.create_vector_of_important_features(X_train, top_K_xgb)
+        # X_test = utils.create_vector_of_important_features(X_test, top_K_xgb)
 
         ### Class balancing ###
         # over_balancer = BorderlineSMOTE()
@@ -133,31 +136,8 @@ def main(params):
                          "AUPR_AVG": np.average([i[0] for i in aupr_vals]),
                          "AUROC_STD": np.std([i[0] for i in auroc_vals]),
                          "AUPR_STD": np.std([i[0] for i in aupr_vals])}, msg="Run results:")
-    utils.log_dict(msg="Running time: " + str(time.time() - start_time))
-    # return np.average([i[0] for i in auroc_vals]) + np.average([i[0] for i in aupr_vals]), counter - 1
     return -1.0 * np.average([i[0] for i in auroc_vals])
 
 
 if __name__ == "__main__":
-    # threshold_vals = []
-    # kNN_vals = []
-    # XGB_vals = []
-    # removal_vals = []
-    # weights = [list(a) for a in list(itertools.product(range(1, 3), range(12, 15), range(1, 3)))]
-    # for i in range(3, 9):
-    #     XGB_vals.append(40 + (i * 2))
-    # for i in range(7, 15):
-    #     kNN_vals.append(i)
-    # for i in range(1, 3):
-    #     removal_vals.append(5 / (10 + i))
-    # for i in range(0, 10):
-    #     threshold_vals.append(0.1 * i)
-    # main([0.2], [8], [48], [0.0], [[2, 13, 1]])
-    space = {
-        'threshold_vals': hp.uniform('thershold_val',0.1,1),
-        'kNN_vals': hp.choice('kNN_vals',range(1,11)),
-        'XGB_vals': hp.choice('XGB_vals',range(30,62,2)),
-    }
-    trials = Trials()
-    best = fmin(fn=main,space=space,algo=tpe.suggest,max_evals=10,trials=trials)
-    print(best)
+    main()
