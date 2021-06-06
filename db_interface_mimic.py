@@ -182,7 +182,7 @@ class DbMimic:
 
     def get_distinct_boolean_features(self) -> list:
         """
-        Returns a list with all distinct labels
+        Returns a list with all distinct boolean features names
         :return: labels list
         """
         return list({key for key in self.boolean_features['category']})

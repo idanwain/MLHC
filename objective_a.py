@@ -61,7 +61,7 @@ def main(threshold_vals, kNN_vals, XGB_vals, removal_vals):
                 if str(patient.hadm_id) in (folds[fold]):
                     folds_indices.append(fold)
 
-        labels_vector = patient_list[0].create_labels_vector()
+        labels_vector = utils.create_labels_vector(db, removed_features)
         for patient in patient_list:
             vector = patient.create_vector_for_patient()
             data.append(vector)
@@ -87,10 +87,8 @@ def main(threshold_vals, kNN_vals, XGB_vals, removal_vals):
             clf_forest.fit(X_train, y_train)
 
             ### Performance assement ##
-            roc_val, ns_fpr, ns_tpr, lr_fpr, lr_tpr = utils.calc_metrics_roc(clf_forest, X_test, y_test,
-                                                                             display_plots=True)
-            pr_val, no_skill, lr_recall, lr_precision = utils.calc_metrics_pr(clf_forest, X_test, y_test,
-                                                                              display_plots=True)
+            roc_val, ns_fpr, ns_tpr, lr_fpr, lr_tpr = utils.calc_metrics_roc(clf_forest, X_test, y_test)
+            pr_val, no_skill, lr_recall, lr_precision = utils.calc_metrics_pr(clf_forest, X_test, y_test)
             auroc_vals.append([roc_val, ns_fpr, ns_tpr, lr_fpr, lr_tpr])
             aupr_vals.append([pr_val, no_skill, lr_recall, lr_precision])
 

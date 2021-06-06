@@ -3,7 +3,7 @@ from matplotlib import pyplot
 from sklearn import metrics
 import logging
 from sklearn.metrics import roc_auc_score, roc_curve, precision_recall_curve, f1_score, auc
-
+import one_hot_encoding
 
 def get_features_for_removal(threshold: float, patient_list: list, db):
     """
@@ -60,9 +60,9 @@ def get_top_K_features_xgb(labels_vector, feature_importance: list, k=50):
     #     indices.append(index)
     #     list_cpy.pop(index)
     # Print list of features, can be removed
-    # print("Top %s features according to XGB:" % k)
-    # for i in indices:
-    #     print("Feature: %s, Importance: %s" % ("I am stupid", feature_importance[i]))
+    print("Top %s features according to XGB:" % k)
+    for i in indices:
+        print("Feature: %s, Importance: %s" % (labels_vector[i], feature_importance[i]))
     return indices
 
 
@@ -84,48 +84,6 @@ def create_vector_of_important_features(data, features: list):
     return new_training_data
 
 
-def split_data(data, labels, ratio):
-    """
-    Splits the data into Traning data and test data. Same for the labels.
-    The split is currently done hard coded and set to 70% of the data.
-
-    :param data: Array of vectors
-    :param labels: Binary vector
-    :return: X_train,y_train,X_test,y_test - traning and test data and labels.
-    """
-
-    # Doing this so i can randomize the data without losing relation to labels
-    joined_data = []
-    X_train = []
-    y_train = []
-    X_test = []
-    y_test = []
-    pos = []
-    neg = []
-    data_len = len(data)
-    for i in range(data_len):
-        joined_data.append((data[i], labels[i]))
-    np.random.shuffle(joined_data)
-    for vector in joined_data:
-        if (vector[1] == 0):
-            neg.append(vector)
-        else:
-            pos.append(vector)
-    pos_split_index = int(len(pos) * 0.7)
-    neg_split_index = int((len(neg) * 0.7) / ratio)
-    train = neg[:neg_split_index] + pos[:pos_split_index]
-    test = neg[neg_split_index:] + pos[pos_split_index:]
-    # train = joined_data[:int(len(joined_data)*0.7)]
-    # test = joined_data[int(len(joined_data)*0.7):]
-    for vector in train:
-        X_train.append(list(vector[0]))
-        y_train.append(vector[1])
-    for vector in test:
-        X_test.append(list(vector[0]))
-        y_test.append(vector[1])
-    return X_train, y_train, X_test, y_test
-
-
 def split_data_by_folds(data, labels, folds, test_fold, removal_factor=0):
     x_train = []
     y_train = []
@@ -142,9 +100,8 @@ def split_data_by_folds(data, labels, folds, test_fold, removal_factor=0):
         else:
             x_train.append(data[i])
             y_train.append(labels[i])
-    x_train_len = len(x_train)
-    # print("Y len: %s. X len: %s" %(len(y_train),X_train_len))
-    for i in range(x_train_len):
+    X_train_len = len(X_train)
+    for i in range(X_train_len):
         if y_train[i] == 0:
             indices_for_removal.append(i)
             counter += 1
@@ -167,23 +124,11 @@ def split_data_by_folds(data, labels, folds, test_fold, removal_factor=0):
             tot_zero += 1
         else:
             tot_one += 1
-    # print("Ratio: %s"%(tot_zero/tot_one))
-    # print("Y len: %s. X len: %s" %(len(y_train),len(X_train)))
-    return x_train, y_train, x_test, y_test
+    return X_train, y_train, X_test, y_test
 
 
-def calc_error(clf, X_test, y_test):
-    tot = 0
-    for i in range(len(X_test)):
-        val = clf.predict([X_test[i]])
-        if (val != y_test[i]):
-            tot += 1
-    print(1 - (tot / len(X_test)))
-    return (1 - (tot / len(X_test)))
-
-
-def calc_metrics_roc(clf, x_test, y_test):
-    y_score = clf.predict_proba(x_test)
+def calc_metrics_roc(clf, X_test, y_test, display_plots=False):
+    y_score = clf.predict_proba(X_test)
     y_score = y_score[:, 1]
     ns_probs = [0 for _ in range(len(y_test))]
     fpr, tpr, _ = metrics.roc_curve(y_test, y_score)
@@ -245,8 +190,8 @@ def plot_graphs(auroc_vals, aupr_vals, counter, objective: str):
         pyplot.legend()
 
     avg_auc_str = str(np.average([i[0] for i in auroc_vals]))[2:]
-    pyplot.savefig(f"C:/tools/objective_{objective}/{counter}_auc_{avg_auc_str}.png")
-    # pyplot.savefig(f"/Users/user/Documents/University/Workshop/graphs for milestone 2/{objective}_{counter}_auc_{avg_auc_str}.png")
+    # pyplot.savefig(f"C:/tools/objective_{objective}/{counter}_auc_{avg_auc_str}.png")
+    pyplot.savefig(f"/Users/user/Documents/University/Workshop/graphs for milestone 2/{objective}_{counter}_auc_{avg_auc_str}.png")
     pyplot.close()
 
     for (pr_val, no_skill, lr_recall, lr_precision) in aupr_vals:
@@ -258,30 +203,23 @@ def plot_graphs(auroc_vals, aupr_vals, counter, objective: str):
         pyplot.legend()
         # show the plot
     avg_aupr_str = str(np.average([i[0] for i in aupr_vals]))[2:]
-    pyplot.savefig(f"C:/tools/objective_{objective}/{counter}_aupr_{avg_aupr_str}.png")
-    # pyplot.savefig(f"/Users/user/Documents/University/Workshop/graphs for milestone 2/{objective}_{counter}_aupr_{avg_aupr_str}.png")
+    # pyplot.savefig(f"C:/tools/objective_{objective}/{counter}_aupr_{avg_aupr_str}.png")
+    pyplot.savefig(f"/Users/user/Documents/University/Workshop/graphs for milestone 2/{objective}_{counter}_aupr_{avg_aupr_str}.png")
     pyplot.close()
 
 
-def plot_hyperparameter(data: dict, label=""):
-    x_axis_data = data.keys()
-    y_axis_data = []
-    for value in data:
-        y_axis_data.append(np.average(data[value]))
-    pyplot.plot(x_axis_data, y_axis_data, label=label + " Average")
-    pyplot.show()
-
-    y_axis_data = []
-    for value in data:
-        y_axis_data.append(np.std(data[value]))
-    pyplot.plot(x_axis_data, y_axis_data, label=label + " STD")
-    pyplot.show()
-
-
-def create_labels_vector(features, boolean_features):
+def create_labels_vector(db,removed_features):
     ret_vecotr = []
-    for label in features:
+    for label in set(db.get_labels()) - set(removed_features):
         ret_vecotr.extend([label + "_avg", label + "_max", label + "_min", label + "_latest", label + "_amount"])
+    boolean_features = db.get_distinct_boolean_features()
+    boolean_features.sort()
     ret_vecotr.extend(boolean_features)
-    ret_vecotr.extend(['gender', 'insurance', 'ethnicity', 'transfers', 'symptoms'])
+    ret_vecotr += create_labels_for_categorical_features()
     return ret_vecotr
+
+
+
+def create_labels_for_categorical_features():
+    return [*one_hot_encoding.GENDER_ENCODING.keys()] + [*one_hot_encoding.INSURANCE_ENCODING.keys()] + \
+           [*one_hot_encoding.ETHNICITY_ENCODING.keys()] + ['transfers', 'symptoms']
