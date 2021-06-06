@@ -1,8 +1,11 @@
 import copy
 import itertools
 import random
-from sklearn.ensemble import RandomForestClassifier
+from sklearn.ensemble import RandomForestClassifier, VotingClassifier
 from sklearn.impute import KNNImputer
+from sklearn.model_selection import GridSearchCV
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.tree import DecisionTreeClassifier
 from xgboost import XGBClassifier
 import utils
 from db_interface_eicu import DbEicu
@@ -72,15 +75,30 @@ def feature_selection(data_mimic, data_eicu, targets_mimic, labels, xgb_k=50):
     return data_mimic, data_eicu
 
 
+def build_grid_model():
+    clf1 = DecisionTreeClassifier()
+    clf2 = RandomForestClassifier()
+    clf3 = KNeighborsClassifier()
+    clf = VotingClassifier(estimators=[('dt', clf1), ('rf', clf2), ('knn', clf3)], voting='soft', weights=[1, 13, 2])
+    params = {
+        'rf__n_estimators': [20, 200],
+        'rf__random_state': [0, 5],
+        'dt__random_state': [0, 5],
+        'dt__max_depth': [5, 20],
+        'knn__n_neighbors': [7, 12],
+        'knn__leaf_size': [22, 80]
+    }
+    return GridSearchCV(estimator=clf, param_grid=params)
+
 def train_model(clf_forest, data_mimic, targets_mimic):
-    clf_forest.fit(data_mimic, targets_mimic)
+    return clf_forest.fit(data_mimic, targets_mimic)
 
 
 def model_assesment(clf_forest, data_eicu, targets_eicu, counter):
     auroc_vals = []
     aupr_vals = []
-    roc_val, ns_fpr, ns_tpr, lr_fpr, lr_tpr = utils.calc_metrics_roc(clf_forest, data_eicu, targets_eicu, display_plots=True)
-    pr_val, no_skill, lr_recall, lr_precision = utils.calc_metrics_pr(clf_forest, data_eicu, targets_eicu, display_plots=True)
+    roc_val, ns_fpr, ns_tpr, lr_fpr, lr_tpr = utils.calc_metrics_roc(clf_forest, data_eicu, targets_eicu)
+    pr_val, no_skill, lr_recall, lr_precision = utils.calc_metrics_pr(clf_forest, data_eicu, targets_eicu)
     auroc_vals.append([roc_val, ns_fpr, ns_tpr, lr_fpr, lr_tpr])
     aupr_vals.append([pr_val, no_skill, lr_recall, lr_precision])
 
@@ -104,7 +122,6 @@ if __name__ == "__main__":
     folds_path = 'C:/tools/feature_mimic_cohort_model_a.csv' if user == 'idan' \
         else '/Users/user/Documents/University/Workshop/feature_mimic_cohort_model_a.csv'
 
-
     db_mimic = DbMimic(boolean_features_path=boolean_features_path,
                        extra_features_path=extra_features_path,
                        data_path=data_path_mimic,
@@ -116,9 +133,9 @@ if __name__ == "__main__":
 
     import numpy as np
     t_vals = np.arange(0.0, 0.6, 0.1)
-    knn_vals = range(1, 10)
-    xgb_vals = range(50, 100, 5)
-    non_vals = range(400, 1500, 100)
+    knn_vals = range(8, 10)
+    xgb_vals = range(48, 60, 2)
+    non_vals = range(400, 700, 50)
     for t, n, k, non in itertools.product(t_vals, knn_vals, xgb_vals, non_vals):
         utils.log_dict(
             msg=f"Configuration: threshold= {t}; n_neighbors= {n}; xgb_k= {k}; num_of_negatives= {non}")
@@ -174,8 +191,7 @@ if __name__ == "__main__":
         # print(f"MIMIC data example: {data_mimic[0]}")
         # print(f"EICU data length: {len(data_eicu)}")
         # print(f"EICU data example: {data_eicu[0]}")
-
-        clf_forest = RandomForestClassifier()
-        train_model(clf_forest, data_mimic, targets_mimic)
+        grid = build_grid_model()
+        clf_forest = train_model(grid, data_mimic, targets_mimic)
         model_assesment(clf_forest, data_eicu, targets_eicu, counter)
         counter += 1

@@ -39,9 +39,8 @@ def remove_features_by_threshold(threshold: float, patient_list: list, db):
     """
     features_to_be_removed = get_features_for_removal(threshold, patient_list, db)
     for patient in patient_list:
-        for feature in patient.events.copy():
-            if feature in features_to_be_removed:
-                del patient.events[feature]
+        for feature in features_to_be_removed:
+            del patient.events[feature]
     return patient_list, features_to_be_removed
 
 
@@ -128,49 +127,49 @@ def split_data(data, labels, ratio):
 
 
 def split_data_by_folds(data, labels, folds, test_fold, removal_factor=0):
-    X_train = []
+    x_train = []
     y_train = []
-    X_test = []
+    x_test = []
     y_test = []
     indices_for_removal = []
     counter = 0
     data_len = len(data)
     for i in range(data_len):
         curr_fold = folds[i]
-        if (curr_fold == test_fold):
-            X_test.append(data[i])
+        if curr_fold == test_fold:
+            x_test.append(data[i])
             y_test.append(labels[i])
         else:
-            X_train.append(data[i])
+            x_train.append(data[i])
             y_train.append(labels[i])
-    X_train_len = len(X_train)
+    x_train_len = len(x_train)
     # print("Y len: %s. X len: %s" %(len(y_train),X_train_len))
-    for i in range(X_train_len):
+    for i in range(x_train_len):
         if y_train[i] == 0:
             indices_for_removal.append(i)
             counter += 1
-        if counter >= int(X_train_len * removal_factor):
-            break;
+        if counter >= int(x_train_len * removal_factor):
+            break
 
-    X_train_removed = []
+    x_train_removed = []
     y_train_removed = []
-    for i in range(X_train_len):
+    for i in range(x_train_len):
         if i not in indices_for_removal:
-            X_train_removed.append(X_train[i])
+            x_train_removed.append(x_train[i])
             y_train_removed.append(y_train[i])
 
-    X_train = X_train_removed
+    x_train = x_train_removed
     y_train = y_train_removed
     tot_zero = 0
     tot_one = 1
     for i in range(len(y_train)):
-        if (y_train[i] == 0):
+        if y_train[i] == 0:
             tot_zero += 1
         else:
             tot_one += 1
     # print("Ratio: %s"%(tot_zero/tot_one))
     # print("Y len: %s. X len: %s" %(len(y_train),len(X_train)))
-    return X_train, y_train, X_test, y_test
+    return x_train, y_train, x_test, y_test
 
 
 def calc_error(clf, X_test, y_test):
@@ -183,8 +182,8 @@ def calc_error(clf, X_test, y_test):
     return (1 - (tot / len(X_test)))
 
 
-def calc_metrics_roc(clf, X_test, y_test, display_plots=False):
-    y_score = clf.predict_proba(X_test)
+def calc_metrics_roc(clf, x_test, y_test):
+    y_score = clf.predict_proba(x_test)
     y_score = y_score[:, 1]
     ns_probs = [0 for _ in range(len(y_test))]
     fpr, tpr, _ = metrics.roc_curve(y_test, y_score)
@@ -195,12 +194,12 @@ def calc_metrics_roc(clf, X_test, y_test, display_plots=False):
     return lr_auc, ns_fpr, ns_tpr, lr_fpr, lr_tpr
 
 
-def calc_metrics_pr(clf, X_test, y_test, display_plots=False):
-    y_score = clf.predict_proba(X_test)
+def calc_metrics_pr(clf, x_test, y_test):
+    y_score = clf.predict_proba(x_test)
     y_score = y_score[:, 1]
-    yhat = clf.predict(X_test)
+    y_hat = clf.predict(x_test)
     lr_precision, lr_recall, _ = precision_recall_curve(y_test, y_score)
-    lr_f1, lr_auc = f1_score(y_test, yhat), auc(lr_recall, lr_precision)
+    lr_f1, lr_auc = f1_score(y_test, y_hat), auc(lr_recall, lr_precision)
     positives = len(list(filter(lambda x: x == 1, y_test)))
     no_skill = positives / len(y_test)
 
