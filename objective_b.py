@@ -8,7 +8,7 @@ from sklearn.svm import SVC
 from sklearn.tree import DecisionTreeClassifier
 from scipy import stats
 from sklearn.impute import KNNImputer
-from hyperopt import hp, tpe, fmin, Trials
+from hyperopt import hp, tpe, fmin, Trials, STATUS_OK
 from sklearn.ensemble import RandomForestClassifier, AdaBoostClassifier, VotingClassifier, ExtraTreesClassifier
 import numpy as np
 from xgboost import XGBClassifier
@@ -131,12 +131,16 @@ def objective(params,patient_list_base,db,folds):
     # utils.plot_graphs(auroc_vals, aupr_vals, counter, 'b')
 
     counter += 1
-
-    utils.log_dict(vals={"AUROC_AVG": np.average([i[0] for i in auroc_vals]),
+    results = {"AUROC_AVG": np.average([i[0] for i in auroc_vals]),
                          "AUPR_AVG": np.average([i[0] for i in aupr_vals]),
                          "AUROC_STD": np.std([i[0] for i in auroc_vals]),
-                         "AUPR_STD": np.std([i[0] for i in aupr_vals])}, msg="Run results:")
-    return -1.0 * np.average([i[0] for i in auroc_vals])
+                         "AUPR_STD": np.std([i[0] for i in aupr_vals])}
+    utils.log_dict(vals=results, msg="Run results:")
+    return {
+        'loss': -1.0 * np.average([i[0] for i in auroc_vals]),
+        'status': STATUS_OK,
+        'metadata': results
+    }
 
 
 if __name__ == "__main__":

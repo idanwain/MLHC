@@ -61,7 +61,7 @@ class PatientMimic:
         }
         number_of_samples = len(self.events[label])
         if number_of_samples == 0:
-            return [np.nan] * 4 + [0]
+            return [np.nan] * 4 + [0] + [np.nan]
         for feature in self.events[label]:
             raw_data.append(feature.value)
             if feature.value > max_val:
@@ -71,7 +71,7 @@ class PatientMimic:
             if feature.time > latest_sample["Date"]:
                 latest_sample["Date"] = feature.time
                 latest_sample["Value"] = feature.value
-        return [np.average(raw_data), max_val, min_val, latest_sample["Value"], number_of_samples]
+        return [np.average(raw_data), max_val, min_val, latest_sample["Value"], number_of_samples,np.std(raw_data)]
 
     def create_vector_for_boolean_features(self):
         return [self.boolean_features[key] for key in sorted(self.boolean_features)]

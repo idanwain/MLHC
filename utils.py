@@ -60,10 +60,9 @@ def get_top_K_features_xgb(labels_vector, feature_importance: list, k=50):
     #     index = np.argmax(list_cpy)
     #     indices.append(index)
     #     list_cpy.pop(index)
-    # Print list of features, can be removed
-    print("Top %s features according to XGB:" % k)
-    for i in indices:
-        print("Feature: %s, Importance: %s" % (labels_vector[i], feature_importance[i]))
+    # print("Top %s features according to XGB:" % k)
+    # for i in indices:
+    #     print("Feature: %s, Importance: %s" % (labels_vector[i], feature_importance[i]))
     return indices
 
 
@@ -212,7 +211,7 @@ def plot_graphs(auroc_vals, aupr_vals, counter, objective: str):
 def create_labels_vector(db,removed_features):
     ret_vecotr = []
     for label in set(db.get_labels()) - set(removed_features):
-        ret_vecotr.extend([label + "_avg", label + "_max", label + "_min", label + "_latest", label + "_amount"])
+        ret_vecotr.extend([label + "_avg", label + "_max", label + "_min", label + "_latest", label + "_amount",label + "_std"])
     boolean_features = db.get_distinct_boolean_features()
     boolean_features.sort()
     ret_vecotr.extend(boolean_features)
