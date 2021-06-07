@@ -2,8 +2,10 @@ import numpy as np
 from matplotlib import pyplot
 from sklearn import metrics
 import logging
+from sklearn.calibration import CalibratedClassifierCV
 from sklearn.metrics import roc_auc_score, roc_curve, precision_recall_curve, f1_score, auc
 import one_hot_encoding
+from scipy import stats
 
 def get_features_for_removal(threshold: float, patient_list: list, db):
     """
@@ -127,8 +129,14 @@ def split_data_by_folds(data, labels, folds, test_fold, removal_factor=0):
     return X_train, y_train, X_test, y_test
 
 
-def calc_metrics_roc(clf, X_test, y_test, display_plots=False):
-    y_score = clf.predict_proba(X_test)
+def calc_metrics_roc(clf, X_test, y_test, X_train, y_train, display_plots=False):
+    try:
+        y_score = clf.predict_proba(X_test)
+    except Exception as e:
+        calibrator = CalibratedClassifierCV(clf, cv='prefit')
+        clf = calibrator.fit(X_train, y_train)
+        y_score = clf.predict_proba(X_test)
+
     y_score = y_score[:, 1]
     ns_probs = [0 for _ in range(len(y_test))]
     fpr, tpr, _ = metrics.roc_curve(y_test, y_score)
@@ -139,8 +147,13 @@ def calc_metrics_roc(clf, X_test, y_test, display_plots=False):
     return lr_auc, ns_fpr, ns_tpr, lr_fpr, lr_tpr
 
 
-def calc_metrics_pr(clf, x_test, y_test):
-    y_score = clf.predict_proba(x_test)
+def calc_metrics_pr(clf, x_test, y_test, X_train, y_train):
+    try:
+        y_score = clf.predict_proba(x_test)
+    except Exception as e:
+        calibrator = CalibratedClassifierCV(clf, cv='prefit')
+        clf = calibrator.fit(X_train, y_train)
+        y_score = clf.predict_proba(x_test)
     y_score = y_score[:, 1]
     y_hat = clf.predict(x_test)
     lr_precision, lr_recall, _ = precision_recall_curve(y_test, y_score)
@@ -223,3 +236,11 @@ def create_labels_vector(db,removed_features):
 def create_labels_for_categorical_features():
     return [*one_hot_encoding.GENDER_ENCODING.keys()] + [*one_hot_encoding.INSURANCE_ENCODING.keys()] + \
            [*one_hot_encoding.ETHNICITY_ENCODING.keys()] + ['transfers', 'symptoms']
+
+
+def normalize_data(data):
+    trans = np.array(data).transpose()
+    res = []
+    for row in trans:
+        res.append(stats.zscore(row))
+    return np.array(res).transpose()

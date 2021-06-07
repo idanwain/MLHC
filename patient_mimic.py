@@ -51,7 +51,6 @@ class PatientMimic:
         Latest sample value
         Amount of samples
         """
-        avg_val = 0
         max_val = -1
         min_val = sys.maxsize
         raw_data = []
