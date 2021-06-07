@@ -39,9 +39,8 @@ def remove_features_by_threshold(threshold: float, patient_list: list, db):
     """
     features_to_be_removed = get_features_for_removal(threshold, patient_list, db)
     for patient in patient_list:
-        for feature in patient.events.copy():
-            if feature in features_to_be_removed:
-                del patient.events[feature]
+        for feature in features_to_be_removed:
+            del patient.events[feature]
     return patient_list, features_to_be_removed
 
 
@@ -94,7 +93,7 @@ def split_data_by_folds(data, labels, folds, test_fold, removal_factor=0):
     data_len = len(data)
     for i in range(data_len):
         curr_fold = folds[i]
-        if (curr_fold == test_fold):
+        if curr_fold == test_fold:
             X_test.append(data[i])
             y_test.append(labels[i])
         else:
@@ -106,7 +105,7 @@ def split_data_by_folds(data, labels, folds, test_fold, removal_factor=0):
             indices_for_removal.append(i)
             counter += 1
         if counter >= int(X_train_len * removal_factor):
-            break;
+            break
 
     X_train_removed = []
     y_train_removed = []
@@ -120,7 +119,7 @@ def split_data_by_folds(data, labels, folds, test_fold, removal_factor=0):
     tot_zero = 0
     tot_one = 1
     for i in range(len(y_train)):
-        if (y_train[i] == 0):
+        if y_train[i] == 0:
             tot_zero += 1
         else:
             tot_one += 1
@@ -139,12 +138,12 @@ def calc_metrics_roc(clf, X_test, y_test, display_plots=False):
     return lr_auc, ns_fpr, ns_tpr, lr_fpr, lr_tpr
 
 
-def calc_metrics_pr(clf, X_test, y_test, display_plots=False):
-    y_score = clf.predict_proba(X_test)
+def calc_metrics_pr(clf, x_test, y_test):
+    y_score = clf.predict_proba(x_test)
     y_score = y_score[:, 1]
-    yhat = clf.predict(X_test)
+    y_hat = clf.predict(x_test)
     lr_precision, lr_recall, _ = precision_recall_curve(y_test, y_score)
-    lr_f1, lr_auc = f1_score(y_test, yhat), auc(lr_recall, lr_precision)
+    lr_f1, lr_auc = f1_score(y_test, y_hat), auc(lr_recall, lr_precision)
     positives = len(list(filter(lambda x: x == 1, y_test)))
     no_skill = positives / len(y_test)
 

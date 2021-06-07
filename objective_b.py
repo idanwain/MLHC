@@ -20,7 +20,7 @@ from imblearn.under_sampling import TomekLinks, ClusterCentroids
 from imblearn.over_sampling import *
 from imblearn.combine import SMOTETomek
 
-user = 'roye'
+user = 'idan'
 boolean_features_path = 'C:/tools/boolean_features_mimic_model_b.csv' if user == 'idan' \
     else '/Users/user/Documents/University/Workshop/boolean_features_mimic_model_b.csv'
 extra_features_path = 'C:/tools/extra_features_model_b.csv' if user == 'idan' \
