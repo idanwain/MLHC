@@ -153,10 +153,14 @@ def objective(params,patient_list_base,db,folds):
         #     'knn__leaf_size': [15, 40]
         # }
         # grid = GridSearchCV(estimator=clf, param_grid=params)
-        estim.fit(np.array(X_train), np.array(y_train))
+        X_train = np.array(X_train)
+        y_train = np.array(y_train)
+        X_test = np.array(X_test)
+        y_test = np.array(y_test)
+        estim.fit(X_train, y_train)
         print(estim.best_model())
         clf = eval(str(estim.best_model()['learner']))
-        clf = clf.fit(np.array(X_train), np.array(y_train))
+        clf = clf.fit(X_train, y_train)
 
         ### Performance assement ##
         roc_val, ns_fpr, ns_tpr, lr_fpr, lr_tpr = utils.calc_metrics_roc(clf, X_test, y_test, X_train, y_train)
