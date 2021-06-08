@@ -54,7 +54,7 @@ def main():
     }
     objective_func = partial(objective,patient_list_base=patient_list_base,db=db,folds=folds)
     trials = Trials()
-    best = fmin(fn=objective_func, space=space, algo=tpe.suggest, max_evals=200, trials=trials, return_argmin=False)
+    best = fmin(fn=objective_func, space=space, algo=tpe.suggest, max_evals=100, trials=trials, return_argmin=False)
     print(best)
 
 
@@ -128,7 +128,7 @@ def objective(params,patient_list_base,db,folds):
         # clf3 = DecisionTreeClassifier()
         estim = HyperoptEstimator(classifier=any_classifier('my_clf'),
                                   algo=tpe.suggest,
-                                  max_evals=10,
+                                  max_evals=20,
                                   trial_timeout=120)
         # clf2 = HyperoptEstimator(classifier=any_classifier('my_clf'),
         #                          preprocessing=any_preprocessing('my_pre'),
@@ -157,14 +157,21 @@ def objective(params,patient_list_base,db,folds):
         y_train = np.array(y_train)
         X_test = np.array(X_test)
         y_test = np.array(y_test)
-        estim.fit(X_train, y_train)
-        print(estim.best_model())
-        clf = eval(str(estim.best_model()['learner']))
-        clf = clf.fit(X_train, y_train)
 
-        ### Performance assement ##
-        roc_val, ns_fpr, ns_tpr, lr_fpr, lr_tpr = utils.calc_metrics_roc(clf, X_test, y_test, X_train, y_train)
-        pr_val, no_skill, lr_recall, lr_precision = utils.calc_metrics_pr(clf, X_test, y_test, X_train, y_train)
+        try:
+            estim.fit(X_train, y_train)
+            print(estim.best_model())
+            clf = eval(str(estim.best_model()['learner']))
+            clf = clf.fit(X_train, y_train)
+
+            ### Performance assement ##
+            roc_val, ns_fpr, ns_tpr, lr_fpr, lr_tpr = utils.calc_metrics_roc(clf, X_test, y_test, X_train, y_train)
+            pr_val, no_skill, lr_recall, lr_precision = utils.calc_metrics_pr(clf, X_test, y_test, X_train, y_train)
+        except Exception as e:
+            auroc_vals = []
+            aupr_vals = []
+            break
+
         auroc_vals.append([roc_val, ns_fpr, ns_tpr, lr_fpr, lr_tpr])
         aupr_vals.append([pr_val, no_skill, lr_recall, lr_precision])
 

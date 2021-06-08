@@ -223,7 +223,7 @@ def plot_graphs(auroc_vals, aupr_vals, counter, objective: str):
 def create_labels_vector(db,removed_features):
     ret_vecotr = []
     for label in set(db.get_labels()) - set(removed_features):
-        ret_vecotr.extend([label + "_avg", label + "_max", label + "_min", label + "_latest", label + "_amount",label + "_std"])
+        ret_vecotr.extend([label + "_avg", label + "_max", label + "_min", label + "_latest", label + "_amount",label + "_std", label + "_last_5_avg"])
     boolean_features = db.get_distinct_boolean_features()
     boolean_features.sort()
     ret_vecotr.extend(boolean_features)
