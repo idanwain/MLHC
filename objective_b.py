@@ -1,5 +1,7 @@
 import itertools
 from collections import Counter
+from threading import Thread
+
 from sklearn.linear_model import LogisticRegression
 from sklearn.model_selection import GridSearchCV
 from sklearn.multiclass import OneVsRestClassifier
@@ -35,6 +37,66 @@ folds_path = 'C:/tools/folds_mimic_model_b.csv' if user == 'idan' \
     else '/Users/user/Documents/University/Workshop/folds_mimic_model_b.csv'
 
 
+def run_fold(index, auroc_vals, aupr_vals, data, targets, folds_indices, test_fold):
+    ### Data split ###
+    X_train, y_train, X_test, y_test = utils.split_data_by_folds(data, targets, folds_indices, test_fold)
+
+    ### Feature selection ###
+    # model = XGBClassifier(use_label_encoder=False)
+    # model.fit(np.asarray(X_train), y_train)
+    # top_K_xgb = utils.get_top_K_features_xgb(labels_vector, model.feature_importances_.tolist(), k=xgb_k)
+    # X_train = utils.create_vector_of_important_features(X_train, top_K_xgb)
+    # X_test = utils.create_vector_of_important_features(X_test, top_K_xgb)
+
+    ### Class balancing ###
+    # over_balancer = BorderlineSMOTE()
+    # X_train, y_train = over_balancer.fit_resample(X_train, y_train)
+    under_balancer = TomekLinks()
+    X_train, y_train = under_balancer.fit_resample(X_train, y_train)
+
+    ### Model fitting ###
+    # clf1 = RandomForestClassifier()
+    # clf2 = KNeighborsClassifier()
+    # clf3 = DecisionTreeClassifier()
+    estim = HyperoptEstimator(classifier=any_classifier('my_clf'),
+                              algo=tpe.suggest,
+                              max_evals=10,
+                              trial_timeout=120)
+
+    # clf = VotingClassifier(estimators=[('clf1', clf1)], voting='soft') # , weights=weight
+    # clf = VotingClassifier(estimators=[('clf1', clf1), ('clf2', clf2), ('clf3', clf3)], voting='soft', weights=weight)
+    # params = {
+    #     'rf__n_estimators': [50, 175],
+    #     # 'rf__max_depth': [5, 100],
+    #     'rf__random_state': [0, 3],
+    #     # 'dt__random_state': [0, 5],
+    #     # 'dt__max_depth': [5, 20],
+    #     'knn__n_neighbors': [1, 20],
+    #     'knn__leaf_size': [15, 40]
+    # }
+    # grid = GridSearchCV(estimator=clf, param_grid=params)
+    X_train = np.array(X_train)
+    y_train = np.array(y_train)
+    X_test = np.array(X_test)
+    y_test = np.array(y_test)
+
+    try:
+        estim.fit(X_train, y_train)
+        print(estim.best_model())
+        clf = eval(str(estim.best_model()['learner']))
+        clf = clf.fit(X_train, y_train)
+
+        ### Performance assement ##
+        roc_val, ns_fpr, ns_tpr, lr_fpr, lr_tpr = utils.calc_metrics_roc(clf, X_test, y_test, X_train, y_train)
+        pr_val, no_skill, lr_recall, lr_precision = utils.calc_metrics_pr(clf, X_test, y_test, X_train, y_train)
+        auroc_vals[index] = [roc_val, ns_fpr, ns_tpr, lr_fpr, lr_tpr]
+        aupr_vals[index] = [pr_val, no_skill, lr_recall, lr_precision]
+
+    except Exception as e:
+        auroc_vals[index] = None
+        aupr_vals[index] = None
+
+
 def main():
     db = DbMimic(boolean_features_path,
                  extra_features_path,
@@ -52,20 +114,20 @@ def main():
         # 'clf3_weight_vals': hp.choice('clf3_weight_vals', range(1, 30))
         # 'removal_factor_vals': hp.uniform('removal_factor_vals', 0, 0.2)
     }
-    objective_func = partial(objective,patient_list_base=patient_list_base,db=db,folds=folds)
+    objective_func = partial(objective, patient_list_base=patient_list_base, db=db, folds=folds)
     trials = Trials()
-    best = fmin(fn=objective_func, space=space, algo=tpe.suggest, max_evals=100, trials=trials, return_argmin=False)
+    best = fmin(fn=objective_func, space=space, algo=tpe.suggest, max_evals=50, trials=trials, return_argmin=False)
     print(best)
 
 
-def objective(params,patient_list_base,db,folds):
+def objective(params, patient_list_base, db, folds):
     global counter
     counter = 0
     data = []
     targets = []
     folds_indices = []
-    auroc_vals = []
-    aupr_vals = []
+    auroc_vals = [None] * 5
+    aupr_vals = [None] * 5
     patient_list = copy.deepcopy(patient_list_base)
 
     ### Hyperparameters ###
@@ -94,90 +156,41 @@ def objective(params,patient_list_base,db,folds):
             if str(patient.hadm_id) in (folds[fold]):
                 folds_indices.append(fold)
 
-    labels_vector = utils.create_labels_vector(db, removed_features)
+    # labels_vector = utils.create_labels_vector(db, removed_features)
     for patient in patient_list:
         vector = patient.create_vector_for_patient()
         data.append(vector)
 
+    ### Normalize data ###
     data = utils.normalize_data(data)
 
     ### Data imputation ###
     imputer = KNNImputer(n_neighbors=n_neighbors, weights="uniform")
     data = (imputer.fit_transform(data))
 
-    for test_fold in folds:
-        ### Data split ###
-        X_train, y_train, X_test, y_test = utils.split_data_by_folds(data, targets, folds_indices, test_fold)
+    threads = []
+    for i, test_fold in enumerate(folds):
+        threads.append(Thread(target=run_fold, args=(i, auroc_vals, aupr_vals, data, targets, folds_indices, test_fold,)))
 
-        ### Feature selection ###
-        model = XGBClassifier(use_label_encoder=False)
-        model.fit(np.asarray(X_train), y_train)
-        # top_K_xgb = utils.get_top_K_features_xgb(labels_vector, model.feature_importances_.tolist(), k=xgb_k)
-        # X_train = utils.create_vector_of_important_features(X_train, top_K_xgb)
-        # X_test = utils.create_vector_of_important_features(X_test, top_K_xgb)
+    for t in threads:
+        t.start()
+    for t in threads:
+        t.join()
 
-        ### Class balancing ###
-        # over_balancer = BorderlineSMOTE()
-        # X_train, y_train = over_balancer.fit_resample(X_train, y_train)
-        under_balancer = TomekLinks()
-        X_train, y_train = under_balancer.fit_resample(X_train, y_train)
 
-        ### Model fitting ###
-        # clf1 = RandomForestClassifier()
-        # clf2 = KNeighborsClassifier()
-        # clf3 = DecisionTreeClassifier()
-        estim = HyperoptEstimator(classifier=any_classifier('my_clf'),
-                                  algo=tpe.suggest,
-                                  max_evals=20,
-                                  trial_timeout=120)
-        # clf2 = HyperoptEstimator(classifier=any_classifier('my_clf'),
-        #                          preprocessing=any_preprocessing('my_pre'),
-        #                          algo=tpe.suggest,
-        #                          max_evals=100,
-        #                          trial_timeout=120)
-        # clf3 = HyperoptEstimator(classifier=any_classifier('my_clf'),
-        #                          preprocessing=any_preprocessing('my_pre'),
-        #                          algo=tpe.suggest,
-        #                          max_evals=100,
-        #                          trial_timeout=120)
-
-        # clf = VotingClassifier(estimators=[('clf1', clf1)], voting='soft') # , weights=weight
-        # clf = VotingClassifier(estimators=[('clf1', clf1), ('clf2', clf2), ('clf3', clf3)], voting='soft', weights=weight)
-        # params = {
-        #     'rf__n_estimators': [50, 175],
-        #     # 'rf__max_depth': [5, 100],
-        #     'rf__random_state': [0, 3],
-        #     # 'dt__random_state': [0, 5],
-        #     # 'dt__max_depth': [5, 20],
-        #     'knn__n_neighbors': [1, 20],
-        #     'knn__leaf_size': [15, 40]
-        # }
-        # grid = GridSearchCV(estimator=clf, param_grid=params)
-        X_train = np.array(X_train)
-        y_train = np.array(y_train)
-        X_test = np.array(X_test)
-        y_test = np.array(y_test)
-
-        try:
-            estim.fit(X_train, y_train)
-            print(estim.best_model())
-            clf = eval(str(estim.best_model()['learner']))
-            clf = clf.fit(X_train, y_train)
-
-            ### Performance assement ##
-            roc_val, ns_fpr, ns_tpr, lr_fpr, lr_tpr = utils.calc_metrics_roc(clf, X_test, y_test, X_train, y_train)
-            pr_val, no_skill, lr_recall, lr_precision = utils.calc_metrics_pr(clf, X_test, y_test, X_train, y_train)
-        except Exception as e:
-            auroc_vals = []
-            aupr_vals = []
-            break
-
-        auroc_vals.append([roc_val, ns_fpr, ns_tpr, lr_fpr, lr_tpr])
-        aupr_vals.append([pr_val, no_skill, lr_recall, lr_precision])
+    # auroc_vals.append([roc_val, ns_fpr, ns_tpr, lr_fpr, lr_tpr])
+    # aupr_vals.append([pr_val, no_skill, lr_recall, lr_precision])
 
     # utils.plot_graphs(auroc_vals, aupr_vals, counter, 'b')
 
     counter += 1
+
+    if None in auroc_vals or None in aupr_vals:
+        return {
+            'loss': 0,
+            'status': STATUS_OK,
+        }
+
     results = {"AUROC_AVG": np.average([i[0] for i in auroc_vals]),
                          "AUPR_AVG": np.average([i[0] for i in aupr_vals]),
                          "AUROC_STD": np.std([i[0] for i in auroc_vals]),
