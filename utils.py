@@ -67,7 +67,7 @@ def get_top_K_features_xgb(labels_vector, feature_importance: list, k=50):
     return indices
 
 
-def create_vector_of_important_features(data, features: list):
+def create_vector_of_important_features(data, features):
     """
     Given the top K important features, remove unimportant features.
     :param features:

@@ -10,8 +10,26 @@ from xgboost import XGBClassifier
 import utils
 from db_interface_eicu import DbEicu
 from db_interface_mimic import DbMimic
+from hyperopt import hp, tpe, fmin, Trials, STATUS_OK
+from functools import partial
+from imblearn.under_sampling import TomekLinks, ClusterCentroids
+from hpsklearn import HyperoptEstimator, svc, any_classifier, any_preprocessing
+import numpy as np
 
+
+user = 'idan'
+data_path_eicu = 'C:/tools/feature_eicu_cohort.csv' if user == 'idan' \
+    else '/Users/user/Documents/University/Workshop/feature_eicu_cohort.csv'
+boolean_features_path = 'C:/tools/boolean_features_mimic_model_a.csv' if user == 'idan' \
+    else '/Users/user/Documents/University/Workshop/boolean_features_mimic_model_a.csv'
+extra_features_path = 'C:/tools/extra_features_model_a.csv' if user == 'idan' \
+    else '/Users/user/Documents/University/Workshop/extra_features_model_a.csv'
+data_path_mimic = 'C:/tools/feature_mimic_cohort_model_a.csv' if user == 'idan' \
+    else '/Users/user/Documents/University/Workshop/feature_mimic_cohort_model_a.csv'
+folds_path = 'C:/tools/feature_mimic_cohort_model_a.csv' if user == 'idan' \
+    else '/Users/user/Documents/University/Workshop/feature_mimic_cohort_model_a.csv'
 counter = 1
+
 
 def intersection(lst1, lst2):
     lst3 = [value for value in lst1 if value in lst2]
@@ -45,23 +63,18 @@ def get_target_list(patient_list_mimic, patient_list_eicu):
     return targets_mimic, targets_eicu
 
 
-def fill_missing_data(labels, patient_list_mimic, patient_list_eicu, n_neighbors=10):
-    data_mimic = []
-    data_eicu = []
-
-    for patient in patient_list_mimic:
+def get_data_from_db(patient_list, labels):
+    data = []
+    for patient in patient_list:
         vector = patient.create_vector_for_patient(labels, True)
-        data_mimic.append(vector)
-    imputer = KNNImputer(n_neighbors=n_neighbors, weights="uniform")
-    data_mimic = (imputer.fit_transform(data_mimic))
+        data.append(vector)
+    return data
 
-    for patient in patient_list_eicu:
-        vector = patient.create_vector_for_patient(labels, True)
-        data_eicu.append(vector)
-    imputer = KNNImputer(n_neighbors=n_neighbors, weights="uniform")
-    data_eicu = (imputer.fit_transform(data_eicu))
 
-    return data_mimic, data_eicu
+def fill_missing_data(data, n_neighbors=10):
+    imputer = KNNImputer(n_neighbors=n_neighbors, weights="uniform")
+    data = (imputer.fit_transform(data))
+    return data
 
 
 def feature_selection(data_mimic, data_eicu, targets_mimic, labels, xgb_k=50):
@@ -75,53 +88,149 @@ def feature_selection(data_mimic, data_eicu, targets_mimic, labels, xgb_k=50):
     return data_mimic, data_eicu
 
 
-def build_grid_model():
-    clf1 = DecisionTreeClassifier()
+def build_grid_model(weight):
+    # clf1 = DecisionTreeClassifier()
     clf2 = RandomForestClassifier()
     clf3 = KNeighborsClassifier()
-    clf = VotingClassifier(estimators=[('dt', clf1), ('rf', clf2), ('knn', clf3)], voting='soft', weights=[1, 13, 2])
+    clf = VotingClassifier(estimators=[('rf', clf2), ('knn', clf3)], voting='soft', weights=weight)
     params = {
         'rf__n_estimators': [20, 200],
         'rf__random_state': [0, 5],
-        'dt__random_state': [0, 5],
-        'dt__max_depth': [5, 20],
+        # 'dt__random_state': [0, 5],
+        # 'dt__max_depth': [5, 20],
         'knn__n_neighbors': [7, 12],
         'knn__leaf_size': [22, 80]
     }
     return GridSearchCV(estimator=clf, param_grid=params)
 
+
 def train_model(clf_forest, data_mimic, targets_mimic):
     return clf_forest.fit(data_mimic, targets_mimic)
 
 
-def model_assesment(clf_forest, data_eicu, targets_eicu, counter):
+def model_assesment(clf_forest, data_eicu, targets_eicu, data_mimic, targets_mimic, counter):
     auroc_vals = []
     aupr_vals = []
-    roc_val, ns_fpr, ns_tpr, lr_fpr, lr_tpr = utils.calc_metrics_roc(clf_forest, data_eicu, targets_eicu)
-    pr_val, no_skill, lr_recall, lr_precision = utils.calc_metrics_pr(clf_forest, data_eicu, targets_eicu)
+    roc_val, ns_fpr, ns_tpr, lr_fpr, lr_tpr = utils.calc_metrics_roc(clf_forest, data_eicu, targets_eicu, data_mimic, targets_mimic)
+    pr_val, no_skill, lr_recall, lr_precision = utils.calc_metrics_pr(clf_forest, data_eicu, targets_eicu, data_mimic, targets_mimic)
     auroc_vals.append([roc_val, ns_fpr, ns_tpr, lr_fpr, lr_tpr])
     aupr_vals.append([pr_val, no_skill, lr_recall, lr_precision])
 
-    utils.plot_graphs(auroc_vals, aupr_vals, counter, 'c')
-    print("AUROC: %s" % roc_val)
-    print("AUPR: %s\n" % pr_val)
-    utils.log_dict(msg="AUROC: %s" % roc_val)
-    utils.log_dict(msg="AUPR: %s\n" % pr_val)
+    return roc_val, pr_val
 
 
-if __name__ == "__main__":
-    user = 'idan'
-    data_path_eicu = 'C:/tools/feature_eicu_cohort.csv' if user == 'idan' \
-        else '/Users/user/Documents/University/Workshop/feature_eicu_cohort.csv'
-    boolean_features_path = 'C:/tools/boolean_features_mimic_model_a.csv' if user == 'idan' \
-        else '/Users/user/Documents/University/Workshop/boolean_features_mimic_model_a.csv'
-    extra_features_path = 'C:/tools/extra_features_model_a.csv' if user == 'idan' \
-        else '/Users/user/Documents/University/Workshop/extra_features_model_a.csv'
-    data_path_mimic = 'C:/tools/feature_mimic_cohort_model_a.csv' if user == 'idan' \
-        else '/Users/user/Documents/University/Workshop/feature_mimic_cohort_model_a.csv'
-    folds_path = 'C:/tools/feature_mimic_cohort_model_a.csv' if user == 'idan' \
-        else '/Users/user/Documents/University/Workshop/feature_mimic_cohort_model_a.csv'
+def objective(params, patient_list_mimic_base, patient_list_eicu_base, db_mimic, db_eicu):
+    global counter
 
+    ### Hyperparameters ###
+    non = params['non_vals']
+    t = params['threshold_vals']
+    n = params['kNN_vals']
+    clf1_weight = params['clf1_weight']
+    clf2_weight = params['clf2_weight']
+    weight = [clf1_weight, clf2_weight]
+    k = params['XGB_vals']
+    config = {
+        "Threshold": t,
+        "kNN": n,
+        "k_XGB": k,
+        "non": non,
+        "weight": weight
+    }
+    utils.log_dict(vals=config, msg="Configuration:")
+
+    patient_list_mimic_temp = copy.deepcopy(patient_list_mimic_base)
+    random.shuffle(patient_list_mimic_temp)
+    neg_num = 0
+    patient_list_mimic = []
+    for patient in patient_list_mimic_temp:
+        if patient.target == 1:
+            patient_list_mimic.append(patient)
+        elif patient.target == 0 and neg_num < non:
+            patient_list_mimic.append(patient)
+            neg_num += 1
+
+    patient_list_eicu = copy.deepcopy(patient_list_eicu_base)
+    final_labels, patient_list_mimic, patient_list_eicu = get_intersected_features(db_mimic,
+                                                                                   db_eicu,
+                                                                                   patient_list_mimic,
+                                                                                   patient_list_eicu,
+                                                                                   threshold=t,
+                                                                                   num_of_negatives=non)
+    print(final_labels)
+
+    targets_mimic, targets_eicu = get_target_list(patient_list_mimic, patient_list_eicu)
+
+    data_mimic = get_data_from_db(patient_list_mimic, final_labels)
+    data_eicu = get_data_from_db(patient_list_eicu, final_labels)
+
+    data_mimic = utils.normalize_data(data_mimic)
+    data_eicu = utils.normalize_data(data_eicu)
+
+    data_mimic = fill_missing_data(data_mimic, n_neighbors=n)
+    data_eicu = fill_missing_data(data_eicu, n_neighbors=n)
+
+    # final_labels_essence_vector = utils.get_essence_label_vector(final_labels)
+    from sklearn.feature_selection import SelectKBest
+    # define feature selection
+    fs = SelectKBest(k=k)
+    # apply feature selection
+    data_mimic = fs.fit_transform(data_mimic, targets_mimic)
+    top_k_xgb = fs.get_support(indices=True)
+    data_eicu = utils.create_vector_of_important_features(data_eicu, top_k_xgb)
+
+    # data_mimic, data_eicu = feature_selection(data_mimic, data_eicu, targets_mimic,
+    #                                           final_labels_essence_vector, xgb_k=k)
+
+    # pearson's correlation feature selection for numeric input and numeric output
+
+    under_balancer = TomekLinks()
+    data_mimic, targets_mimic = under_balancer.fit_resample(data_mimic, targets_mimic)
+
+    # estim = HyperoptEstimator(classifier=any_classifier('my_clf'),
+    #                           algo=tpe.suggest,
+    #                           max_evals=20,
+    #                           trial_timeout=120)
+
+    # data_mimic = np.array(data_mimic)
+    # targets_mimic = np.array(targets_mimic)
+    # data_eicu = np.array(data_eicu)
+    # targets_eicu = np.array(targets_eicu)
+    #
+    # auroc_vals = []
+    # aupr_vals = []
+    # try:
+    #     estim.fit(data_mimic, targets_mimic)
+    #     print(estim.best_model())
+    #     clf = eval(str(estim.best_model()['learner']))
+    #     clf = clf.fit(data_eicu, targets_eicu)
+    #
+    #     ### Performance assement ##
+    #     roc_val, ns_fpr, ns_tpr, lr_fpr, lr_tpr = utils.calc_metrics_roc(clf, data_mimic, targets_mimic, data_eicu, targets_eicu)
+    #     pr_val, no_skill, lr_recall, lr_precision = utils.calc_metrics_pr(clf, data_mimic, targets_mimic, data_eicu, targets_eicu)
+    #     auroc_vals.append([roc_val, ns_fpr, ns_tpr, lr_fpr, lr_tpr])
+    #     aupr_vals.append([pr_val, no_skill, lr_recall, lr_precision])
+    # except Exception as e:
+    #     print('exception! aborting..')
+
+    grid = build_grid_model(weight)
+    clf_forest = train_model(grid, data_mimic, targets_mimic)
+    auroc, aupr = model_assesment(clf_forest, data_eicu, targets_eicu, data_mimic, targets_mimic, counter)
+
+    counter += 1
+    results = {
+        "AUROC_AVG": auroc,
+        "AUPR_AVG": aupr,
+    }
+    utils.log_dict(vals=results, msg="Run results:")
+    return {
+        'loss': -1.0 * (aupr + auroc),
+        'status': STATUS_OK,
+        'metadata': results
+    }
+
+def main():
+    global counter
     db_mimic = DbMimic(boolean_features_path=boolean_features_path,
                        extra_features_path=extra_features_path,
                        data_path=data_path_mimic,
@@ -131,67 +240,19 @@ if __name__ == "__main__":
     patient_list_mimic_base = db_mimic.create_patient_list()
     patient_list_eicu_base = db_eicu.create_patient_list()
 
-    import numpy as np
-    t_vals = np.arange(0.0, 0.6, 0.1)
-    knn_vals = range(8, 10)
-    xgb_vals = range(48, 60, 2)
-    non_vals = range(400, 700, 50)
-    for t, n, k, non in itertools.product(t_vals, knn_vals, xgb_vals, non_vals):
-        utils.log_dict(
-            msg=f"Configuration: threshold= {t}; n_neighbors= {n}; xgb_k= {k}; num_of_negatives= {non}")
-        print(
-            f"Configuration: threshold= {t}; n_neighbors= {n}; xgb_k= {k}; num_of_negatives= {non}")
-        patient_list_mimic_temp = copy.deepcopy(patient_list_mimic_base)
-        random.shuffle(patient_list_mimic_temp)
-        neg_num = 0
-        patient_list_mimic = []
-        for patient in patient_list_mimic_temp:
-            if patient.target == 1:
-                patient_list_mimic.append(patient)
-            elif patient.target == 0 and neg_num < non:
-                patient_list_mimic.append(patient)
-                neg_num += 1
+    space = {
+        'threshold_vals': hp.uniform('thershold_val', 0, 1),
+        'kNN_vals': hp.choice('kNN_vals', range(1, 20)),
+        'XGB_vals': hp.choice('XGB_vals', range(0, 32)),
+        'non_vals': hp.choice('non_vals', range(400, 2000)),
+        'clf1_weight': hp.choice('clf1_weight', range(1, 30)),
+        'clf2_weight': hp.choice('clf2_weight', range(1, 30))
+    }
+    objective_func = partial(objective, patient_list_mimic_base=patient_list_mimic_base, patient_list_eicu_base=patient_list_eicu_base, db_mimic=db_mimic, db_eicu=db_eicu)
+    trials = Trials()
+    best = fmin(fn=objective_func, space=space, algo=tpe.suggest, max_evals=100, trials=trials, return_argmin=False)
+    print(best)
 
-        patient_list_eicu = copy.deepcopy(patient_list_eicu_base)
-        final_labels, patient_list_mimic, patient_list_eicu = get_intersected_features(db_mimic,
-                                                                                       db_eicu,
-                                                                                       patient_list_mimic,
-                                                                                       patient_list_eicu,
-                                                                                       threshold=t,
-                                                                                       num_of_negatives=non)
-        # print(f"final_labels: {final_labels}")
-        # print(f"final_labels length: {len(final_labels)}")
-        # print(f"MIMIC patient's event list example: {patient_list_mimic[0].events}")
-        # print(f"number of MIMIC patients: {len(patient_list_mimic)}")
-        # print(f"EICU patient's event list example: {patient_list_eicu[0].events}")
-        # print(f"number of EICU patients: {len(patient_list_eicu)}")
 
-        targets_mimic, targets_eicu = get_target_list(patient_list_mimic, patient_list_eicu)
-        # print(f"targets MIMIC: {targets_mimic}")
-        # print(f"num targets MIMIC: {len(targets_mimic)}")
-        # print(f"targets EICU: {targets_eicu}")
-        # print(f"num targets EICU: {len(targets_eicu)}")
-
-        data_mimic, data_eicu = fill_missing_data(final_labels, patient_list_mimic, patient_list_eicu,
-                                                  n_neighbors=n)
-        # print("Filled missing data:")
-        # print(f"MIMIC data length: {len(data_mimic)}")
-        # print(f"MIMIC data example: {data_mimic[0]}")
-        # print(f"EICU data length: {len(data_eicu)}")
-        # print(f"EICU data example: {data_eicu[0]}")
-
-        final_labels_essence_vector = utils.get_essence_label_vector(final_labels)
-        # print(f"final_labels_essence_vector: {final_labels_essence_vector}")
-        # print(f"final_labels_essence_vector length: {len(final_labels_essence_vector)}")
-
-        data_mimic, data_eicu = feature_selection(data_mimic, data_eicu, targets_mimic,
-                                                  final_labels_essence_vector, xgb_k=k)
-        # print("feature_selection data:")
-        # print(f"MIMIC data length: {len(data_mimic)}")
-        # print(f"MIMIC data example: {data_mimic[0]}")
-        # print(f"EICU data length: {len(data_eicu)}")
-        # print(f"EICU data example: {data_eicu[0]}")
-        grid = build_grid_model()
-        clf_forest = train_model(grid, data_mimic, targets_mimic)
-        model_assesment(clf_forest, data_eicu, targets_eicu, counter)
-        counter += 1
+if __name__ == "__main__":
+    main()
