@@ -9,6 +9,7 @@ from sklearn.svm import SVC
 from sklearn.tree import DecisionTreeClassifier
 from scipy import stats
 from sklearn.impute import KNNImputer
+from sklearn.feature_selection import SelectKBest
 from hyperopt import hp, tpe, fmin, Trials, STATUS_OK
 from sklearn.linear_model import SGDClassifier
 from sklearn.ensemble import RandomForestClassifier, AdaBoostClassifier, VotingClassifier, ExtraTreesClassifier, GradientBoostingClassifier
@@ -24,7 +25,7 @@ from imblearn.combine import SMOTETomek
 from hpsklearn import HyperoptEstimator, svc, any_classifier, any_preprocessing
 from numpy import nan
 
-user = 'idan'
+user = 'roye'
 boolean_features_path = 'C:/tools/boolean_features_mimic_model_b.csv' if user == 'idan' \
     else '/Users/user/Documents/University/Workshop/boolean_features_mimic_model_b.csv'
 extra_features_path = 'C:/tools/extra_features_model_b.csv' if user == 'idan' \
@@ -46,11 +47,8 @@ def main():
     space = {
         'threshold_vals': hp.uniform('thershold_val', 0, 1),
         'kNN_vals': hp.choice('kNN_vals', range(1, 20)),
-        # 'XGB_vals': hp.choice('XGB_vals', range(30, 62)),
-        # 'clf1_weight_vals': hp.choice('clf1_weight_vals', range(1, 30)),
-        # 'clf2_weight_vals': hp.choice('clf2_weight_vals', range(1, 30)),
-        # 'clf3_weight_vals': hp.choice('clf3_weight_vals', range(1, 30))
-        # 'removal_factor_vals': hp.uniform('removal_factor_vals', 0, 0.2)
+        'XGB_vals': hp.choice('XGB_vals', range(30, 62)),
+
     }
     objective_func = partial(objective,patient_list_base=patient_list_base,db=db,folds=folds)
     trials = Trials()
@@ -71,19 +69,11 @@ def objective(params,patient_list_base,db,folds):
     ### Hyperparameters ###
     threshold = params['threshold_vals']  # Minimum appearance for feature to be included
     n_neighbors = params['kNN_vals']  # Neighbors amount for kNN
-    # xgb_k = params['XGB_vals']  # Amount of features to return by XGB
-    # removal_factor = params['removal_factor_vals']  # How many negative samples we remove from the training set.
-    # weight = list(params['weight_vals'])
-    # clf1_weight = params['clf1_weight_vals']
-    # clf2_weight = params['clf2_weight_vals']
-    # clf3_weight = params['clf3_weight_vals']
-    # weight = [clf1_weight, clf2_weight, clf3_weight]
+    xgb_k = params['XGB_vals']  # Amount of features to return by XGB
     config = {
         "Threshold": threshold,
         "kNN": n_neighbors,
-        # "k_XGB": xgb_k,
-        # "Removal factor": removal_factor,
-        # 'weights': weight
+        "K_best": xgb_k,
     }
     utils.log_dict(vals=config, msg="Configuration:")
 
@@ -110,11 +100,11 @@ def objective(params,patient_list_base,db,folds):
         X_train, y_train, X_test, y_test = utils.split_data_by_folds(data, targets, folds_indices, test_fold)
 
         ### Feature selection ###
-        model = XGBClassifier(use_label_encoder=False)
-        model.fit(np.asarray(X_train), y_train)
-        # top_K_xgb = utils.get_top_K_features_xgb(labels_vector, model.feature_importances_.tolist(), k=xgb_k)
-        # X_train = utils.create_vector_of_important_features(X_train, top_K_xgb)
-        # X_test = utils.create_vector_of_important_features(X_test, top_K_xgb)
+        selector = SelectKBest(k=xgb_k)
+        X_train = selector.fit_transform(X_train,y_train)
+        indices = selector.get_support(indices=True)
+        X_test = utils.create_vector_of_important_features(X_test, indices)
+
 
         ### Class balancing ###
         # over_balancer = BorderlineSMOTE()
@@ -123,36 +113,10 @@ def objective(params,patient_list_base,db,folds):
         X_train, y_train = under_balancer.fit_resample(X_train, y_train)
 
         ### Model fitting ###
-        # clf1 = RandomForestClassifier()
-        # clf2 = KNeighborsClassifier()
-        # clf3 = DecisionTreeClassifier()
         estim = HyperoptEstimator(classifier=any_classifier('my_clf'),
                                   algo=tpe.suggest,
                                   max_evals=20,
                                   trial_timeout=120)
-        # clf2 = HyperoptEstimator(classifier=any_classifier('my_clf'),
-        #                          preprocessing=any_preprocessing('my_pre'),
-        #                          algo=tpe.suggest,
-        #                          max_evals=100,
-        #                          trial_timeout=120)
-        # clf3 = HyperoptEstimator(classifier=any_classifier('my_clf'),
-        #                          preprocessing=any_preprocessing('my_pre'),
-        #                          algo=tpe.suggest,
-        #                          max_evals=100,
-        #                          trial_timeout=120)
-
-        # clf = VotingClassifier(estimators=[('clf1', clf1)], voting='soft') # , weights=weight
-        # clf = VotingClassifier(estimators=[('clf1', clf1), ('clf2', clf2), ('clf3', clf3)], voting='soft', weights=weight)
-        # params = {
-        #     'rf__n_estimators': [50, 175],
-        #     # 'rf__max_depth': [5, 100],
-        #     'rf__random_state': [0, 3],
-        #     # 'dt__random_state': [0, 5],
-        #     # 'dt__max_depth': [5, 20],
-        #     'knn__n_neighbors': [1, 20],
-        #     'knn__leaf_size': [15, 40]
-        # }
-        # grid = GridSearchCV(estimator=clf, param_grid=params)
         X_train = np.array(X_train)
         y_train = np.array(y_train)
         X_test = np.array(X_test)
@@ -170,6 +134,7 @@ def objective(params,patient_list_base,db,folds):
         except Exception as e:
             auroc_vals = []
             aupr_vals = []
+            print(e)
             break
 
         auroc_vals.append([roc_val, ns_fpr, ns_tpr, lr_fpr, lr_tpr])
