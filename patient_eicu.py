@@ -32,7 +32,7 @@ class PatientEicu:
         Latest sample value
         Amount of samples
         """
-        avg_val = 0
+        raw_data = []
         max_val = -1
         min_val = sys.maxsize
         latest_sample = {
@@ -41,10 +41,10 @@ class PatientEicu:
         }
         number_of_samples = len(self.events[label])
         if number_of_samples == 0:
-            return [np.nan] * 4 + [0]
+            return [np.nan] * 4 + [0] + [np.nan] * 2
         for feature in self.events[label]:
             val = float(feature.value)
-            avg_val += val
+            raw_data.append(val)
             if val > max_val:
                 max_val = val
             if val < min_val:
@@ -52,7 +52,15 @@ class PatientEicu:
             if feature.time > latest_sample["Date"]:
                 latest_sample["Date"] = feature.time
                 latest_sample["Value"] = val
-        return [(avg_val/number_of_samples), max_val, min_val, latest_sample["Value"], number_of_samples]
+        return [
+            np.average(raw_data),
+            max_val,
+            min_val,
+            latest_sample["Value"],
+            number_of_samples,
+            np.std(raw_data),
+            np.average(raw_data[-5:])
+        ]
 
     def create_labels_vector(self, labels=None, objective_c=False):
         if labels is None:

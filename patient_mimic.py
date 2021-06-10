@@ -72,7 +72,8 @@ class PatientMimic:
                 latest_sample["Value"] = feature.value
         return [
             np.average(raw_data),
-            max_val, min_val,
+            max_val,
+            min_val,
             latest_sample["Value"],
             number_of_samples,
             np.std(raw_data),

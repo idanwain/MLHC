@@ -241,5 +241,10 @@ def normalize_data(data):
     trans = np.array(data).transpose()
     res = []
     for row in trans:
-        res.append(stats.zscore(row))
-    return np.array(res).transpose()
+        try:
+            z_score = stats.zscore(row, nan_policy='omit')  # maybe should 'omit'
+        except Exception as e:
+            z_score = row
+        res.append(z_score)
+    res = np.array(res).transpose()
+    return res
