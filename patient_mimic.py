@@ -20,7 +20,7 @@ class PatientMimic:
         self.transfers_before_target = transfers_before_target
         self.insurance = insurance
         self.diagnosis = diagnosis
-        self.symptoms = symptoms
+        self.symptoms = self.disassemble_symptoms(symptoms=symptoms)
         if target == "negative" or target == "Appropriate":
             self.target = 0
         else:
@@ -90,8 +90,15 @@ class PatientMimic:
         insurance_encoding = one_hot_encoding.INSURANCE_ENCODING[self.insurance]
         ethnicity_encoding = one_hot_encoding.ETHNICITY_ENCODING[self.ethnicity]
         categorical_vector = gender_encoding + insurance_encoding + ethnicity_encoding + [
-            self.transfers_before_target] + [self.symptoms]
+            self.transfers_before_target] + self.symptoms
         return categorical_vector
+
+    def disassemble_symptoms(self, symptoms):
+        import math
+        sparse = [0]*128
+        if not math.isnan(symptoms):
+            sparse[int(symptoms)] = 1
+        return sparse
 
     def create_delta_vector(self,label):
         raw_data = []
