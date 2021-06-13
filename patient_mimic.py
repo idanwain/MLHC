@@ -92,6 +92,8 @@ class PatientMimic:
         return categorical_vector
 
     def disassemble_symptoms(self, symptoms):
+        import math
         sparse = [0]*128
-        sparse[symptoms] = 1
+        if not math.isnan(symptoms):
+            sparse[int(symptoms)] = 1
         return sparse

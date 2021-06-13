@@ -99,18 +99,19 @@ def feature_selection(data_mimic, data_eicu, targets_mimic, k):
 
 def build_grid_model(weight):
     clf1 = RandomForestClassifier()
-    clf2 = KNeighborsClassifier()
-    clf3 = AdaBoostClassifier()
-    estimators = [('rf', clf1), ('knn', clf2), ('ab', clf3)]
-    clf = VotingClassifier(estimators=estimators, voting='soft', weights=weight)
-    params = {
-        'rf__n_estimators': [20, 200],
-        'rf__random_state': [0, 5],
-        'knn__n_neighbors': [1, 20],
-        'knn__leaf_size': [22, 80],
-        'ab__n_estimators': [20, 150]
-    }
-    return GridSearchCV(estimator=clf, param_grid=params)
+    return clf1
+    # clf2 = KNeighborsClassifier()
+    # clf3 = AdaBoostClassifier()
+    # estimators = [('rf', clf1), ('knn', clf2), ('ab', clf3)]
+    # clf = VotingClassifier(estimators=estimators, voting='soft', weights=weight)
+    # params = {
+    #     'rf__n_estimators': [20, 200],
+    #     'rf__random_state': [0, 5],
+    #     'knn__n_neighbors': [1, 20],
+    #     'knn__leaf_size': [22, 80],
+    #     'ab__n_estimators': [20, 150]
+    # }
+    # return GridSearchCV(estimator=clf, param_grid=params)
 
 
 def train_model(clf_forest, data_mimic, targets_mimic):
@@ -144,9 +145,9 @@ def main():
         'kNN_vals': hp.choice('kNN_vals', range(1, 100)),
         'XGB_vals': hp.choice('XGB_vals', range(1, 60)),
         'non_vals': hp.choice('non_vals', range(400, 2500)),
-        'clf1_weight': hp.choice('clf1_weight', range(1, 30)),
-        'clf2_weight': hp.choice('clf2_weight', range(1, 30)),
-        'clf3_weight': hp.choice('clf3_weight', range(1, 30)),
+        # 'clf1_weight': hp.choice('clf1_weight', range(1, 30)),
+        # 'clf2_weight': hp.choice('clf2_weight', range(1, 30)),
+        # 'clf3_weight': hp.choice('clf3_weight', range(1, 30)),
         'over_balance': hp.choice('over_balance', [0, 1, 2])
     }
     objective_func = partial(
@@ -175,10 +176,10 @@ def objective(params, patient_list_mimic_base, patient_list_eicu_base, db_mimic,
     non = params['non_vals']
     t = params['threshold_vals']
     n = params['kNN_vals']
-    clf1_weight = params['clf1_weight']
-    clf2_weight = params['clf2_weight']
-    clf3_weight = params['clf3_weight']
-    weight = [clf1_weight, clf2_weight, clf3_weight]
+    # clf1_weight = params['clf1_weight']
+    # clf2_weight = params['clf2_weight']
+    # clf3_weight = params['clf3_weight']
+    # weight = [clf1_weight, clf2_weight, clf3_weight]
     k = params['XGB_vals']
     over_balance = params['over_balance']
 
@@ -188,7 +189,7 @@ def objective(params, patient_list_mimic_base, patient_list_eicu_base, db_mimic,
         "kNN": n,
         "k_XGB": k,
         "non": non,
-        "weight": weight,
+        # "weight": weight,
         "over_balance": over_balance,
         "counter": counter
     }
@@ -230,7 +231,7 @@ def objective(params, patient_list_mimic_base, patient_list_eicu_base, db_mimic,
         data_mimic, targets_mimic = under_balancer.fit_resample(data_mimic, targets_mimic)
 
     # fit model
-    # weight = 1
+    weight = 1
     grid = build_grid_model(weight)
     clf_forest = train_model(grid, data_mimic, targets_mimic)
 
