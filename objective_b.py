@@ -34,6 +34,7 @@ data_path_mimic = 'C:/tools/feature_mimic_cohort_model_b.csv' if user == 'idan' 
     else '/Users/user/Documents/University/Workshop/feature_mimic_cohort_model_b.csv'
 folds_path = 'C:/tools/folds_mimic_model_b.csv' if user == 'idan' \
     else '/Users/user/Documents/University/Workshop/folds_mimic_model_b.csv'
+counter = 1
 
 
 def main():
@@ -58,7 +59,6 @@ def main():
 
 def objective(params,patient_list_base,db,folds):
     global counter
-    counter = 0
     data = []
     targets = []
     folds_indices = []
@@ -134,7 +134,7 @@ def objective(params,patient_list_base,db,folds):
         except Exception as e:
             auroc_vals = []
             aupr_vals = []
-            print(e)
+            utils.log_dict(msg=f"ERROR: {e}")
             break
 
         auroc_vals.append([roc_val, ns_fpr, ns_tpr, lr_fpr, lr_tpr])
