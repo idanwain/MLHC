@@ -225,7 +225,7 @@ def plot_graphs(auroc_vals, aupr_vals, counter, objective: str):
 
 def create_labels_vector(db, removed_features):
     ret_vecotr = []
-    essences = ["Average", "Max", "Min", "Latest", "Amount", "STD", "Last 5 average"]
+    essences = ["Average", "Max", "Min", "Latest", "Amount", "STD", "Last 5 average","Max-min diff"]
     for label in set(db.get_labels()) - set(removed_features):
         for essence in essences:
             ret_vecotr.extend(label + "_" + essence)

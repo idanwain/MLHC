@@ -34,6 +34,7 @@ class PatientMimic:
         features_vector = []
         for label in labels:
             features_vector += self.get_essence_values_for_label(label)
+            features_vector += self.create_delta_vector(label)
         if not objective_c:
             features_vector += self.create_vector_for_boolean_features()
             features_vector += self.create_vector_of_categorical_features()
@@ -60,7 +61,7 @@ class PatientMimic:
         }
         number_of_samples = len(self.events[label])
         if number_of_samples == 0:
-            return [np.nan] * 4 + [0] + [np.nan]*2
+            return [np.nan] * 4 + [0] + [np.nan]*3
         for feature in self.events[label]:
             raw_data.append(feature.value)
             if feature.value > max_val:
@@ -77,7 +78,8 @@ class PatientMimic:
             latest_sample["Value"],
             number_of_samples,
             np.std(raw_data),
-            np.average(raw_data[-5:])
+            np.average(raw_data[-5:]),
+            max_val - min_val
         ]
 
     def create_vector_for_boolean_features(self):
@@ -90,3 +92,19 @@ class PatientMimic:
         categorical_vector = gender_encoding + insurance_encoding + ethnicity_encoding + [
             self.transfers_before_target] + [self.symptoms]
         return categorical_vector
+
+    def create_delta_vector(self,label):
+        raw_data = []
+        max_delta = 0
+        for feature in self.events[label]:
+            raw_data.append((feature.value,feature.time))
+        if(len(raw_data) == 0):
+            return [np.nan]
+        sorted_data = sorted(raw_data, key=lambda tup: tup[1])
+        # Get maximum delta between any 2 neighbour samples
+        for i in range(len(sorted_data) - 1):
+            curr_delta = np.abs(sorted_data[i][0] - sorted_data[i+1][0])
+            if(curr_delta > max_delta):
+                max_delta = curr_delta
+        return [max_delta]
+

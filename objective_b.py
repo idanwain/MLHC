@@ -47,8 +47,8 @@ def main():
     patient_list_base = db.create_patient_list()
     space = {
         'threshold_vals': hp.uniform('thershold_val', 0, 1),
-        'kNN_vals': hp.choice('kNN_vals', range(1, 20)),
-        'XGB_vals': hp.choice('XGB_vals', range(30, 62)),
+        'kNN_vals': hp.choice('kNN_vals', range(1, 80)),
+        'XGB_vals': hp.choice('XGB_vals', range(5, 100)),
 
     }
     objective_func = partial(objective,patient_list_base=patient_list_base,db=db,folds=folds)
