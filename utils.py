@@ -7,6 +7,7 @@ from sklearn.metrics import roc_auc_score, roc_curve, precision_recall_curve, f1
 import one_hot_encoding
 from scipy import stats
 
+
 def get_features_for_removal(threshold: float, patient_list: list, db):
     """
     Returns a list of features to be removed.
@@ -203,7 +204,8 @@ def plot_graphs(auroc_vals, aupr_vals, counter, objective: str):
 
     avg_auc_str = str(np.average([i[0] for i in auroc_vals]))[2:]
     # pyplot.savefig(f"C:/tools/objective_{objective}/{counter}_auc_{avg_auc_str}.png")
-    pyplot.savefig(f"/Users/user/Documents/University/Workshop/graphs for milestone 2/{objective}_{counter}_auc_{avg_auc_str}.png")
+    pyplot.savefig(
+        f"/Users/user/Documents/University/Workshop/graphs for milestone 2/{objective}_{counter}_auc_{avg_auc_str}.png")
     pyplot.close()
 
     for (pr_val, no_skill, lr_recall, lr_precision) in aupr_vals:
@@ -216,20 +218,22 @@ def plot_graphs(auroc_vals, aupr_vals, counter, objective: str):
         # show the plot
     avg_aupr_str = str(np.average([i[0] for i in aupr_vals]))[2:]
     # pyplot.savefig(f"C:/tools/objective_{objective}/{counter}_aupr_{avg_aupr_str}.png")
-    pyplot.savefig(f"/Users/user/Documents/University/Workshop/graphs for milestone 2/{objective}_{counter}_aupr_{avg_aupr_str}.png")
+    pyplot.savefig(
+        f"/Users/user/Documents/University/Workshop/graphs for milestone 2/{objective}_{counter}_aupr_{avg_aupr_str}.png")
     pyplot.close()
 
 
-def create_labels_vector(db,removed_features):
+def create_labels_vector(db, removed_features):
     ret_vecotr = []
+    essences = ["Average", "Max", "Min", "Latest", "Amount", "STD", "Last 5 average"]
     for label in set(db.get_labels()) - set(removed_features):
-        ret_vecotr.extend([label + "_avg", label + "_max", label + "_min", label + "_latest", label + "_amount",label + "_std", label + "_last_5_avg"])
+        for essence in essences:
+            ret_vecotr.extend(label + "_" + essence)
     boolean_features = db.get_distinct_boolean_features()
     boolean_features.sort()
     ret_vecotr.extend(boolean_features)
     ret_vecotr += create_labels_for_categorical_features()
     return ret_vecotr
-
 
 
 def create_labels_for_categorical_features():
