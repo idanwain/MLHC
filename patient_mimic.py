@@ -92,10 +92,6 @@ class PatientMimic:
         return categorical_vector
 
     def disassemble_symptoms(self, symptoms):
-        bits = []
-        while symptoms > 0:
-            bits.append(int(symptoms % 2))
-            symptoms = int(symptoms / 2)
-        while len(bits) != 7:
-            bits.append(0)
-        return bits
+        sparse = [0]*128
+        sparse[symptoms] = 1
+        return sparse
