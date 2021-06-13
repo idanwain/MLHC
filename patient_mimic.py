@@ -20,7 +20,7 @@ class PatientMimic:
         self.transfers_before_target = transfers_before_target
         self.insurance = insurance
         self.diagnosis = diagnosis
-        self.symptoms = symptoms
+        self.symptoms = self.disassemble_symptoms(symptoms=symptoms)
         if target == "negative" or target == "Appropriate":
             self.target = 0
         else:
@@ -88,5 +88,14 @@ class PatientMimic:
         insurance_encoding = one_hot_encoding.INSURANCE_ENCODING[self.insurance]
         ethnicity_encoding = one_hot_encoding.ETHNICITY_ENCODING[self.ethnicity]
         categorical_vector = gender_encoding + insurance_encoding + ethnicity_encoding + [
-            self.transfers_before_target] + [self.symptoms]
+            self.transfers_before_target] + self.symptoms
         return categorical_vector
+
+    def disassemble_symptoms(self, symptoms):
+        bits = []
+        while symptoms > 0:
+            bits.append(int(symptoms % 2))
+            symptoms = int(symptoms / 2)
+        while len(bits) != 7:
+            bits.append(0)
+        return bits

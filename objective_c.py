@@ -100,17 +100,14 @@ def feature_selection(data_mimic, data_eicu, targets_mimic, k):
 def build_grid_model(weight):
     clf1 = RandomForestClassifier()
     clf2 = KNeighborsClassifier()
-    clf3 = ExtraTreesClassifier()
-    clf4 = GradientBoostingClassifier()
-    clf5 = AdaBoostClassifier()
-    clf = VotingClassifier(estimators=[('rf', clf1), ('knn', clf2), ('et', clf3), ('gb', clf4), ('ab', clf5)], voting='soft', weights=weight)
+    clf3 = AdaBoostClassifier()
+    estimators = [('rf', clf1), ('knn', clf2), ('ab', clf3)]
+    clf = VotingClassifier(estimators=estimators, voting='soft', weights=weight)
     params = {
         'rf__n_estimators': [20, 200],
         'rf__random_state': [0, 5],
         'knn__n_neighbors': [1, 20],
         'knn__leaf_size': [22, 80],
-        'et__n_estimators': [20, 200],
-        'et__random_state': [0, 5],
         'ab__n_estimators': [20, 150]
     }
     return GridSearchCV(estimator=clf, param_grid=params)
@@ -120,7 +117,7 @@ def train_model(clf_forest, data_mimic, targets_mimic):
     return clf_forest.fit(data_mimic, targets_mimic)
 
 
-def model_assessment(clf_forest, data_eicu, targets_eicu, data_mimic, targets_mimic, counter):
+def model_assessment(clf_forest, data_eicu, targets_eicu, data_mimic, targets_mimic):
     auroc_vals = []
     aupr_vals = []
     roc_val, ns_fpr, ns_tpr, lr_fpr, lr_tpr = utils.calc_metrics_roc(clf_forest, data_eicu, targets_eicu, data_mimic, targets_mimic)
@@ -128,7 +125,7 @@ def model_assessment(clf_forest, data_eicu, targets_eicu, data_mimic, targets_mi
     auroc_vals.append([roc_val, ns_fpr, ns_tpr, lr_fpr, lr_tpr])
     aupr_vals.append([pr_val, no_skill, lr_recall, lr_precision])
 
-    return roc_val, pr_val
+    return roc_val, pr_val, auroc_vals, aupr_vals
 
 
 def main():
@@ -144,14 +141,12 @@ def main():
 
     space = {
         'threshold_vals': hp.uniform('thershold_val', 0, 1),
-        'kNN_vals': hp.choice('kNN_vals', range(1, 20)),
+        'kNN_vals': hp.choice('kNN_vals', range(1, 100)),
         'XGB_vals': hp.choice('XGB_vals', range(1, 60)),
-        'non_vals': hp.choice('non_vals', range(400, 2000)),
+        'non_vals': hp.choice('non_vals', range(400, 2500)),
         'clf1_weight': hp.choice('clf1_weight', range(1, 30)),
         'clf2_weight': hp.choice('clf2_weight', range(1, 30)),
         'clf3_weight': hp.choice('clf3_weight', range(1, 30)),
-        'clf4_weight': hp.choice('clf4_weight', range(1, 30)),
-        'clf5_weight': hp.choice('clf5_weight', range(1, 30)),
         'over_balance': hp.choice('over_balance', [0, 1, 2])
     }
     objective_func = partial(
@@ -166,7 +161,7 @@ def main():
         fn=objective_func,
         space=space,
         algo=tpe.suggest,
-        max_evals=100,
+        max_evals=200,
         trials=trials,
         return_argmin=False
     )
@@ -183,9 +178,7 @@ def objective(params, patient_list_mimic_base, patient_list_eicu_base, db_mimic,
     clf1_weight = params['clf1_weight']
     clf2_weight = params['clf2_weight']
     clf3_weight = params['clf3_weight']
-    clf4_weight = params['clf4_weight']
-    clf5_weight = params['clf5_weight']
-    weight = [clf1_weight, clf2_weight, clf3_weight, clf4_weight, clf5_weight]
+    weight = [clf1_weight, clf2_weight, clf3_weight]
     k = params['XGB_vals']
     over_balance = params['over_balance']
 
@@ -196,7 +189,8 @@ def objective(params, patient_list_mimic_base, patient_list_eicu_base, db_mimic,
         "k_XGB": k,
         "non": non,
         "weight": weight,
-        "over_balance": over_balance
+        "over_balance": over_balance,
+        "counter": counter
     }
     utils.log_dict(vals=config, msg="Configuration:")
 
@@ -236,11 +230,15 @@ def objective(params, patient_list_mimic_base, patient_list_eicu_base, db_mimic,
         data_mimic, targets_mimic = under_balancer.fit_resample(data_mimic, targets_mimic)
 
     # fit model
+    # weight = 1
     grid = build_grid_model(weight)
     clf_forest = train_model(grid, data_mimic, targets_mimic)
 
     # model assessment
-    auroc, aupr = model_assessment(clf_forest, data_eicu, targets_eicu, data_mimic, targets_mimic, counter)
+    auroc, aupr, auroc_vals, aupr_vals = model_assessment(clf_forest, data_eicu, targets_eicu, data_mimic, targets_mimic)
+
+    # plot graph
+    utils.plot_graphs(auroc_vals, aupr_vals, counter, 'c')
 
     counter += 1
     results = {
@@ -249,7 +247,7 @@ def objective(params, patient_list_mimic_base, patient_list_eicu_base, db_mimic,
     }
     utils.log_dict(vals=results, msg="Run results:")
     return {
-        'loss': -1.0 * aupr,
+        'loss': -1.0 * auroc,
         'status': STATUS_OK,
         'metadata': results
     }
