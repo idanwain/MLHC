@@ -59,7 +59,8 @@ class PatientEicu:
             latest_sample["Value"],
             number_of_samples,
             np.std(raw_data),
-            np.average(raw_data[-5:])
+            np.average(raw_data[-5:]),
+            max_val - min_val
         ]
 
     def create_delta_vector(self, label):
