@@ -17,7 +17,7 @@ class PatientEicu:
         features_vector = []
         for label in labels:
             features_vector += self.get_essence_values_for_label(label)
-        # features_vector += self.create_vector_for_boolean_features()
+            features_vector += self.create_delta_vector(label)
         return features_vector
 
     def get_essence_values_for_label(self, label):
@@ -62,14 +62,17 @@ class PatientEicu:
             np.average(raw_data[-5:])
         ]
 
-    def create_labels_vector(self, labels=None, objective_c=False):
-        if labels is None:
-            labels = self.events
-        ret_vector = []
-        for label in labels:
-            ret_vector.extend([label + "_avg", label + "_max", label + "_min", label + "_latest", label + "_amount"])
-        # ret_vector.extend(list(self.boolean_features.keys()))
-        return ret_vector
-
-    # def create_vector_for_boolean_features(self):
-    #     return list(self.boolean_features.values())
+    def create_delta_vector(self, label):
+        raw_data = []
+        max_delta = 0
+        for feature in self.events[label]:
+            raw_data.append((feature.value, feature.time))
+        if (len(raw_data) == 0):
+            return [np.nan]
+        sorted_data = sorted(raw_data, key=lambda tup: tup[1])
+        # Get maximum delta between any 2 neighbour samples
+        for i in range(len(sorted_data) - 1):
+            curr_delta = np.abs(sorted_data[i][0] - sorted_data[i + 1][0])
+            if (curr_delta > max_delta):
+                max_delta = curr_delta
+        return [max_delta]
