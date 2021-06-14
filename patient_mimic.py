@@ -61,7 +61,7 @@ class PatientMimic:
         }
         number_of_samples = len(self.events[label])
         if number_of_samples == 0:
-            return [np.nan] * 4 + [0] + [np.nan]*3
+            return [np.nan] * 4 + [0] + [np.nan]*5
         for feature in self.events[label]:
             raw_data.append(feature.value)
             if feature.value > max_val:
@@ -79,7 +79,9 @@ class PatientMimic:
             number_of_samples,
             np.std(raw_data),
             np.average(raw_data[-5:]),
-            max_val - min_val
+            max_val - min_val,
+            float(np.quantile(raw_data, [0.25])),
+            float(np.quantile(raw_data, [0.75]))
         ]
 
     def create_vector_for_boolean_features(self):

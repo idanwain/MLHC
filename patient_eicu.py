@@ -41,7 +41,7 @@ class PatientEicu:
         }
         number_of_samples = len(self.events[label])
         if number_of_samples == 0:
-            return [np.nan] * 4 + [0] + [np.nan] * 2
+            return [np.nan] * 4 + [0] + [np.nan] * 5
         for feature in self.events[label]:
             val = float(feature.value)
             raw_data.append(val)
@@ -60,7 +60,9 @@ class PatientEicu:
             number_of_samples,
             np.std(raw_data),
             np.average(raw_data[-5:]),
-            max_val - min_val
+            max_val - min_val,
+            float(np.quantile(raw_data,[0.25])),
+            float(np.quantile(raw_data, [0.75]))
         ]
 
     def create_delta_vector(self, label):
