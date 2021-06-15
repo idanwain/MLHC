@@ -3,7 +3,7 @@ from feature import Feature
 import pandas as pd
 from patient_mimic import PatientMimic
 from datetime import datetime
-
+import utils
 
 mimic_to_eicu_mapping = {
     'Neturophils': '-polys',
@@ -101,9 +101,9 @@ class DbMimic:
             time = datetime.strptime(row[1]["charttime"], '%Y-%m-%d %H:%M:%S')
             value = row[1]["valuenum"]
             unit_of_measuere = row[1]["valueuom"]
-            # if(label in self.anomaly_mapping and (value > self.anomaly_mapping[label]["max"] or value < self.anomaly_mapping[label]["min"])):
-                # print("Anomaly found!")
-                # print(label,value)
+            if label in self.anomaly_mapping and (value > self.anomaly_mapping[label]["max"] or value < self.anomaly_mapping[label]["min"]):
+                utils.log_dict(msg="Anomaly found",vals={"Label":label,"Value":value})
+                continue
             feature = Feature(time=time, value=value, uom=unit_of_measuere)
             patient_dict[label].append(feature)
         return patient_dict

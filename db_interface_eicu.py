@@ -2,7 +2,7 @@ from typing import Dict, List
 from feature import Feature
 import pandas as pd
 from patient_eicu import PatientEicu
-
+import utils
 eicu_to_mimic_mapping = {
     '-polys': 'Neturophils' ,
     'RBC': 'Red Blood Cells',
@@ -46,6 +46,8 @@ class DbEicu:
     def __init__(self, data_path="C:/tools/feature_eicu_cohort.csv"):
         self.relevant_events_data = pd.read_csv(data_path)
         self.available_labels_in_events = []
+        self.anomaly_mapping = self.build_anomaly_mapping()
+
 
     def get_patient_health_system_stay_id_list(self) -> list:
         """
@@ -90,8 +92,12 @@ class DbEicu:
             label = row[1]["labname"]
             time = row[1]["lab_time"]
             value = row[1]["labresult"] if row[1]["labresult"] else row[1]["labresulttext"]
-            unit_of_measuere = row[1]["labmeasurenamesystem"] if row[1]["labmeasurenamesystem"] else row[1]["labmeasurenameinterface"]
-            feature = Feature(time=time, value=value, uom=unit_of_measuere)
+            unit_of_measure = row[1]["labmeasurenamesystem"] if row[1]["labmeasurenamesystem"] else row[1]["labmeasurenameinterface"]
+            if (eicu_to_mimic_mapping[label] in self.anomaly_mapping and (
+                    value > self.anomaly_mapping[label]["max"] or value < self.anomaly_mapping[label]["min"])):
+                utils.log_dict(msg="Anomaly found", vals={"Label": label, "Value": value})
+                continue
+            feature = Feature(time=time, value=value, uom=unit_of_measure)
             patient_dict[eicu_to_mimic_mapping[label]].append(feature)
         return patient_dict
 
@@ -125,6 +131,15 @@ class DbEicu:
             i += 1
         print("Done")
         return patient_list
+    def build_anomaly_mapping(self):
+        data = pd.read_csv('human_range.csv')
+        res = {}
+        for row in data.iterrows():
+            feature = row[1]["feature"]
+            max_val = row[1]["max"]
+            min_val = row[1]["min"]
+            res[feature] = {"min":min_val,"max":max_val}
+        return res
 
 
 
