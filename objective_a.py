@@ -10,7 +10,7 @@ from sklearn.tree import DecisionTreeClassifier
 from scipy import stats
 from sklearn.impute import KNNImputer
 from sklearn.feature_selection import SelectKBest
-from hyperopt import hp, tpe, fmin, Trials, STATUS_OK
+from hyperopt import hp, tpe, fmin, Trials, STATUS_OK, atpe
 from sklearn.linear_model import SGDClassifier
 from sklearn.ensemble import RandomForestClassifier, AdaBoostClassifier, VotingClassifier, ExtraTreesClassifier, GradientBoostingClassifier
 import numpy as np
@@ -25,14 +25,14 @@ from imblearn.combine import SMOTETomek
 from hpsklearn import HyperoptEstimator, svc, any_classifier, any_preprocessing
 from numpy import nan
 
-user = 'roye'
+user = 'idan'
 boolean_features_path = 'C:/tools/boolean_features_mimic_model_a.csv' if user == 'idan' \
     else '/Users/user/Documents/University/Workshop/boolean_features_mimic_model_a.csv'
 extra_features_path = 'C:/tools/extra_features_model_a.csv' if user == 'idan' \
     else '/Users/user/Documents/University/Workshop/extra_features_model_a.csv'
 data_path_mimic = 'C:/tools/feature_mimic_cohort_model_a.csv' if user == 'idan' \
     else '/Users/user/Documents/University/Workshop/feature_mimic_cohort_model_a.csv'
-folds_path = 'C:/tools/folds_mimic_model_a.csv' if user == 'idan' \
+folds_path = 'C:/tools/folds.csv' if user == 'idan' \
     else '/Users/user/Documents/University/Workshop/folds_mimic_model_a.csv'
 
 counter = 1
@@ -54,7 +54,7 @@ def main():
     }
     objective_func = partial(objective,patient_list_base=patient_list_base,db=db,folds=folds)
     trials = Trials()
-    best = fmin(fn=objective_func, space=space, algo=tpe.suggest, max_evals=100, trials=trials, return_argmin=False)
+    best = fmin(fn=objective_func, space=space, algo=atpe.suggest, max_evals=100, trials=trials, return_argmin=False)
     print(best)
 
 
@@ -116,7 +116,7 @@ def objective(params,patient_list_base,db,folds):
         ### Model fitting ###
         estim = HyperoptEstimator(classifier=any_classifier('my_clf'),
                                   algo=tpe.suggest,
-                                  max_evals=20,
+                                  max_evals=10,
                                   trial_timeout=120)
         X_train = np.array(X_train)
         y_train = np.array(y_train)
@@ -141,7 +141,7 @@ def objective(params,patient_list_base,db,folds):
         auroc_vals.append([roc_val, ns_fpr, ns_tpr, lr_fpr, lr_tpr])
         aupr_vals.append([pr_val, no_skill, lr_recall, lr_precision])
 
-    # utils.plot_graphs(auroc_vals, aupr_vals, counter, 'b')
+    utils.plot_graphs(auroc_vals, aupr_vals, counter, 'a')
 
     counter += 1
     results = {"AUROC_AVG": np.average([i[0] for i in auroc_vals]),
