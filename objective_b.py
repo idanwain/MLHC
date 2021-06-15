@@ -25,7 +25,7 @@ from imblearn.combine import SMOTETomek
 from hpsklearn import HyperoptEstimator, svc, any_classifier, any_preprocessing
 from numpy import nan
 
-user = 'idan'
+user = 'roye'
 boolean_features_path = 'C:/tools/boolean_features_mimic_model_b.csv' if user == 'idan' \
     else '/Users/user/Documents/University/Workshop/boolean_features_mimic_model_b.csv'
 extra_features_path = 'C:/tools/extra_features_model_b.csv' if user == 'idan' \
@@ -47,8 +47,8 @@ def main():
     patient_list_base = db.create_patient_list()
     space = {
         'threshold_vals': hp.uniform('thershold_val', 0, 1),
-        'kNN_vals': hp.choice('kNN_vals', range(1, 80)),
-        'XGB_vals': hp.choice('XGB_vals', range(5, 100)),
+        'kNN_vals': hp.choice('kNN_vals', range(1, 15)),
+        'XGB_vals': hp.choice('XGB_vals', range(1, 60)),
 
     }
     objective_func = partial(objective,patient_list_base=patient_list_base,db=db,folds=folds)
@@ -92,13 +92,15 @@ def objective(params,patient_list_base,db,folds):
 
     data = utils.normalize_data(data)
 
-    ### Data imputation ###
-    imputer = KNNImputer(n_neighbors=n_neighbors, weights="uniform")
-    data = (imputer.fit_transform(data))
-
     for test_fold in folds:
         ### Data split ###
         X_train, y_train, X_test, y_test = utils.split_data_by_folds(data, targets, folds_indices, test_fold)
+
+        ### Data imputation ###
+        imputer = KNNImputer(n_neighbors=n_neighbors, weights="uniform")
+        imputer.fit(X_train)
+        X_train = imputer.transform(X_train)
+        X_test = imputer.transform(X_test)
 
         ### Feature selection ###
         selector = SelectKBest(k=xgb_k)
@@ -117,8 +119,8 @@ def objective(params,patient_list_base,db,folds):
         ### Model fitting ###
         estim = HyperoptEstimator(classifier=any_classifier('my_clf'),
                                   algo=tpe.suggest,
-                                  max_evals=20,
-                                  trial_timeout=120)
+                                  max_evals=10,
+                                  trial_timeout=60)
         X_train = np.array(X_train)
         y_train = np.array(y_train)
         X_test = np.array(X_test)

@@ -56,6 +56,7 @@ class DbMimic:
         self.relevant_events_data = pd.read_csv(data_path)
         self.folds_data = pd.read_csv(folds_path)
         self.available_labels_in_events = []
+        self.anomaly_mapping = self.build_anomaly_mapping()
 
     def get_hadm_id_list(self) -> list:
         """
@@ -100,6 +101,9 @@ class DbMimic:
             time = datetime.strptime(row[1]["charttime"], '%Y-%m-%d %H:%M:%S')
             value = row[1]["valuenum"]
             unit_of_measuere = row[1]["valueuom"]
+            # if(label in self.anomaly_mapping and (value > self.anomaly_mapping[label]["max"] or value < self.anomaly_mapping[label]["min"])):
+                # print("Anomaly found!")
+                # print(label,value)
             feature = Feature(time=time, value=value, uom=unit_of_measuere)
             patient_dict[label].append(feature)
         return patient_dict
@@ -186,6 +190,18 @@ class DbMimic:
         :return: labels list
         """
         return list({key for key in self.boolean_features['category']})
+
+    def build_anomaly_mapping(self):
+        data = pd.read_csv('human_range.csv')
+        res = {}
+        for row in data.iterrows():
+            feature = row[1]["feature"]
+            max_val = row[1]["max"]
+            min_val = row[1]["min"]
+            res[feature] = {"min":min_val,"max":max_val}
+        return res
+
+
 
 
 
