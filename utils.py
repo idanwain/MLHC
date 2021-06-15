@@ -263,6 +263,6 @@ def normalize_data(data):
 def save_conf_file(config, counter, objective):
     path = f"C:/tools/objective_{objective}/{counter}_config.txt" if user == "idan"\
         else f"/Users/user/Documents/University/Workshop/graphs for milestone 2/{objective}_{counter}_config.txt"
-    with open(path, "a+") as f:
+    with open(path, "w") as f:
         for key in config:
             f.write(f'{key}: {config[key]}\n')
