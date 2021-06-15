@@ -27,7 +27,7 @@ FIO2,20,100
 Glucose,0,2000
 Bicarbonate,0,100
 Hemoglobin,2,25
-INR(PT),0.5,5
+INR(PT),0.5,35
 LCT,0.2,15
 LDH,0,50000
 Lymphocytes,0.2,100
@@ -62,13 +62,13 @@ TVM,100,1000
 TVP,100,3500
 VB1,10,100
 VB12,100,2500
-WBC,0.2,100
-Heart Rate,40,200
-NBP Mean,20,250
-Calculated Total CO2,5,50
-Lactate,1,20
+WBC,0.2,150
+Heart Rate,30,200
+NBP Mean,10,250
+Calculated Total CO2,5,60
+Lactate,0.3,20
 Anion Gap,2,50
-"Calcium, Total",2,20
-Chloride,70,130
+"Calcium, Total",2,25
+Chloride,70,200
 Temperature Celsius,20,43
 Monocytes,0.2,100
