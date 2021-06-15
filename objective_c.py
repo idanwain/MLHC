@@ -2,17 +2,19 @@ import copy
 import random
 from sklearn.feature_selection import SelectKBest
 from imblearn.over_sampling import BorderlineSMOTE
-from sklearn.ensemble import RandomForestClassifier, VotingClassifier, ExtraTreesClassifier, GradientBoostingClassifier, AdaBoostClassifier
+from sklearn.ensemble import RandomForestClassifier, VotingClassifier, ExtraTreesClassifier, GradientBoostingClassifier, \
+    AdaBoostClassifier
 from sklearn.impute import KNNImputer
 from sklearn.model_selection import GridSearchCV
 from sklearn.neighbors import KNeighborsClassifier
 import utils
 from db_interface_eicu import DbEicu
 from db_interface_mimic import DbMimic
-from hyperopt import hp, tpe, fmin, Trials, STATUS_OK
+from hyperopt import hp, tpe, fmin, Trials, STATUS_OK, rand, atpe
 from functools import partial
 from imblearn.under_sampling import TomekLinks
-
+from hpsklearn import HyperoptEstimator, random_forest, knn, ada_boost
+import numpy as np
 
 user = 'idan'
 data_path_eicu = 'C:/tools/feature_eicu_cohort.csv' if user == 'idan' \
@@ -97,13 +99,14 @@ def feature_selection(data_mimic, data_eicu, targets_mimic, k):
     return data_mimic, data_eicu
 
 
-def build_grid_model(weight):
-    clf1 = RandomForestClassifier()
-    return clf1
+def build_grid_model(clfs, weight):
+    # clf1 = RandomForestClassifier()
     # clf2 = KNeighborsClassifier()
     # clf3 = AdaBoostClassifier()
-    # estimators = [('rf', clf1), ('knn', clf2), ('ab', clf3)]
-    # clf = VotingClassifier(estimators=estimators, voting='soft', weights=weight)
+    # estimators = [('clf1', clf1), ('clf2', clf2), ('clf3', clf3)]
+    estimators = [(f'clf{i+1}', clf) for i, clf in enumerate(clfs)]
+    clf = VotingClassifier(estimators=estimators, voting='soft', weights=weight)
+    return clf
     # params = {
     #     'rf__n_estimators': [20, 200],
     #     'rf__random_state': [0, 5],
@@ -121,52 +124,27 @@ def train_model(clf_forest, data_mimic, targets_mimic):
 def model_assessment(clf_forest, data_eicu, targets_eicu, data_mimic, targets_mimic):
     auroc_vals = []
     aupr_vals = []
-    roc_val, ns_fpr, ns_tpr, lr_fpr, lr_tpr = utils.calc_metrics_roc(clf_forest, data_eicu, targets_eicu, data_mimic, targets_mimic)
-    pr_val, no_skill, lr_recall, lr_precision = utils.calc_metrics_pr(clf_forest, data_eicu, targets_eicu, data_mimic, targets_mimic)
+    roc_val, ns_fpr, ns_tpr, lr_fpr, lr_tpr = utils.calc_metrics_roc(clf_forest, data_eicu, targets_eicu, data_mimic,
+                                                                     targets_mimic)
+    pr_val, no_skill, lr_recall, lr_precision = utils.calc_metrics_pr(clf_forest, data_eicu, targets_eicu, data_mimic,
+                                                                      targets_mimic)
     auroc_vals.append([roc_val, ns_fpr, ns_tpr, lr_fpr, lr_tpr])
     aupr_vals.append([pr_val, no_skill, lr_recall, lr_precision])
 
     return roc_val, pr_val, auroc_vals, aupr_vals
 
 
-def main():
-    global counter
-    db_mimic = DbMimic(boolean_features_path=boolean_features_path,
-                       extra_features_path=extra_features_path,
-                       data_path=data_path_mimic,
-                       folds_path=folds_path)
-    db_eicu = DbEicu(data_path=data_path_eicu)
-
-    patient_list_mimic_base = db_mimic.create_patient_list()
-    patient_list_eicu_base = db_eicu.create_patient_list()
-
-    space = {
-        'threshold_vals': hp.uniform('thershold_val', 0, 1),
-        'kNN_vals': hp.choice('kNN_vals', range(1, 100)),
-        'XGB_vals': hp.choice('XGB_vals', range(1, 60)),
-        'non_vals': hp.choice('non_vals', range(400, 2500)),
-        # 'clf1_weight': hp.choice('clf1_weight', range(1, 30)),
-        # 'clf2_weight': hp.choice('clf2_weight', range(1, 30)),
-        # 'clf3_weight': hp.choice('clf3_weight', range(1, 30)),
-        'over_balance': hp.choice('over_balance', [0, 1, 2])
-    }
-    objective_func = partial(
-        objective,
-        patient_list_mimic_base=patient_list_mimic_base,
-        patient_list_eicu_base=patient_list_eicu_base,
-        db_mimic=db_mimic,
-        db_eicu=db_eicu
-     )
-    trials = Trials()
-    best = fmin(
-        fn=objective_func,
-        space=space,
-        algo=tpe.suggest,
-        max_evals=200,
-        trials=trials,
-        return_argmin=False
-    )
-    print(best)
+def estimate_best_model(clf, data_mimic, targets_mimic):
+    estimator = HyperoptEstimator(classifier=clf,
+                                  algo=tpe.suggest,
+                                  max_evals=5,
+                                  trial_timeout=120)
+    try:
+        estimator.fit(data_mimic, targets_mimic)
+        res = eval(str(estimator.best_model()['learner']))
+    except Exception as e:
+        res = RandomForestClassifier()
+    return res
 
 
 def objective(params, patient_list_mimic_base, patient_list_eicu_base, db_mimic, db_eicu):
@@ -176,10 +154,10 @@ def objective(params, patient_list_mimic_base, patient_list_eicu_base, db_mimic,
     non = params['non_vals']
     t = params['threshold_vals']
     n = params['kNN_vals']
-    # clf1_weight = params['clf1_weight']
-    # clf2_weight = params['clf2_weight']
+    clf1_weight = params['clf1_weight']
+    clf2_weight = params['clf2_weight']
     # clf3_weight = params['clf3_weight']
-    # weight = [clf1_weight, clf2_weight, clf3_weight]
+    weight = [clf1_weight, clf2_weight]
     k = params['XGB_vals']
     over_balance = params['over_balance']
 
@@ -189,7 +167,7 @@ def objective(params, patient_list_mimic_base, patient_list_eicu_base, db_mimic,
         "kNN": n,
         "k_XGB": k,
         "non": non,
-        # "weight": weight,
+        "weight": weight,
         "over_balance": over_balance,
         "counter": counter
     }
@@ -230,13 +208,26 @@ def objective(params, patient_list_mimic_base, patient_list_eicu_base, db_mimic,
         under_balancer = TomekLinks()
         data_mimic, targets_mimic = under_balancer.fit_resample(data_mimic, targets_mimic)
 
+    # weight = 1
+    # adjust data for estimator
+    data_mimic = np.array(data_mimic)
+    targets_mimic = np.array(targets_mimic)
+    data_eicu = np.array(data_eicu)
+    targets_eicu = np.array(targets_eicu)
+
+    # estimate best model
+    clf1 = estimate_best_model(random_forest('my_name.random_forest'), data_mimic, targets_mimic)
+    clf2 = estimate_best_model(knn('my_name.knn'), data_mimic, targets_mimic)
+    # clf3 = estimate_best_model(ada_boost('my_name.ada_boost'), data_mimic, targets_mimic)
+    clfs = [clf1, clf2]
+
     # fit model
-    weight = 1
-    grid = build_grid_model(weight)
+    grid = build_grid_model(clfs, weight)
     clf_forest = train_model(grid, data_mimic, targets_mimic)
 
     # model assessment
-    auroc, aupr, auroc_vals, aupr_vals = model_assessment(clf_forest, data_eicu, targets_eicu, data_mimic, targets_mimic)
+    auroc, aupr, auroc_vals, aupr_vals = model_assessment(clf_forest, data_eicu, targets_eicu, data_mimic,
+                                                          targets_mimic)
 
     # plot graph
     utils.plot_graphs(auroc_vals, aupr_vals, counter, 'c')
@@ -248,10 +239,50 @@ def objective(params, patient_list_mimic_base, patient_list_eicu_base, db_mimic,
     }
     utils.log_dict(vals=results, msg="Run results:")
     return {
-        'loss': -1.0 * auroc,
+        'loss': -1.0 * aupr,
         'status': STATUS_OK,
         'metadata': results
     }
+
+
+def main():
+    global counter
+    db_mimic = DbMimic(boolean_features_path=boolean_features_path,
+                       extra_features_path=extra_features_path,
+                       data_path=data_path_mimic,
+                       folds_path=folds_path)
+    db_eicu = DbEicu(data_path=data_path_eicu)
+
+    patient_list_mimic_base = db_mimic.create_patient_list()
+    patient_list_eicu_base = db_eicu.create_patient_list()
+
+    space = {
+        'threshold_vals': hp.uniform('thershold_val', 0, 1),
+        'kNN_vals': hp.choice('kNN_vals', range(1, 100)),
+        'XGB_vals': hp.choice('XGB_vals', range(1, 60)),
+        'non_vals': hp.choice('non_vals', range(400, 2500)),
+        'clf1_weight': hp.choice('clf1_weight', range(1, 30)),
+        'clf2_weight': hp.choice('clf2_weight', range(1, 30)),
+        # 'clf3_weight': hp.choice('clf3_weight', range(1, 30)),
+        'over_balance': hp.choice('over_balance', [0, 1, 2])
+    }
+    objective_func = partial(
+        objective,
+        patient_list_mimic_base=patient_list_mimic_base,
+        patient_list_eicu_base=patient_list_eicu_base,
+        db_mimic=db_mimic,
+        db_eicu=db_eicu
+    )
+    trials = Trials()
+    best = fmin(
+        fn=objective_func,
+        space=space,
+        algo=atpe.suggest,
+        max_evals=1000,
+        trials=trials,
+        return_argmin=False
+    )
+    print(best)
 
 
 if __name__ == "__main__":
