@@ -228,22 +228,23 @@ def plot_graphs(auroc_vals, aupr_vals, counter, objective: str):
     pyplot.close()
 
 
-def create_labels_vector(db, removed_features):
+def create_labels_vector(db, removed_features, objective_c=False):
     ret_vecotr = []
-    essences = ["Average", "Max", "Min", "Latest", "Amount", "STD", "Last 5 average", "Max-min diff"]
+    essences = ["Average", "Max", "Min", "Latest", "Amount", "STD", "Last 5 average", "Max-min diff", "0.25 quantile", "0.75 quantile", "Max delta"]
     for label in set(db.get_labels()) - set(removed_features):
         for essence in essences:
-            ret_vecotr.extend(label + "_" + essence)
-    boolean_features = db.get_distinct_boolean_features()
-    boolean_features.sort()
-    ret_vecotr.extend(boolean_features)
-    ret_vecotr += create_labels_for_categorical_features()
+            ret_vecotr.extend([label + "_" + essence])
+    if not objective_c:
+        boolean_features = db.get_distinct_boolean_features()
+        boolean_features.sort()
+        ret_vecotr.extend(boolean_features)
+        ret_vecotr += create_labels_for_categorical_features()
     return ret_vecotr
 
 
 def create_labels_for_categorical_features():
     return [*one_hot_encoding.GENDER_ENCODING.keys()] + [*one_hot_encoding.INSURANCE_ENCODING.keys()] + \
-           [*one_hot_encoding.ETHNICITY_ENCODING.keys()] + ['transfers', 'symptoms']
+           [*one_hot_encoding.ETHNICITY_ENCODING.keys()] + ['transfers'] + [f'symp_{i}' for i in range(0, 128)]
 
 
 def normalize_data(data):
@@ -257,3 +258,11 @@ def normalize_data(data):
         res.append(z_score)
     res = np.array(res).transpose()
     return res
+
+
+def save_conf_file(config, counter, objective):
+    path = f"C:/tools/objective_{objective}/{counter}_config.txt" if user == "idan"\
+        else f"/Users/user/Documents/University/Workshop/graphs for milestone 2/{objective}_{counter}_config.txt"
+    with open(path, "a+") as f:
+        for key in config:
+            f.write(f'{key}: {config[key]}\n')

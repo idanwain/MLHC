@@ -50,7 +50,6 @@ def main():
         'threshold_vals': hp.uniform('thershold_val', 0, 1),
         'kNN_vals': hp.choice('kNN_vals', range(1, 20)),
         'XGB_vals': hp.choice('XGB_vals', range(30, 62)),
-
     }
     objective_func = partial(objective,patient_list_base=patient_list_base,db=db,folds=folds)
     trials = Trials()
@@ -65,6 +64,7 @@ def objective(params,patient_list_base,db,folds):
     folds_indices = []
     auroc_vals = []
     aupr_vals = []
+    selected_features = []
     patient_list = copy.deepcopy(patient_list_base)
 
     ### Hyperparameters ###
@@ -104,6 +104,7 @@ def objective(params,patient_list_base,db,folds):
         selector = SelectKBest(k=xgb_k)
         X_train = selector.fit_transform(X_train,y_train)
         indices = selector.get_support(indices=True)
+        selected_features.append([feature for i, feature in enumerate(labels_vector) if i in indices])
         X_test = utils.create_vector_of_important_features(X_test, indices)
 
 
@@ -142,6 +143,8 @@ def objective(params,patient_list_base,db,folds):
         aupr_vals.append([pr_val, no_skill, lr_recall, lr_precision])
 
     utils.plot_graphs(auroc_vals, aupr_vals, counter, 'a')
+    config['selected_features'] = selected_features
+    utils.save_conf_file(config, counter, 'a')
 
     counter += 1
     results = {"AUROC_AVG": np.average([i[0] for i in auroc_vals]),

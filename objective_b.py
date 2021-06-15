@@ -64,6 +64,7 @@ def objective(params,patient_list_base,db,folds):
     folds_indices = []
     auroc_vals = []
     aupr_vals = []
+    selected_features = []
     patient_list = copy.deepcopy(patient_list_base)
 
     ### Hyperparameters ###
@@ -103,6 +104,7 @@ def objective(params,patient_list_base,db,folds):
         selector = SelectKBest(k=xgb_k)
         X_train = selector.fit_transform(X_train,y_train)
         indices = selector.get_support(indices=True)
+        selected_features.append([feature for i, feature in enumerate(labels_vector) if i in indices])
         X_test = utils.create_vector_of_important_features(X_test, indices)
 
 
@@ -140,7 +142,9 @@ def objective(params,patient_list_base,db,folds):
         auroc_vals.append([roc_val, ns_fpr, ns_tpr, lr_fpr, lr_tpr])
         aupr_vals.append([pr_val, no_skill, lr_recall, lr_precision])
 
-    # utils.plot_graphs(auroc_vals, aupr_vals, counter, 'b')
+    utils.plot_graphs(auroc_vals, aupr_vals, counter, 'b')
+    config['selected_features'] = selected_features
+    utils.save_conf_file(config, counter, 'b')
 
     counter += 1
     results = {"AUROC_AVG": np.average([i[0] for i in auroc_vals]),
