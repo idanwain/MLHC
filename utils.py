@@ -266,3 +266,13 @@ def save_conf_file(config, counter, objective):
     with open(path, "w") as f:
         for key in config:
             f.write(f'{key}: {config[key]}\n')
+
+
+def create_labels_vector_by_labels(labels):
+    ret_vecotr = []
+    essences = ["Average", "Max", "Min", "Latest", "Amount", "STD", "Last 5 average", "Max-min diff", "0.25 quantile", "0.75 quantile", "Max delta"]
+    for label in labels:
+        for essence in essences:
+            ret_vecotr.extend([label + "_" + essence])
+
+    return ret_vecotr

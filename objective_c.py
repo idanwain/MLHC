@@ -10,9 +10,9 @@ from sklearn.neighbors import KNeighborsClassifier
 import utils
 from db_interface_eicu import DbEicu
 from db_interface_mimic import DbMimic
-from hyperopt import hp, tpe, fmin, Trials, STATUS_OK, rand, atpe
+from hyperopt import hp, tpe, fmin, Trials, STATUS_OK, rand, atpe, STATUS_FAIL
 from functools import partial
-from imblearn.under_sampling import TomekLinks
+from imblearn.under_sampling import TomekLinks, RandomUnderSampler, NearMiss
 from hpsklearn import HyperoptEstimator, random_forest, knn, ada_boost
 import numpy as np
 
@@ -83,11 +83,13 @@ def get_data_from_db(patient_list, labels):
     return data
 
 
-def fill_missing_data(data, n_neighbors=10):
+def fill_missing_data(data_mimic, data_eicu, n_neighbors=10):
     imputer = KNNImputer(n_neighbors=n_neighbors, weights="uniform")
-    data = (imputer.fit_transform(data))
+    imputer = imputer.fit(data_mimic)
+    data_mimic = imputer.transform(data_mimic)
+    data_eicu = imputer.transform(data_eicu)
 
-    return data
+    return data_mimic, data_eicu
 
 
 def feature_selection(data_mimic, data_eicu, targets_mimic, k):
@@ -96,25 +98,14 @@ def feature_selection(data_mimic, data_eicu, targets_mimic, k):
     top_k_xgb = fs.get_support(indices=True)
     data_eicu = utils.create_vector_of_important_features(data_eicu, top_k_xgb)
 
-    return data_mimic, data_eicu
+    return data_mimic, data_eicu, top_k_xgb
 
 
 def build_grid_model(clfs, weight):
-    # clf1 = RandomForestClassifier()
-    # clf2 = KNeighborsClassifier()
-    # clf3 = AdaBoostClassifier()
-    # estimators = [('clf1', clf1), ('clf2', clf2), ('clf3', clf3)]
     estimators = [(f'clf{i+1}', clf) for i, clf in enumerate(clfs)]
     clf = VotingClassifier(estimators=estimators, voting='soft', weights=weight)
+
     return clf
-    # params = {
-    #     'rf__n_estimators': [20, 200],
-    #     'rf__random_state': [0, 5],
-    #     'knn__n_neighbors': [1, 20],
-    #     'knn__leaf_size': [22, 80],
-    #     'ab__n_estimators': [20, 150]
-    # }
-    # return GridSearchCV(estimator=clf, param_grid=params)
 
 
 def train_model(clf_forest, data_mimic, targets_mimic):
@@ -159,7 +150,7 @@ def objective(params, patient_list_mimic_base, patient_list_eicu_base, db_mimic,
     # clf3_weight = params['clf3_weight']
     weight = [clf1_weight, clf2_weight]
     k = params['XGB_vals']
-    over_balance = params['over_balance']
+    balance = params['balance']
 
     # log configuration
     config = {
@@ -168,7 +159,7 @@ def objective(params, patient_list_mimic_base, patient_list_eicu_base, db_mimic,
         "k_XGB": k,
         "non": non,
         "weight": weight,
-        "over_balance": over_balance,
+        "balance": balance,
         "counter": counter
     }
     utils.log_dict(vals=config, msg="Configuration:")
@@ -191,24 +182,19 @@ def objective(params, patient_list_mimic_base, patient_list_eicu_base, db_mimic,
 
     # normalize data
     data_mimic = utils.normalize_data(data_mimic)
-    data_eicu = utils.normalize_data(data_eicu)
+    data_eicu = utils.normalize_data(np.concatenate((data_mimic, data_eicu)))[len(data_mimic):]
 
     # fill missing data
-    data_mimic = fill_missing_data(data_mimic, n_neighbors=n)
-    data_eicu = fill_missing_data(data_eicu, n_neighbors=n)
+    data_mimic, data_eicu = fill_missing_data(data_mimic, data_eicu, n_neighbors=n)
 
     # feature selection
-    data_mimic, data_eicu = feature_selection(data_mimic, data_eicu, targets_mimic, k)
+    data_mimic, data_eicu, indices = feature_selection(data_mimic, data_eicu, targets_mimic, k)
+    labels_vector = utils.create_labels_vector_by_labels(final_labels)
+    config['selected_features'] = [feature for i, feature in enumerate(labels_vector) if i in indices]
 
     # balance data
-    if over_balance == 0:
-        over_balancer = BorderlineSMOTE()
-        data_mimic, targets_mimic = over_balancer.fit_resample(data_mimic, targets_mimic)
-    elif over_balance == 1:
-        under_balancer = TomekLinks()
-        data_mimic, targets_mimic = under_balancer.fit_resample(data_mimic, targets_mimic)
+    data_mimic, targets_mimic = balance.fit_resample(data_mimic, targets_mimic)
 
-    # weight = 1
     # adjust data for estimator
     data_mimic = np.array(data_mimic)
     targets_mimic = np.array(targets_mimic)
@@ -221,6 +207,15 @@ def objective(params, patient_list_mimic_base, patient_list_eicu_base, db_mimic,
     # clf3 = estimate_best_model(ada_boost('my_name.ada_boost'), data_mimic, targets_mimic)
     clfs = [clf1, clf2]
 
+    for j, clf in enumerate(clfs):
+        config[f'best_model_{j}'] = str(clf)
+
+    if None in clfs:
+        return {
+            'loss': 0,
+            'status': STATUS_FAIL
+        }
+
     # fit model
     grid = build_grid_model(clfs, weight)
     clf_forest = train_model(grid, data_mimic, targets_mimic)
@@ -231,6 +226,7 @@ def objective(params, patient_list_mimic_base, patient_list_eicu_base, db_mimic,
 
     # plot graph
     utils.plot_graphs(auroc_vals, aupr_vals, counter, 'c')
+    utils.save_conf_file(config, counter, 'c')
 
     counter += 1
     results = {
@@ -264,7 +260,7 @@ def main():
         'clf1_weight': hp.choice('clf1_weight', range(1, 30)),
         'clf2_weight': hp.choice('clf2_weight', range(1, 30)),
         # 'clf3_weight': hp.choice('clf3_weight', range(1, 30)),
-        'over_balance': hp.choice('over_balance', [0, 1, 2])
+        'balance': hp.choice('balance', [TomekLinks(), BorderlineSMOTE(), RandomUnderSampler()])
     }
     objective_func = partial(
         objective,
