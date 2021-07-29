@@ -10,6 +10,7 @@ def module_2_preprocessing(external_validation_set_path, model_type):
     threshold = 0.5
     n_neighbors = 5
     data = []
+    ids = {'identifier':[]}
     db = DbMimic(external_validation_set_path,
                  external_validation_set_path,
                  data_path=external_validation_set_path,
@@ -21,6 +22,7 @@ def module_2_preprocessing(external_validation_set_path, model_type):
     for patient in patient_list:
         vector = patient.create_vector_for_patient()
         data.append(vector)
+        ids['identifier'].append(patient.get_identifier())
 
     ### Normalize data ###
     data = utils.normalize_data(data)
@@ -36,6 +38,7 @@ def module_2_preprocessing(external_validation_set_path, model_type):
 
     ### Save files ###
     df = pd.DataFrame(data)
+    df.append(ids)
     df.to_csv(processed_external_validation_set_path)
 
 def load_indices_from_disk(indices_file_path):
