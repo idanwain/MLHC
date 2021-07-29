@@ -1,3 +1,9 @@
+import sql_helper
 
-def module_1_cohort_creation(file_a_path, db_conn, model_type):
-    pass
+user = 'idan'
+
+
+def module_1_cohort_creation(file_path, db_conn, model_type):
+    db = sql_helper.SqlHelper(db_conn, user)
+    db.load_cohort_to_db(file_path, model_type)
+    db.create_features_table()
