@@ -39,5 +39,7 @@ def module_2_preprocessing(external_validation_set_path, model_type):
     df.to_csv(processed_external_validation_set_path)
 
 def load_indices_from_disk(indices_file_path):
-    pass
-
+    with open(indices_file_path,'r') as file:
+        content = file.read()
+        indices = content.split(',')
+    return indices
