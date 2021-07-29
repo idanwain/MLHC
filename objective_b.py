@@ -28,7 +28,7 @@ from numpy import nan
 
 user = 'roye'
 counter = 0
-model = 'b'
+model = 'a'
 
 if model == 'a':
     boolean_features_path = 'C:/tools/boolean_features_mimic_model_a.csv' if user == 'idan' \
@@ -182,7 +182,6 @@ def objective(params, patient_list_base, db, folds):
         X_train, y_train = balance[fold_num].fit_resample(X_train, y_train)
 
         # model fitting
-        print(np.isnan(X_train))
         estimator = HyperoptEstimator(classifier=any_classifier('my_clf'),
                                       algo=tpe.suggest,
                                       max_evals=10,
@@ -217,8 +216,8 @@ def objective(params, patient_list_base, db, folds):
         }
 
     # save result
-    utils.plot_graphs(auroc_vals, aupr_vals, counter, 'b')
-    utils.save_conf_file(config, counter, 'b')
+    utils.plot_graphs(auroc_vals, aupr_vals, counter, model)
+    utils.save_conf_file(config, counter, model)
 
     auroc_avg = np.average([i[0] for i in auroc_vals])
     aupr_avg = np.average([i[0] for i in aupr_vals])
