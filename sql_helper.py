@@ -13,32 +13,32 @@ class SqlHelper:
                 execute_result = self.cursor.execute(query, params)
             else:
                 execute_result = self.cursor.execute(query)
-            result = []
-            column = []
-            if execute_result is not None:
-                if not execute_result.description:
-                    return []
-
-                columns = [column[0] for column in execute_result.description]
-
-                if len(columns) == 1:
-                    result.append({columns[0]: []})
-                    column = result[0].get(columns[0])
-
-                for row in execute_result.fetchall():
-                    if len(columns) == 1:
-                        column.append(row[0])
-                    else:
-                        result.append(dict(zip(columns, row)))
-
-                if len(result) == 1 and len(result[0].keys()) == 1 and not result[0][list(result[0].keys())[0]]:
-                    result = []
-
-            return result
-
         except Exception as e:
             utils.log_dict(msg=f'DB error: {query}, Exception: {e}')
             raise
+
+        result = []
+        column = []
+        if execute_result is not None:
+            if not execute_result.description:
+                return []
+
+            columns = [column[0] for column in execute_result.description]
+
+            if len(columns) == 1:
+                result.append({columns[0]: []})
+                column = result[0].get(columns[0])
+
+            for row in execute_result.fetchall():
+                if len(columns) == 1:
+                    column.append(row[0])
+                else:
+                    result.append(dict(zip(columns, row)))
+
+            if len(result) == 1 and len(result[0].keys()) == 1 and not result[0][list(result[0].keys())[0]]:
+                result = []
+
+        return result
 
     def load_cohort_to_db(self, file_path, model_type):
         query = f"""DROP TABLE IF EXISTS model_{model_type}_mimic_cohort;
