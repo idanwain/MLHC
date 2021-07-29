@@ -1,12 +1,12 @@
 from sklearn.impute import KNNImputer
-from sklearn.feature_selection import SelectKBest
+from sklearn.feature_selection import SelectKBest, SelectFpr, SelectFromModel
 from hyperopt import hp, tpe, fmin, Trials, STATUS_OK, STATUS_FAIL, atpe
 import numpy as np
 from functools import partial
 import copy
 from db_interface_mimic import DbMimic
 import utils
-from imblearn.under_sampling import TomekLinks, ClusterCentroids, RandomUnderSampler, NearMiss
+from imblearn.under_sampling import TomekLinks, ClusterCentroids, RandomUnderSampler, NearMiss, EditedNearestNeighbours
 from hpsklearn import HyperoptEstimator, svc, any_classifier, any_preprocessing
 import itertools
 from collections import Counter
@@ -26,7 +26,7 @@ from imblearn.over_sampling import *
 from imblearn.combine import SMOTETomek
 from numpy import nan
 
-user = 'idan'
+user = 'roye'
 counter = 0
 model = 'a'
 
@@ -83,10 +83,12 @@ def feature_selection(X_train, X_test, y_train, k):
     if k > len(X_train[0]):
         utils.log_dict(msg="Using all features")
         k = len(X_train[0])
-    selector = SelectKBest(k=k)
-    X_train = selector.fit_transform(X_train, y_train)
+    selector = SelectFromModel(estimator=XGBClassifier(),max_features=k)
+    selector.fit(X_train, y_train)
+    X_train = selector.transform(X_train)
     indices = selector.get_support(indices=True)
-    X_test = utils.create_vector_of_important_features(X_test, indices)
+    # X_test = utils.create_vector_of_important_features(X_test, indices)
+    X_test = selector.transform(X_test)
 
     return X_train, X_test, indices
 
@@ -112,17 +114,17 @@ def main():
     patient_list_base = db.create_patient_list()
     space = {
         'threshold_vals': hp.uniform('thershold_val', 0, 1),
-        'kNN_vals': hp.choice('kNN_vals', range(1, 20)),
+        'kNN_vals': hp.choice('kNN_vals', range(1, 15)),
         'XGB1_vals': hp.choice('XGB1_vals', range(1, 60)),
         'XGB2_vals': hp.choice('XGB2_vals', range(1, 60)),
         'XGB3_vals': hp.choice('XGB3_vals', range(1, 60)),
         'XGB4_vals': hp.choice('XGB4_vals', range(1, 60)),
         'XGB5_vals': hp.choice('XGB5_vals', range(1, 60)),
-        'balance': hp.choice('balance', [TomekLinks(), BorderlineSMOTE(), RandomUnderSampler(), NearMiss()])
+        'balance': hp.choice('balance', [TomekLinks(), RandomUnderSampler()])
     }
     objective_func = partial(objective, patient_list_base=patient_list_base, db=db, folds=folds)
     trials = Trials()
-    best = fmin(fn=objective_func, space=space, algo=atpe.suggest, max_evals=100, trials=trials, return_argmin=False)
+    best = fmin(fn=objective_func, space=space, algo=tpe.suggest, max_evals=100, trials=trials, return_argmin=False)
     print(best)
 
 
