@@ -117,3 +117,6 @@ class PatientMimic:
                 max_delta = curr_delta
         return [max_delta]
 
+    def get_identifier(self):
+        return self.hadm_id
+
