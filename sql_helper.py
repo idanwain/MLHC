@@ -216,3 +216,116 @@ class SqlHelper:
                     ;"""
 
         self.execute_query(query)
+
+    def init_boolean_features(self):
+        query = f"""drop table if exists boolean_features;
+                    create table boolean_features (itemid int, linksto varchar(50), category varchar(100));
+                    insert into boolean_features select itemid, linksto, category from d_items where category in
+                    (
+                    'Access Lines - Invasive',
+                    'Lumbar Puncture',
+                    'Impella',
+                    'Arterial Line Insertion',
+                    'IABP',
+                    'Intubation',
+                    'Thoracentesis',
+                    'Dialysis',
+                    'Access Lines - Peripheral',
+                    'PA Line Insertion',
+                    'Tandem Heart',
+                    'PICC Line Insertion',
+                    'CVL Insertion',
+                    'Paracentesis'
+                    ) and linksto = 'chartevents';
+                    
+                    insert into cohort_relevant_features select itemid, linksto from boolean_features;"""
+
+        self.execute_query(query)
+
+    def merge_features_and_cohort(self, user):
+        output_path = 'C:/tools/feature_mimic_cohort_model_a.csv' if user == 'idan' else '/Users/user/Documents/University/Workshop/feature_mimic_cohort_model_a.csv'
+        query = f"""DROP TABLE IF EXISTS relevant_labevents_for_cohort;
+                    CREATE TABLE relevant_labevents_for_cohort as (
+                        select subject_id||'-'||hadm_id as identifier, subject_id, hadm_id, itemid, charttime, valuenum, valueuom, label
+                        from labevents join (select itemid, label from d_labitems) as t1 using (itemid)
+                        where subject_id||'-'||hadm_id in (select identifier from model_a_mimic_cohort) 
+                        AND itemid in (select item_id from cohort_relevant_features where _table='labevents')
+                    );
+                    
+                    
+                    DROP TABLE IF EXISTS relevant_chartevents_for_cohort;
+                    CREATE TABLE relevant_chartevents_for_cohort as (
+                        select subject_id||'-'||hadm_id as identifier, subject_id, hadm_id, itemid, charttime, valuenum, valueuom, label
+                        from chartevents join (select itemid, label from d_items) as t1 using (itemid)
+                        where subject_id||'-'||hadm_id in (select identifier from model_a_mimic_cohort) 
+                            AND itemid in (select item_id from cohort_relevant_features where _table='chartevents')
+                    );
+                    
+                    DROP TABLE IF EXISTS relevant_procedure_for_cohort;
+                    CREATE TABLE relevant_procedure_for_cohort as (
+                        select subject_id||'-'||hadm_id as identifier, subject_id, hadm_id, itemid, starttime as charttime, value as valuenum, valueuom, label
+                        from procedureevents_mv join (select itemid, label from d_items) as t1 using (itemid)
+                        where subject_id||'-'||hadm_id in (select identifier from model_a_mimic_cohort) 
+                            AND itemid in (select item_id from cohort_relevant_features where _table='procedureevents_mv')
+                    );
+                    
+                    DROP TABLE IF EXISTS relevant_inputs_mv_for_cohort;
+                    CREATE TABLE relevant_inputs_mv_for_cohort as (
+                        select subject_id||'-'||hadm_id as identifier, subject_id, hadm_id, itemid, starttime as charttime, amount as valuenum, amountuom as valueuom, label
+                        from inputevents_mv join (select itemid, label from d_items) as t1 using (itemid)
+                        where subject_id||'-'||hadm_id in (select identifier from model_a_mimic_cohort) 
+                            AND itemid in (select item_id from cohort_relevant_features where _table='inputevents_mv')
+                    );
+                    
+                    
+                    DROP TABLE IF EXISTS relevant_inputs_cv_for_cohort;
+                    CREATE TABLE relevant_inputs_cv_for_cohort as (
+                        select subject_id||'-'||hadm_id as identifier, subject_id, hadm_id, itemid, charttime, amount as valuenum, amountuom as valueuom, label
+                        from inputevents_cv join (select itemid, label from d_items) as t1 using (itemid)
+                        where subject_id||'-'||hadm_id in (select identifier from model_a_mimic_cohort) 
+                            AND itemid in (select item_id from cohort_relevant_features where _table='inputevents_cv')
+                    );
+                    
+                    /* (5_c) Create a unified table of feature from the tables created above:*/
+                    DROP TABLE IF EXISTS all_relevant_lab_features;
+                    CREATE TABLE all_relevant_lab_features as (
+                        select * from 
+                        relevant_chartevents_for_cohort 
+                        union 
+                        (select * from relevant_labevents_for_cohort)
+                        union
+                        (select * from relevant_procedure_for_cohort)
+                        union
+                        (select * from relevant_inputs_mv_for_cohort)
+                        union
+                        (select * from relevant_inputs_cv_for_cohort)
+                    );
+                    
+                    /* (5_d) Create a table of relevant events (features) received near when the target (culture) was received */
+                    DROP TABLE IF EXISTS relevant_events;
+                    CREATE TABLE relevant_events as(
+                        SELECT 
+                                *,
+                                date_part('year', admittime) - date_part('year', dob) as estimated_age,
+                                round(CAST((extract(epoch from target_time - all_relevant_lab_features.charttime) / 3600.0) as numeric),2) as hours_from_charttime_time_to_targettime,
+                                round(CAST((extract(epoch from charttime - admittime) / 3600.0 ) as numeric),2) as hours_from_admittime_to_charttime,
+                                round(CAST((extract(epoch from target_time - admittime) / 3600.0) as numeric),2) as hours_from_admittime_to_targettime
+                        FROM 
+                            all_relevant_lab_features			
+                            INNER JOIN (select identifier, target, target_time, admittime from model_a_mimic_cohort) _tmp2 using (identifier)
+                            INNER JOIN (select subject_id,gender, dob from patients where subject_id in (
+                                                            select CAST (subject_id as INTEGER) 
+                                                            from model_a_mimic_cohort)) as t3 	
+                                        using (subject_id)
+                        WHERE 
+                             identifier in (select identifier from model_a_mimic_cohort)
+                        AND
+                            (extract(epoch from target_time - all_relevant_lab_features.charttime)) > 0
+                    );
+                    
+                    /* (5_e) save table to CSV file*/
+                    COPY relevant_events To
+                    {output_path}
+                    With CSV DELIMITER ',' HEADER;"""
+
+        self.execute_query(query)
