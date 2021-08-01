@@ -7,6 +7,9 @@ class SqlHelper:
         self.cursor = db_connection.cursor()
         self.user = username
 
+    def close(self):
+        self.cursor.close()
+
     def execute_query(self, query: str, params: List = None):
         try:
             if params is not None:
@@ -243,7 +246,7 @@ class SqlHelper:
         self.execute_query(query)
 
     def merge_features_and_cohort(self, user):
-        output_path = 'C:/tools/feature_mimic_cohort_model_a.csv' if user == 'idan' else '/Users/user/Documents/University/Workshop/feature_mimic_cohort_model_a.csv'
+        output_path = "'C:/tools/feature_mimic_cohort_model_a2.csv'" if user == 'idan' else "'/Users/user/Documents/University/Workshop/feature_mimic_cohort_model_a.csv'"
         query = f"""DROP TABLE IF EXISTS relevant_labevents_for_cohort;
                     CREATE TABLE relevant_labevents_for_cohort as (
                         select subject_id||'-'||hadm_id as identifier, subject_id, hadm_id, itemid, charttime, valuenum, valueuom, label
