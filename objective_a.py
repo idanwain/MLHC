@@ -26,9 +26,9 @@ from hpsklearn import HyperoptEstimator, svc, any_classifier, any_preprocessing
 from numpy import nan
 import os
 
-try:
-    user = os.environ['MLHC_USER']
-except KeyError:
+if os.name == 'posix':
+    user = 'roye'
+else:
     user = 'idan'
 boolean_features_path = 'C:/tools/boolean_features_mimic_model_a.csv' if user == 'idan' \
     else '/Users/user/Documents/University/Workshop/boolean_features_mimic_model_a.csv'

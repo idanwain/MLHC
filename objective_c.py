@@ -17,9 +17,9 @@ from hpsklearn import HyperoptEstimator, random_forest, knn, ada_boost
 import numpy as np
 import os
 
-try:
-    user = os.environ['MLHC_USER']
-except KeyError:
+if os.name == 'posix':
+    user = 'roye'
+else:
     user = 'idan'
 data_path_eicu = 'C:/tools/feature_eicu_cohort.csv' if user == 'idan' \
     else '/Users/user/Documents/University/Workshop/feature_eicu_cohort.csv'

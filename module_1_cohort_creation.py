@@ -1,9 +1,9 @@
 import sql_helper
 import os
 
-try:
-    user = os.environ['MLHC_USER']
-except KeyError:
+if os.name == 'posix':
+    user = 'roye'
+else:
     user = 'idan'
 
 

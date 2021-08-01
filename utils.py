@@ -8,9 +8,9 @@ import one_hot_encoding
 from scipy import stats
 import os
 
-try:
-    user = os.environ['MLHC_USER']
-except KeyError:
+if os.name == 'posix':
+    user = 'roye'
+else:
     user = 'idan'
 
 def get_features_for_removal(threshold: float, patient_list: list, db):

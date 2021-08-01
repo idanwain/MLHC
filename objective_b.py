@@ -27,9 +27,9 @@ from imblearn.combine import SMOTETomek
 from numpy import nan
 import os
 
-try:
-    user = os.environ['MLHC_USER']
-except KeyError:
+if os.name == 'posix':
+    user = 'roye'
+else:
     user = 'idan'
 counter = 0
 model = 'b'
