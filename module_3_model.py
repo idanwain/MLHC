@@ -1,7 +1,7 @@
 import pickle
 import pandas as pd
 
-path_to_model = "./model"
+path_to_model = "model"
 
 
 def module_3_model(processed_external_validation_set_path, model_type):
@@ -16,7 +16,8 @@ def module_3_model(processed_external_validation_set_path, model_type):
 
     ### Load model and perform prediciton ###
     data = df.to_numpy()
-    clf = pickle.load(path_to_model + '_' + model_type)
+    with open(path_to_model + '_' + model_type , 'rb') as file:
+        clf = pickle.load(file)
     result = clf.predict_proba(data)
 
     ### Save results to csv ###

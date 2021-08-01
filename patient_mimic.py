@@ -25,7 +25,7 @@ class PatientMimic:
             self.target = 0
         else:
             self.target = 1
-        self.events = events_list
+        self.events = {k: events_list[k] for k in sorted(events_list)}
         self.boolean_features = boolean_features
 
     def create_vector_for_patient(self, labels=None, objective_c=False):
@@ -51,6 +51,10 @@ class PatientMimic:
         Min value
         Latest sample value
         Amount of samples
+        STD
+        Average of last 5 samples
+        Difference between lowest sample and highest sample
+        25th and 75th quartiles
         """
         max_val = -1
         min_val = sys.maxsize

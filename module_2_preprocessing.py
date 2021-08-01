@@ -2,11 +2,12 @@ from db_interface_mimic import DbMimic
 import utils
 from sklearn.impute import KNNImputer
 import pandas as pd
+import pickle
 
-indices_file_path = './indices'
 processed_external_validation_set_path = './processed_external_validation_set_path.csv'
 def module_2_preprocessing(external_validation_set_path, model_type):
     ### These values should be replaced with optimal values ###
+    indices_file_path = 'indices_' + model_type
     threshold = 0.5
     n_neighbors = 5
     data = []
@@ -42,7 +43,6 @@ def module_2_preprocessing(external_validation_set_path, model_type):
     df.to_csv(processed_external_validation_set_path)
 
 def load_indices_from_disk(indices_file_path):
-    with open(indices_file_path,'r') as file:
-        content = file.read()
-        indices = content.split(',')
+    with open(indices_file_path,'rb') as file:
+        indices = pickle.load(file)
     return indices

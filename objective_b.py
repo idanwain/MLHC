@@ -26,15 +26,16 @@ from imblearn.over_sampling import *
 from imblearn.combine import SMOTETomek
 from numpy import nan
 import os
+import pickle
 
 if os.name == 'posix':
     user = 'roye'
 else:
     user = 'idan'
 counter = 0
-model = 'b'
+model_type = 'b'
 
-if model == 'a':
+if model_type == 'a':
     boolean_features_path = 'C:/tools/boolean_features_mimic_model_a.csv' if user == 'idan' \
         else '/Users/user/Documents/University/Workshop/boolean_features_mimic_model_a.csv'
     extra_features_path = 'C:/tools/extra_features_model_a.csv' if user == 'idan' \
@@ -43,7 +44,7 @@ if model == 'a':
         else '/Users/user/Documents/University/Workshop/feature_mimic_cohort_model_a.csv'
     folds_path = 'C:/tools/folds.csv' if user == 'idan' \
         else '/Users/user/Documents/University/Workshop/folds_mimic_model_a.csv'
-elif model == 'b':
+elif model_type == 'b':
     boolean_features_path = 'C:/tools/boolean_features_mimic_model_b.csv' if user == 'idan' \
         else '/Users/user/Documents/University/Workshop/boolean_features_mimic_model_b.csv'
     extra_features_path = 'C:/tools/extra_features_model_b.csv' if user == 'idan' \
@@ -107,6 +108,28 @@ def train_model(estim, X_train, y_train):
 
     return clf, estim
 
+def get_best_model_and_indices(trails):
+    loss = 0
+    best_model = None
+    indices = []
+    for entry in trails.results:
+        if(entry['loss'] < loss):
+            best_model = entry['clf']
+            loss = entry['loss']
+            indices = entry['indices']
+    return best_model, indices
+
+def save_data_to_disk(model,indices,params):
+    model = pickle.dumps(model)
+    indices = pickle.dumps(indices)
+    params = {'threshold_vals':params['threshold_vals'],'kNN_vals':params['kNN_vals']}
+    params = pickle.dumps(params)
+    with open('model_' + model_type, 'wb') as model_file:
+        model_file.write(model)
+    with open('indices_' + model_type, 'wb') as indices_file:
+        indices_file.write(indices)
+    with open('optimal_values_' + model_type,'wb') as optimal_values_file:
+        optimal_values_file.write(params)
 
 def main():
     db = DbMimic(boolean_features_path,
@@ -129,7 +152,9 @@ def main():
     objective_func = partial(objective, patient_list_base=patient_list_base, db=db, folds=folds)
     trials = Trials()
     best = fmin(fn=objective_func, space=space, algo=tpe.suggest, max_evals=5, trials=trials, return_argmin=False)
-    print(best)
+    best_model, indices = get_best_model_and_indices(trials)
+    save_data_to_disk(best_model,indices,best)
+
 
 
 def objective(params, patient_list_base, db, folds):
@@ -220,8 +245,8 @@ def objective(params, patient_list_base, db, folds):
         }
 
     # save result
-    utils.plot_graphs(auroc_vals, aupr_vals, counter, model)
-    utils.save_conf_file(config, counter, model)
+    utils.plot_graphs(auroc_vals, aupr_vals, counter, model_type)
+    utils.save_conf_file(config, counter, model_type)
 
     auroc_avg = np.average([i[0] for i in auroc_vals])
     aupr_avg = np.average([i[0] for i in aupr_vals])
@@ -238,7 +263,9 @@ def objective(params, patient_list_base, db, folds):
     return {
         'loss': -1.0 * auroc_avg,
         'status': STATUS_OK,
-        'metadata': results
+        'metadata': results,
+        'clf': clf,
+        'indices' : indices
     }
 
 
