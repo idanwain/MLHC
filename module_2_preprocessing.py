@@ -6,7 +6,6 @@ import pickle
 
 processed_external_validation_set_path = './processed_external_validation_set_path.csv'
 def module_2_preprocessing(external_validation_set_path, model_type):
-    ### These values should be replaced with optimal values ###
     indices_file_path = 'indices_' + model_type
     optimal_values_path = 'optimal_values_' + model_type
     threshold , n_neighbors = load_optimal_values_from_disk(optimal_values_path)

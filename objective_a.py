@@ -109,7 +109,7 @@ def objective(params,patient_list_base,db,folds):
         ### Feature selection ###
         selector = SelectKBest(k=xgb_k)
         X_train = selector.fit_transform(X_train,y_train)
-        indices = selector.get_support(indices=True) #TODO: Save indices list to disk
+        indices = selector.get_support(indices=True)
         selected_features.append([feature for i, feature in enumerate(labels_vector) if i in indices])
         X_test = utils.create_vector_of_important_features(X_test, indices)
 
