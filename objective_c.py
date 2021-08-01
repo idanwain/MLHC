@@ -15,8 +15,12 @@ from functools import partial
 from imblearn.under_sampling import TomekLinks, RandomUnderSampler, NearMiss
 from hpsklearn import HyperoptEstimator, random_forest, knn, ada_boost
 import numpy as np
+import os
 
-user = 'idan'
+try:
+    user = os.environ['MLHC_USER']
+except KeyError:
+    user = 'idan'
 data_path_eicu = 'C:/tools/feature_eicu_cohort.csv' if user == 'idan' \
     else '/Users/user/Documents/University/Workshop/feature_eicu_cohort.csv'
 boolean_features_path = 'C:/tools/boolean_features_mimic_model_a.csv' if user == 'idan' \

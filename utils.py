@@ -6,8 +6,12 @@ from sklearn.calibration import CalibratedClassifierCV
 from sklearn.metrics import roc_auc_score, roc_curve, precision_recall_curve, f1_score, auc
 import one_hot_encoding
 from scipy import stats
+import os
 
-user = 'idan'
+try:
+    user = os.environ['MLHC_USER']
+except KeyError:
+    user = 'idan'
 
 def get_features_for_removal(threshold: float, patient_list: list, db):
     """

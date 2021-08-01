@@ -25,10 +25,14 @@ from xgboost import XGBClassifier
 from imblearn.over_sampling import *
 from imblearn.combine import SMOTETomek
 from numpy import nan
+import os
 
-user = 'roye'
+try:
+    user = os.environ['MLHC_USER']
+except KeyError:
+    user = 'idan'
 counter = 0
-model = 'a'
+model = 'b'
 
 if model == 'a':
     boolean_features_path = 'C:/tools/boolean_features_mimic_model_a.csv' if user == 'idan' \
@@ -124,7 +128,7 @@ def main():
     }
     objective_func = partial(objective, patient_list_base=patient_list_base, db=db, folds=folds)
     trials = Trials()
-    best = fmin(fn=objective_func, space=space, algo=tpe.suggest, max_evals=100, trials=trials, return_argmin=False)
+    best = fmin(fn=objective_func, space=space, algo=tpe.suggest, max_evals=5, trials=trials, return_argmin=False)
     print(best)
 
 

@@ -1,6 +1,10 @@
 import sql_helper
+import os
 
-user = 'idan'
+try:
+    user = os.environ['MLHC_USER']
+except KeyError:
+    user = 'idan'
 
 
 def module_1_cohort_creation(file_path, db_conn, model_type):
