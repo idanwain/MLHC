@@ -8,8 +8,8 @@ processed_external_validation_set_path = './processed_external_validation_set_pa
 def module_2_preprocessing(external_validation_set_path, model_type):
     ### These values should be replaced with optimal values ###
     indices_file_path = 'indices_' + model_type
-    threshold = 0.5
-    n_neighbors = 5
+    optimal_values_path = 'optimal_values_' + model_type
+    threshold , n_neighbors = load_optimal_values_from_disk(optimal_values_path)
     data = []
     ids = {'identifier':[]}
     db = DbMimic(external_validation_set_path,
@@ -46,3 +46,8 @@ def load_indices_from_disk(indices_file_path):
     with open(indices_file_path,'rb') as file:
         indices = pickle.load(file)
     return indices
+
+def load_optimal_values_from_disk(optimal_values_path):
+    with open(optimal_values_path,'rb') as file:
+        data = pickle.load(file)
+    return data['threshold_vals'], data['kNN_vals']
