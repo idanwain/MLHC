@@ -1,11 +1,18 @@
 import pickle
 import pandas as pd
+import os
+
 
 path_to_model = "model"
-
+if os.name == 'posix':
+    user = 'roye'
+else:
+    user = 'idan'
 
 def module_3_model(processed_external_validation_set_path, model_type):
-    path_to_risk_score = 'model_' + model_type + '_mimic_cohort_risk_score_group_8.csv'
+    path_to_risk_score = 'C:/tools/model_' + model_type + '_mimic_cohort_risk_score_group_8.csv' if user == 'idan' \
+        else '/Users/user/Documents/University/Workshop/model_' + model_type + '_mimic_cohort_risk_score_group_8.csv'
+
     final_df = {'identifier': [], 'risk_score': []}
 
     ### Load data from csv ###
