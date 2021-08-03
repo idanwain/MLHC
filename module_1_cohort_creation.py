@@ -12,17 +12,11 @@ training = False
 
 def module_1_cohort_creation(file_path, db_conn, model_type):
     db = sql_helper.SqlHelper(db_conn, model_type, user, training)
-    print('1')
     db.load_cohort_to_db(file_path)
-    print('2')
     db.create_features_table()
-    print('3')
     db.init_boolean_features()
-    print('4')
     db.create_symptoms()
-    print('5')
     db.merge_features_and_cohort()
-    print('6')
     db.close()
     db_conn.close()
 
