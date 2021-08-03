@@ -3,8 +3,15 @@ import utils
 from sklearn.impute import KNNImputer
 import pandas as pd
 import pickle
+import os
 
-processed_external_validation_set_path = './processed_external_validation_set_path.csv'
+if os.name == 'posix':
+    user = 'idan'
+else:
+    user = 'roye'
+
+processed_external_validation_set_path = 'C:/tools/processed_external_validation_set_path.csv' if user == 'idan' \
+    else '/Users/user/Documents/University/Workshop/processed_external_validation_set_path.csv'
 def module_2_preprocessing(external_validation_set_path, model_type):
     indices_file_path = 'indices_' + model_type
     optimal_values_path = 'optimal_values_' + model_type
@@ -40,6 +47,7 @@ def module_2_preprocessing(external_validation_set_path, model_type):
     df = pd.DataFrame(data)
     df.append(ids)
     df.to_csv(processed_external_validation_set_path)
+    return processed_external_validation_set_path
 
 def load_indices_from_disk(indices_file_path):
     with open(indices_file_path,'rb') as file:
