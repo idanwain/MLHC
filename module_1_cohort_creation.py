@@ -22,7 +22,6 @@ def module_1_cohort_creation(file_path, db_conn, model_type):
         else f"/Users/user/Documents/University/Workshop/external_validation_set_{model_type}.csv"
 
 
-
 if __name__ == '__main__':
     db_conn = psycopg2.connect(
         host="localhost",
