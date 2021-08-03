@@ -200,6 +200,7 @@ class DbMimic:
         return res
 
     def extract_symptoms_by_identifier(self, identifier):
-        relevant_row = self.relevant_events_data.loc[lambda df: df['identifier'] == identifier and df['label'] == 'symptoms', :]
+        relevant_row = self.relevant_events_data.loc[lambda df: df['identifier'] == identifier, :]
+        relevant_row = relevant_row.loc[lambda df: df['label'] == 'symptoms', :]
         for row in relevant_row.iterrows():
             return row[1]['valuenum']
