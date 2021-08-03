@@ -20,8 +20,8 @@ def module_2_preprocessing(external_validation_set_path, model_type):
     ids = {'identifier':[]}
     db = DbMimic(external_validation_set_path,
                  external_validation_set_path,
-                 data_path=external_validation_set_path,
-                 folds_path='')
+                 data_path=external_validation_set_path
+                 )
     patient_list_base = db.create_patient_list()
 
     ### Removing rare feautres ###

@@ -14,11 +14,13 @@ def module_1_cohort_creation(file_path, db_conn, model_type):
     db.create_features_table()
     db.init_boolean_features()
     db.create_symptoms(model_type)
-    output_path = db.merge_features_and_cohort(model_type, user)
+    db.merge_features_and_cohort(model_type, user)
     db.close()
     db_conn.close()
 
-    return output_path
+    return f"C:/tools/feature_mimic_cohort_model_{model_type}.csv" if user == 'idan' \
+        else f"/Users/user/Documents/University/Workshop/external_validation_set_{model_type}.csv"
+
 
 
 if __name__ == '__main__':
