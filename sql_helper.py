@@ -221,7 +221,9 @@ class SqlHelper:
 
         self.execute_query(query)
 
-    def init_boolean_features(self):
+    def init_boolean_features(self, model_type, user):
+        output_path = f"'C:/tools/boolean_features_mimic_model_{model_type}.csv'" if user == 'idan'\
+            else f"'/Users/user/Documents/University/Workshop/boolean_features_mimic_model_{model_type}.csv'"
         query = f"""drop table if exists boolean_features;
                     create table boolean_features (itemid int, linksto varchar(50), category varchar(100));
                     insert into boolean_features select itemid, linksto, category from d_items where category in
@@ -242,7 +244,10 @@ class SqlHelper:
                     'Paracentesis'
                     ) and linksto = 'chartevents';
                     
-                    insert into cohort_relevant_features select itemid, linksto from boolean_features;"""
+                    insert into cohort_relevant_features select itemid, linksto from boolean_features;
+                    COPY boolean_features To
+                    {output_path}
+                    With CSV DELIMITER ',' HEADER;"""
 
         self.execute_query(query)
 
@@ -476,7 +481,8 @@ class SqlHelper:
         self.execute_query(query)
 
     def merge_features_and_cohort(self, model_type, user):
-        output_path = f"'C:/tools/external_validation_set_{model_type}.csv'" if user == 'idan' else f"'/Users/user/Documents/University/Workshop/external_validation_set_{model_type}.csv'"
+        output_path = f"'C:/tools/external_validation_set_{model_type}.csv'" if user == 'idan'\
+            else f"'/Users/user/Documents/University/Workshop/external_validation_set_{model_type}.csv'"
         query = f"""DROP TABLE IF EXISTS relevant_labevents_for_cohort;
                     CREATE TABLE relevant_labevents_for_cohort as (
                         select subject_id||'-'||hadm_id as identifier, subject_id, hadm_id, itemid, charttime, valuenum, valueuom, label
