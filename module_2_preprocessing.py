@@ -6,9 +6,9 @@ import pickle
 import os
 
 if os.name == 'posix':
-    user = 'idan'
-else:
     user = 'roye'
+else:
+    user = 'idan'
 
 processed_external_validation_set_path = 'C:/tools/processed_external_validation_set_path.csv' if user == 'idan' \
     else '/Users/user/Documents/University/Workshop/processed_external_validation_set_path.csv'
