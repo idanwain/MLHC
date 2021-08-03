@@ -18,7 +18,7 @@ def module_2_preprocessing(external_validation_set_path, model_type):
     threshold , n_neighbors = load_optimal_values_from_disk(optimal_values_path)
     data = []
     ids = {'identifier':[]}
-    db = DbMimic(external_validation_set_path,
+    db = DbMimic(f'/Users/user/Documents/University/Workshop/boolean_features_mimic_model_{model_type}.csv',
                  external_validation_set_path,
                  data_path=external_validation_set_path
                  )
@@ -45,7 +45,7 @@ def module_2_preprocessing(external_validation_set_path, model_type):
 
     ### Save files ###
     df = pd.DataFrame(data)
-    df.append(ids)
+    df['identifier'] = ids['identifier']
     df.to_csv(processed_external_validation_set_path)
     return processed_external_validation_set_path
 

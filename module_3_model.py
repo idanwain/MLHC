@@ -19,7 +19,7 @@ def module_3_model(processed_external_validation_set_path, model_type):
     df = pd.read_csv(processed_external_validation_set_path)
     for row in df.iterrows():
         final_df['identifier'].append(row[1]['identifier'])
-    df.drop('identifier')
+    df.drop('identifier',axis=1)
 
     ### Load model and perform prediciton ###
     data = df.to_numpy()
