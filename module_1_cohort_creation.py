@@ -16,6 +16,7 @@ def module_1_cohort_creation(file_path, db_conn, model_type):
     db.create_symptoms(model_type)
     output_path = db.merge_features_and_cohort(model_type, user)
     db.close()
+    db_conn.close()
 
     return output_path
 
@@ -29,4 +30,3 @@ if __name__ == '__main__':
     model_type = 'a'
     path = f"'C:/tools/model_{model_type}_mimic_cohort.csv'" if user == 'idan' else f"'/Users/user/Documents/University/Workshop/model_{model_type}_mimic_cohort.csv'"
     module_1_cohort_creation(path, db_conn, model_type)
-    db_conn.close()

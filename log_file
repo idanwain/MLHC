@@ -17445,3 +17445,20 @@ DEBUG:root:DB error: drop table if exists boolean_features;
 LINE 3: ...an_features select itemid, linksto, category from d_items wh...
                                                              ^
 
+DEBUG:root:DB error: SET datestyle = dmy;
+                    DROP TABLE IF EXISTS model_a_mimic_cohort;
+                    CREATE TABLE model_a_mimic_cohort (
+                      identifier VARCHAR(50),
+                      subject_id VARCHAR(50),
+                      hadm_id VARCHAR(50),
+                      admittime TIMESTAMP,
+                      icu_time TIMESTAMP,
+                      target_time TIMESTAMP,
+                      target VARCHAR(50)
+                    );
+                    COPY model_a_mimic_cohort 
+                    FROM 'C:/tools/model_a_mimic_cohort_v2.csv'
+                    DELIMITER ','
+                    CSV HEADER;, Exception: could not open file "C:/tools/model_a_mimic_cohort_v2.csv" for reading: No such file or directory
+HINT:  COPY FROM instructs the PostgreSQL server process to read a file. You may want a client-side facility such as psql's \copy.
+
