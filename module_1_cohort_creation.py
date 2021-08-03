@@ -18,7 +18,7 @@ def module_1_cohort_creation(file_path, db_conn, model_type):
     db.close()
     db_conn.close()
 
-    return f"C:/tools/feature_mimic_cohort_model_{model_type}.csv" if user == 'idan' \
+    return f"C:/tools/external_validation_set_{model_type}.csv" if user == 'idan' \
         else f"/Users/user/Documents/University/Workshop/external_validation_set_{model_type}.csv"
 
 
