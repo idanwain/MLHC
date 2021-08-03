@@ -88,10 +88,7 @@ class PatientMimic:
 
     def create_vector_of_categorical_features(self):
         gender_encoding = one_hot_encoding.GENDER_ENCODING[self.gender]
-        insurance_encoding = one_hot_encoding.INSURANCE_ENCODING[self.insurance]
-        ethnicity_encoding = one_hot_encoding.ETHNICITY_ENCODING[self.ethnicity]
-        categorical_vector = gender_encoding + insurance_encoding + ethnicity_encoding + [
-            self.transfers_before_target] + self.symptoms
+        categorical_vector = gender_encoding + self.symptoms
         return categorical_vector
 
     def disassemble_symptoms(self, symptoms):
