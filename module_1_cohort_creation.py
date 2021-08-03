@@ -7,12 +7,6 @@ if os.name == 'posix':
 else:
     user = 'idan'
 
-db_conn = psycopg2.connect(
-    host="localhost",
-    database="mimic",
-    user="postgres",
-    password="")
-
 
 def module_1_cohort_creation(file_path, db_conn, model_type):
     db = sql_helper.SqlHelper(db_conn, user)
@@ -27,6 +21,11 @@ def module_1_cohort_creation(file_path, db_conn, model_type):
 
 
 if __name__ == '__main__':
+    db_conn = psycopg2.connect(
+        host="localhost",
+        database="mimic",
+        user="postgres",
+        password="")
     model_type = 'a'
     path = f"'C:/tools/model_{model_type}_mimic_cohort.csv'" if user == 'idan' else f"'/Users/user/Documents/University/Workshop/model_{model_type}_mimic_cohort.csv'"
     module_1_cohort_creation(path, db_conn, model_type)
