@@ -12,7 +12,7 @@ def module_1_cohort_creation(file_path, db_conn, model_type):
     db = sql_helper.SqlHelper(db_conn, user)
     db.load_cohort_to_db(file_path, model_type)
     db.create_features_table()
-    db.init_boolean_features()
+    db.init_boolean_features(model_type, user)
     db.create_symptoms(model_type)
     db.merge_features_and_cohort(model_type, user)
     db.close()
