@@ -44,7 +44,8 @@ class SqlHelper:
         return result
 
     def load_cohort_to_db(self, file_path, model_type):
-        query = f"""DROP TABLE IF EXISTS model_{model_type}_mimic_cohort;
+        query = f"""SET datestyle = dmy;
+                    DROP TABLE IF EXISTS model_{model_type}_mimic_cohort;
                     CREATE TABLE model_{model_type}_mimic_cohort (
                       identifier VARCHAR(50),
                       subject_id VARCHAR(50),
@@ -245,8 +246,237 @@ class SqlHelper:
 
         self.execute_query(query)
 
+    def create_symptoms(self, model_type):
+        query = f"""drop table if exists relevant_note_events;
+                    create table relevant_note_events as
+                        select *
+                        from noteevents as ne
+                        where ne.hadm_id in (select cast(hadm_id as int) from model_{model_type}_mimic_cohort);
+                    
+                    alter table relevant_note_events drop column if exists target_time;
+                    alter table relevant_note_events add column target_time timestamp without time zone;
+                    update relevant_note_events as tr set target_time = (
+                      select target_time
+                      from model_{model_type}_mimic_cohort as re
+                      where tr.hadm_id = cast(re.hadm_id as int)
+                      group by re.target_time, re.hadm_id
+                    );
+                    
+                    alter table relevant_note_events drop column if exists fever;
+                    alter table relevant_note_events drop column if exists chills;
+                    alter table relevant_note_events drop column if exists nausea;
+                    alter table relevant_note_events drop column if exists vomit;
+                    alter table relevant_note_events drop column if exists diarrhea;
+                    alter table relevant_note_events drop column if exists fatigue;
+                    alter table relevant_note_events drop column if exists weakness;
+                    alter table relevant_note_events drop column if exists symptoms;
+                    alter table relevant_note_events add column fever int;
+                    alter table relevant_note_events add column chills int;
+                    alter table relevant_note_events add column nausea int;
+                    alter table relevant_note_events add column vomit int;
+                    alter table relevant_note_events add column diarrhea int;
+                    alter table relevant_note_events add column fatigue int;
+                    alter table relevant_note_events add column weakness int;
+                    alter table relevant_note_events add column symptoms int;
+                    
+                    update relevant_note_events set fever = case when
+                        (text like '%fever%' or text like '%Fever%') and
+                        target_time is not null and category in ('Case Management', 'Consult', 'General', 'Nursing', 'Nursing/other', 'Pharmacy', 'Physician')
+                        then 1 else 0 end;
+                    
+                    update relevant_note_events set chills = case when
+                        (text like '%chill%' or text like '%Chill%') and
+                        target_time is not null and category in ('Case Management', 'Consult', 'General', 'Nursing', 'Nursing/other', 'Pharmacy', 'Physician')
+                        then 1 else 0 end;
+                    
+                    update relevant_note_events set nausea = case when
+                        (text like '%nausea%' or text like '%Nausea%') and
+                        target_time is not null and category in ('Case Management', 'Consult', 'General', 'Nursing', 'Nursing/other', 'Pharmacy', 'Physician')
+                        then 1 else 0 end;
+                    
+                    update relevant_note_events set vomit = case when
+                        (text like '%vomit%' or text like '%Vomit%') and
+                        target_time is not null and category in ('Case Management', 'Consult', 'General', 'Nursing', 'Nursing/other', 'Pharmacy', 'Physician')
+                        then 1 else 0 end;
+                    
+                    update relevant_note_events set diarrhea = case when
+                        (text like '%diarrhea%' or text like '%Diarrhea%') and
+                        target_time is not null and category in ('Case Management', 'Consult', 'General', 'Nursing', 'Nursing/other', 'Pharmacy', 'Physician')
+                        then 1 else 0 end;
+                    
+                    update relevant_note_events set fatigue = case when
+                        (text like '%fatigue%' or text like '%Fatigue%') and
+                        target_time is not null and category in ('Case Management', 'Consult', 'General', 'Nursing', 'Nursing/other', 'Pharmacy', 'Physician')
+                        then 1 else 0 end;
+                    
+                    update relevant_note_events set weakness = case when
+                        (text like '%weakness%' or text like '%Weakness%') and
+                        target_time is not null and category in ('Case Management', 'Consult', 'General', 'Nursing', 'Nursing/other', 'Pharmacy', 'Physician')
+                        then 1 else 0 end;
+                    
+                    update relevant_note_events as rne1 set fever =
+                        case when exists(select 1 from relevant_note_events rne2 where rne1.hadm_id = rne2.hadm_id and rne2.fever = 1 group by rne1.hadm_id)
+                        then 1 else 0 end;
+                    
+                    update relevant_note_events as rne1 set chills =
+                        case when exists(select 1 from relevant_note_events rne2 where rne1.hadm_id = rne2.hadm_id and rne2.chills = 1 group by rne1.hadm_id)
+                        then 1 else 0 end;
+                    
+                    update relevant_note_events as rne1 set nausea =
+                        case when exists(select 1 from relevant_note_events rne2 where rne1.hadm_id = rne2.hadm_id and rne2.nausea = 1 group by rne1.hadm_id)
+                        then 1 else 0 end;
+                    
+                    update relevant_note_events as rne1 set vomit =
+                        case when exists(select 1 from relevant_note_events rne2 where rne1.hadm_id = rne2.hadm_id and rne2.vomit = 1 group by rne1.hadm_id)
+                        then 1 else 0 end;
+                    
+                    update relevant_note_events as rne1 set diarrhea =
+                        case when exists(select 1 from relevant_note_events rne2 where rne1.hadm_id = rne2.hadm_id and rne2.diarrhea = 1 group by rne1.hadm_id)
+                        then 1 else 0 end;
+                    
+                    update relevant_note_events as rne1 set fatigue =
+                        case when exists(select 1 from relevant_note_events rne2 where rne1.hadm_id = rne2.hadm_id and rne2.fatigue = 1 group by rne1.hadm_id)
+                        then 1 else 0 end;
+                    
+                    update relevant_note_events as rne1 set weakness =
+                        case when exists(select 1 from relevant_note_events rne2 where rne1.hadm_id = rne2.hadm_id and rne2.weakness = 1 group by rne1.hadm_id)
+                        then 1 else 0 end;
+                    
+                    update relevant_note_events set symptoms = case
+                        when fever = 0 and chills = 0 and nausea = 0 and vomit = 0 and diarrhea = 0 and fatigue = 0 and weakness = 0 then 0
+                        when fever = 1 and chills = 0 and nausea = 0 and vomit = 0 and diarrhea = 0 and fatigue = 0 and weakness = 0 then 1
+                        when fever = 0 and chills = 1 and nausea = 0 and vomit = 0 and diarrhea = 0 and fatigue = 0 and weakness = 0 then 2
+                        when fever = 1 and chills = 1 and nausea = 0 and vomit = 0 and diarrhea = 0 and fatigue = 0 and weakness = 0 then 3
+                        when fever = 0 and chills = 0 and nausea = 1 and vomit = 0 and diarrhea = 0 and fatigue = 0 and weakness = 0 then 4
+                        when fever = 1 and chills = 0 and nausea = 1 and vomit = 0 and diarrhea = 0 and fatigue = 0 and weakness = 0 then 5
+                        when fever = 0 and chills = 1 and nausea = 1 and vomit = 0 and diarrhea = 0 and fatigue = 0 and weakness = 0 then 6
+                        when fever = 1 and chills = 1 and nausea = 1 and vomit = 0 and diarrhea = 0 and fatigue = 0 and weakness = 0 then 7
+                        when fever = 0 and chills = 0 and nausea = 0 and vomit = 1 and diarrhea = 0 and fatigue = 0 and weakness = 0 then 8
+                        when fever = 1 and chills = 0 and nausea = 0 and vomit = 1 and diarrhea = 0 and fatigue = 0 and weakness = 0 then 9
+                        when fever = 0 and chills = 1 and nausea = 0 and vomit = 1 and diarrhea = 0 and fatigue = 0 and weakness = 0 then 10
+                        when fever = 1 and chills = 1 and nausea = 0 and vomit = 1 and diarrhea = 0 and fatigue = 0 and weakness = 0 then 11
+                        when fever = 0 and chills = 0 and nausea = 1 and vomit = 1 and diarrhea = 0 and fatigue = 0 and weakness = 0 then 12
+                        when fever = 1 and chills = 0 and nausea = 1 and vomit = 1 and diarrhea = 0 and fatigue = 0 and weakness = 0 then 13
+                        when fever = 0 and chills = 1 and nausea = 1 and vomit = 1 and diarrhea = 0 and fatigue = 0 and weakness = 0 then 14
+                        when fever = 1 and chills = 1 and nausea = 1 and vomit = 1 and diarrhea = 0 and fatigue = 0 and weakness = 0 then 15
+                        when fever = 0 and chills = 0 and nausea = 0 and vomit = 0 and diarrhea = 1 and fatigue = 0 and weakness = 0 then 16
+                        when fever = 1 and chills = 0 and nausea = 0 and vomit = 0 and diarrhea = 1 and fatigue = 0 and weakness = 0 then 17
+                        when fever = 0 and chills = 1 and nausea = 0 and vomit = 0 and diarrhea = 1 and fatigue = 0 and weakness = 0 then 18
+                        when fever = 1 and chills = 1 and nausea = 0 and vomit = 0 and diarrhea = 1 and fatigue = 0 and weakness = 0 then 19
+                        when fever = 0 and chills = 0 and nausea = 1 and vomit = 0 and diarrhea = 1 and fatigue = 0 and weakness = 0 then 20
+                        when fever = 1 and chills = 0 and nausea = 1 and vomit = 0 and diarrhea = 1 and fatigue = 0 and weakness = 0 then 21
+                        when fever = 0 and chills = 1 and nausea = 1 and vomit = 0 and diarrhea = 1 and fatigue = 0 and weakness = 0 then 22
+                        when fever = 1 and chills = 1 and nausea = 1 and vomit = 0 and diarrhea = 1 and fatigue = 0 and weakness = 0 then 23
+                        when fever = 0 and chills = 0 and nausea = 0 and vomit = 1 and diarrhea = 1 and fatigue = 0 and weakness = 0 then 24
+                        when fever = 1 and chills = 0 and nausea = 0 and vomit = 1 and diarrhea = 1 and fatigue = 0 and weakness = 0 then 25
+                        when fever = 0 and chills = 1 and nausea = 0 and vomit = 1 and diarrhea = 1 and fatigue = 0 and weakness = 0 then 26
+                        when fever = 1 and chills = 1 and nausea = 0 and vomit = 1 and diarrhea = 1 and fatigue = 0 and weakness = 0 then 27
+                        when fever = 0 and chills = 0 and nausea = 1 and vomit = 1 and diarrhea = 1 and fatigue = 0 and weakness = 0 then 28
+                        when fever = 1 and chills = 0 and nausea = 1 and vomit = 1 and diarrhea = 1 and fatigue = 0 and weakness = 0 then 29
+                        when fever = 0 and chills = 1 and nausea = 1 and vomit = 1 and diarrhea = 1 and fatigue = 0 and weakness = 0 then 30
+                        when fever = 1 and chills = 1 and nausea = 1 and vomit = 1 and diarrhea = 1 and fatigue = 0 and weakness = 0 then 31
+                        when fever = 0 and chills = 0 and nausea = 0 and vomit = 0 and diarrhea = 0 and fatigue = 1 and weakness = 0 then 32
+                        when fever = 1 and chills = 0 and nausea = 0 and vomit = 0 and diarrhea = 0 and fatigue = 1 and weakness = 0 then 33
+                        when fever = 0 and chills = 1 and nausea = 0 and vomit = 0 and diarrhea = 0 and fatigue = 1 and weakness = 0 then 34
+                        when fever = 1 and chills = 1 and nausea = 0 and vomit = 0 and diarrhea = 0 and fatigue = 1 and weakness = 0 then 35
+                        when fever = 0 and chills = 0 and nausea = 1 and vomit = 0 and diarrhea = 0 and fatigue = 1 and weakness = 0 then 36
+                        when fever = 1 and chills = 0 and nausea = 1 and vomit = 0 and diarrhea = 0 and fatigue = 1 and weakness = 0 then 37
+                        when fever = 0 and chills = 1 and nausea = 1 and vomit = 0 and diarrhea = 0 and fatigue = 1 and weakness = 0 then 38
+                        when fever = 1 and chills = 1 and nausea = 1 and vomit = 0 and diarrhea = 0 and fatigue = 1 and weakness = 0 then 39
+                        when fever = 0 and chills = 0 and nausea = 0 and vomit = 1 and diarrhea = 0 and fatigue = 1 and weakness = 0 then 40
+                        when fever = 1 and chills = 0 and nausea = 0 and vomit = 1 and diarrhea = 0 and fatigue = 1 and weakness = 0 then 41
+                        when fever = 0 and chills = 1 and nausea = 0 and vomit = 1 and diarrhea = 0 and fatigue = 1 and weakness = 0 then 42
+                        when fever = 1 and chills = 1 and nausea = 0 and vomit = 1 and diarrhea = 0 and fatigue = 1 and weakness = 0 then 43
+                        when fever = 0 and chills = 0 and nausea = 1 and vomit = 1 and diarrhea = 0 and fatigue = 1 and weakness = 0 then 44
+                        when fever = 1 and chills = 0 and nausea = 1 and vomit = 1 and diarrhea = 0 and fatigue = 1 and weakness = 0 then 45
+                        when fever = 0 and chills = 1 and nausea = 1 and vomit = 1 and diarrhea = 0 and fatigue = 1 and weakness = 0 then 46
+                        when fever = 1 and chills = 1 and nausea = 1 and vomit = 1 and diarrhea = 0 and fatigue = 1 and weakness = 0 then 47
+                        when fever = 0 and chills = 0 and nausea = 0 and vomit = 0 and diarrhea = 1 and fatigue = 1 and weakness = 0 then 48
+                        when fever = 1 and chills = 0 and nausea = 0 and vomit = 0 and diarrhea = 1 and fatigue = 1 and weakness = 0 then 49
+                        when fever = 0 and chills = 1 and nausea = 0 and vomit = 0 and diarrhea = 1 and fatigue = 1 and weakness = 0 then 50
+                        when fever = 1 and chills = 1 and nausea = 0 and vomit = 0 and diarrhea = 1 and fatigue = 1 and weakness = 0 then 51
+                        when fever = 0 and chills = 0 and nausea = 1 and vomit = 0 and diarrhea = 1 and fatigue = 1 and weakness = 0 then 52
+                        when fever = 1 and chills = 0 and nausea = 1 and vomit = 0 and diarrhea = 1 and fatigue = 1 and weakness = 0 then 53
+                        when fever = 0 and chills = 1 and nausea = 1 and vomit = 0 and diarrhea = 1 and fatigue = 1 and weakness = 0 then 54
+                        when fever = 1 and chills = 1 and nausea = 1 and vomit = 0 and diarrhea = 1 and fatigue = 1 and weakness = 0 then 55
+                        when fever = 0 and chills = 0 and nausea = 0 and vomit = 1 and diarrhea = 1 and fatigue = 1 and weakness = 0 then 56
+                        when fever = 1 and chills = 0 and nausea = 0 and vomit = 1 and diarrhea = 1 and fatigue = 1 and weakness = 0 then 57
+                        when fever = 0 and chills = 1 and nausea = 0 and vomit = 1 and diarrhea = 1 and fatigue = 1 and weakness = 0 then 58
+                        when fever = 1 and chills = 1 and nausea = 0 and vomit = 1 and diarrhea = 1 and fatigue = 1 and weakness = 0 then 59
+                        when fever = 0 and chills = 0 and nausea = 1 and vomit = 1 and diarrhea = 1 and fatigue = 1 and weakness = 0 then 60
+                        when fever = 1 and chills = 0 and nausea = 1 and vomit = 1 and diarrhea = 1 and fatigue = 1 and weakness = 0 then 61
+                        when fever = 0 and chills = 1 and nausea = 1 and vomit = 1 and diarrhea = 1 and fatigue = 1 and weakness = 0 then 62
+                        when fever = 1 and chills = 1 and nausea = 1 and vomit = 1 and diarrhea = 1 and fatigue = 1 and weakness = 0 then 63
+                        when fever = 0 and chills = 0 and nausea = 0 and vomit = 0 and diarrhea = 0 and fatigue = 0 and weakness = 1 then 64
+                        when fever = 1 and chills = 0 and nausea = 0 and vomit = 0 and diarrhea = 0 and fatigue = 0 and weakness = 1 then 65
+                        when fever = 0 and chills = 1 and nausea = 0 and vomit = 0 and diarrhea = 0 and fatigue = 0 and weakness = 1 then 66
+                        when fever = 1 and chills = 1 and nausea = 0 and vomit = 0 and diarrhea = 0 and fatigue = 0 and weakness = 1 then 67
+                        when fever = 0 and chills = 0 and nausea = 1 and vomit = 0 and diarrhea = 0 and fatigue = 0 and weakness = 1 then 68
+                        when fever = 1 and chills = 0 and nausea = 1 and vomit = 0 and diarrhea = 0 and fatigue = 0 and weakness = 1 then 69
+                        when fever = 0 and chills = 1 and nausea = 1 and vomit = 0 and diarrhea = 0 and fatigue = 0 and weakness = 1 then 70
+                        when fever = 1 and chills = 1 and nausea = 1 and vomit = 0 and diarrhea = 0 and fatigue = 0 and weakness = 1 then 71
+                        when fever = 0 and chills = 0 and nausea = 0 and vomit = 1 and diarrhea = 0 and fatigue = 0 and weakness = 1 then 72
+                        when fever = 1 and chills = 0 and nausea = 0 and vomit = 1 and diarrhea = 0 and fatigue = 0 and weakness = 1 then 73
+                        when fever = 0 and chills = 1 and nausea = 0 and vomit = 1 and diarrhea = 0 and fatigue = 0 and weakness = 1 then 74
+                        when fever = 1 and chills = 1 and nausea = 0 and vomit = 1 and diarrhea = 0 and fatigue = 0 and weakness = 1 then 75
+                        when fever = 0 and chills = 0 and nausea = 1 and vomit = 1 and diarrhea = 0 and fatigue = 0 and weakness = 1 then 76
+                        when fever = 1 and chills = 0 and nausea = 1 and vomit = 1 and diarrhea = 0 and fatigue = 0 and weakness = 1 then 77
+                        when fever = 0 and chills = 1 and nausea = 1 and vomit = 1 and diarrhea = 0 and fatigue = 0 and weakness = 1 then 78
+                        when fever = 1 and chills = 1 and nausea = 1 and vomit = 1 and diarrhea = 0 and fatigue = 0 and weakness = 1 then 79
+                        when fever = 0 and chills = 0 and nausea = 0 and vomit = 0 and diarrhea = 1 and fatigue = 0 and weakness = 1 then 80
+                        when fever = 1 and chills = 0 and nausea = 0 and vomit = 0 and diarrhea = 1 and fatigue = 0 and weakness = 1 then 81
+                        when fever = 0 and chills = 1 and nausea = 0 and vomit = 0 and diarrhea = 1 and fatigue = 0 and weakness = 1 then 82
+                        when fever = 1 and chills = 1 and nausea = 0 and vomit = 0 and diarrhea = 1 and fatigue = 0 and weakness = 1 then 83
+                        when fever = 0 and chills = 0 and nausea = 1 and vomit = 0 and diarrhea = 1 and fatigue = 0 and weakness = 1 then 84
+                        when fever = 1 and chills = 0 and nausea = 1 and vomit = 0 and diarrhea = 1 and fatigue = 0 and weakness = 1 then 85
+                        when fever = 0 and chills = 1 and nausea = 1 and vomit = 0 and diarrhea = 1 and fatigue = 0 and weakness = 1 then 86
+                        when fever = 1 and chills = 1 and nausea = 1 and vomit = 0 and diarrhea = 1 and fatigue = 0 and weakness = 1 then 87
+                        when fever = 0 and chills = 0 and nausea = 0 and vomit = 1 and diarrhea = 1 and fatigue = 0 and weakness = 1 then 88
+                        when fever = 1 and chills = 0 and nausea = 0 and vomit = 1 and diarrhea = 1 and fatigue = 0 and weakness = 1 then 89
+                        when fever = 0 and chills = 1 and nausea = 0 and vomit = 1 and diarrhea = 1 and fatigue = 0 and weakness = 1 then 90
+                        when fever = 1 and chills = 1 and nausea = 0 and vomit = 1 and diarrhea = 1 and fatigue = 0 and weakness = 1 then 91
+                        when fever = 0 and chills = 0 and nausea = 1 and vomit = 1 and diarrhea = 1 and fatigue = 0 and weakness = 1 then 92
+                        when fever = 1 and chills = 0 and nausea = 1 and vomit = 1 and diarrhea = 1 and fatigue = 0 and weakness = 1 then 93
+                        when fever = 0 and chills = 1 and nausea = 1 and vomit = 1 and diarrhea = 1 and fatigue = 0 and weakness = 1 then 94
+                        when fever = 1 and chills = 1 and nausea = 1 and vomit = 1 and diarrhea = 1 and fatigue = 0 and weakness = 1 then 95
+                        when fever = 0 and chills = 0 and nausea = 0 and vomit = 0 and diarrhea = 0 and fatigue = 1 and weakness = 1 then 96
+                        when fever = 1 and chills = 0 and nausea = 0 and vomit = 0 and diarrhea = 0 and fatigue = 1 and weakness = 1 then 97
+                        when fever = 0 and chills = 1 and nausea = 0 and vomit = 0 and diarrhea = 0 and fatigue = 1 and weakness = 1 then 98
+                        when fever = 1 and chills = 1 and nausea = 0 and vomit = 0 and diarrhea = 0 and fatigue = 1 and weakness = 1 then 99
+                        when fever = 0 and chills = 0 and nausea = 1 and vomit = 0 and diarrhea = 0 and fatigue = 1 and weakness = 1 then 100
+                        when fever = 1 and chills = 0 and nausea = 1 and vomit = 0 and diarrhea = 0 and fatigue = 1 and weakness = 1 then 101
+                        when fever = 0 and chills = 1 and nausea = 1 and vomit = 0 and diarrhea = 0 and fatigue = 1 and weakness = 1 then 102
+                        when fever = 1 and chills = 1 and nausea = 1 and vomit = 0 and diarrhea = 0 and fatigue = 1 and weakness = 1 then 103
+                        when fever = 0 and chills = 0 and nausea = 0 and vomit = 1 and diarrhea = 0 and fatigue = 1 and weakness = 1 then 104
+                        when fever = 1 and chills = 0 and nausea = 0 and vomit = 1 and diarrhea = 0 and fatigue = 1 and weakness = 1 then 105
+                        when fever = 0 and chills = 1 and nausea = 0 and vomit = 1 and diarrhea = 0 and fatigue = 1 and weakness = 1 then 106
+                        when fever = 1 and chills = 1 and nausea = 0 and vomit = 1 and diarrhea = 0 and fatigue = 1 and weakness = 1 then 107
+                        when fever = 0 and chills = 0 and nausea = 1 and vomit = 1 and diarrhea = 0 and fatigue = 1 and weakness = 1 then 108
+                        when fever = 1 and chills = 0 and nausea = 1 and vomit = 1 and diarrhea = 0 and fatigue = 1 and weakness = 1 then 109
+                        when fever = 0 and chills = 1 and nausea = 1 and vomit = 1 and diarrhea = 0 and fatigue = 1 and weakness = 1 then 110
+                        when fever = 1 and chills = 1 and nausea = 1 and vomit = 1 and diarrhea = 0 and fatigue = 1 and weakness = 1 then 111
+                        when fever = 0 and chills = 0 and nausea = 0 and vomit = 0 and diarrhea = 1 and fatigue = 1 and weakness = 1 then 112
+                        when fever = 1 and chills = 0 and nausea = 0 and vomit = 0 and diarrhea = 1 and fatigue = 1 and weakness = 1 then 113
+                        when fever = 0 and chills = 1 and nausea = 0 and vomit = 0 and diarrhea = 1 and fatigue = 1 and weakness = 1 then 114
+                        when fever = 1 and chills = 1 and nausea = 0 and vomit = 0 and diarrhea = 1 and fatigue = 1 and weakness = 1 then 115
+                        when fever = 0 and chills = 0 and nausea = 1 and vomit = 0 and diarrhea = 1 and fatigue = 1 and weakness = 1 then 116
+                        when fever = 1 and chills = 0 and nausea = 1 and vomit = 0 and diarrhea = 1 and fatigue = 1 and weakness = 1 then 117
+                        when fever = 0 and chills = 1 and nausea = 1 and vomit = 0 and diarrhea = 1 and fatigue = 1 and weakness = 1 then 118
+                        when fever = 1 and chills = 1 and nausea = 1 and vomit = 0 and diarrhea = 1 and fatigue = 1 and weakness = 1 then 119
+                        when fever = 0 and chills = 0 and nausea = 0 and vomit = 1 and diarrhea = 1 and fatigue = 1 and weakness = 1 then 120
+                        when fever = 1 and chills = 0 and nausea = 0 and vomit = 1 and diarrhea = 1 and fatigue = 1 and weakness = 1 then 121
+                        when fever = 0 and chills = 1 and nausea = 0 and vomit = 1 and diarrhea = 1 and fatigue = 1 and weakness = 1 then 122
+                        when fever = 1 and chills = 1 and nausea = 0 and vomit = 1 and diarrhea = 1 and fatigue = 1 and weakness = 1 then 123
+                        when fever = 0 and chills = 0 and nausea = 1 and vomit = 1 and diarrhea = 1 and fatigue = 1 and weakness = 1 then 124
+                        when fever = 1 and chills = 0 and nausea = 1 and vomit = 1 and diarrhea = 1 and fatigue = 1 and weakness = 1 then 125
+                        when fever = 0 and chills = 1 and nausea = 1 and vomit = 1 and diarrhea = 1 and fatigue = 1 and weakness = 1 then 126
+                        when fever = 1 and chills = 1 and nausea = 1 and vomit = 1 and diarrhea = 1 and fatigue = 1 and weakness = 1 then 127
+                    end;"""
+
+        self.execute_query(query)
+
     def merge_features_and_cohort(self, model_type, user):
-        output_path = "'C:/tools/feature_mimic_cohort_model_a2.csv'" if user == 'idan' else "'/Users/user/Documents/University/Workshop/feature_mimic_cohort_model_a.csv'"
+        output_path = f"'C:/tools/feature_mimic_cohort_model_{model_type}.csv'" if user == 'idan' else f"'/Users/user/Documents/University/Workshop/feature_mimic_cohort_model_{model_type}.csv'"
         query = f"""DROP TABLE IF EXISTS relevant_labevents_for_cohort;
                     CREATE TABLE relevant_labevents_for_cohort as (
                         select subject_id||'-'||hadm_id as identifier, subject_id, hadm_id, itemid, charttime, valuenum, valueuom, label
@@ -288,6 +518,14 @@ class SqlHelper:
                         where subject_id||'-'||hadm_id in (select identifier from model_{model_type}_mimic_cohort) 
                             AND itemid in (select item_id from cohort_relevant_features where _table='inputevents_cv')
                     );
+
+
+                    DROP TABLE IF EXISTS relevant_note_events_for_cohort;
+                    CREATE TABLE relevant_note_events_for_cohort as (
+                        select subject_id||'-'||hadm_id as identifier, subject_id, hadm_id, 0 as itemid, charttime, symptoms as valuenum, '' as valueuom, 'symptoms' as label
+                        from relevant_note_events
+                        where subject_id||'-'||hadm_id in (select identifier from model_{model_type}_mimic_cohort)
+                    );
                     
                     /* (5_c) Create a unified table of feature from the tables created above:*/
                     DROP TABLE IF EXISTS all_relevant_lab_features;
@@ -302,6 +540,11 @@ class SqlHelper:
                         (select * from relevant_inputs_mv_for_cohort)
                         union
                         (select * from relevant_inputs_cv_for_cohort)
+                        union
+                        (select identifier, subject_id, hadm_id, itemid, charttime, valuenum, valueuom, label
+                        from (select *, ROW_NUMBER() OVER(PARTITION BY identifier ORDER BY itemid DESC) rn
+                        from relevant_note_events_for_cohort
+                        ) x where x.rn = 1)                        
                     );
                     
                     /* (5_d) Create a table of relevant events (features) received near when the target (culture) was received */
@@ -332,3 +575,4 @@ class SqlHelper:
                     With CSV DELIMITER ',' HEADER;"""
 
         self.execute_query(query)
+        return output_path
