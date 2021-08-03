@@ -3,9 +3,11 @@ import utils
 
 
 class SqlHelper:
-    def __init__(self, db_connection, username):
+    def __init__(self, db_connection, model_type, username, training):
         self.cursor = db_connection.cursor()
+        self.model_type = model_type
         self.user = username
+        self.training = '_train_data' if training else ''
 
     def close(self):
         self.cursor.close()
@@ -43,10 +45,10 @@ class SqlHelper:
 
         return result
 
-    def load_cohort_to_db(self, file_path, model_type):
+    def load_cohort_to_db(self, file_path):
         query = f"""SET datestyle = dmy;
-                    DROP TABLE IF EXISTS model_{model_type}_mimic_cohort;
-                    CREATE TABLE model_{model_type}_mimic_cohort (
+                    DROP TABLE IF EXISTS model_{self.model_type}_mimic_cohort{self.training};
+                    CREATE TABLE model_{self.model_type}_mimic_cohort{self.training} (
                       identifier VARCHAR(50),
                       subject_id VARCHAR(50),
                       hadm_id VARCHAR(50),
@@ -55,7 +57,7 @@ class SqlHelper:
                       target_time TIMESTAMP,
                       target VARCHAR(50)
                     );
-                    COPY model_{model_type}_mimic_cohort 
+                    COPY model_{self.model_type}_mimic_cohort{self.training}
                     FROM {file_path}
                     DELIMITER ','
                     CSV HEADER;"""
@@ -63,13 +65,13 @@ class SqlHelper:
         self.execute_query(query)
 
     def create_features_table(self):
-        query = f"""DROP TABLE IF EXISTS cohort_relevant_features;
-                    create table cohort_relevant_features(
+        query = f"""DROP TABLE IF EXISTS cohort_relevant_features{self.training};
+                    create table cohort_relevant_features{self.training}(
                         item_id INT,
                         _table TEXT
                     );
                     
-                    insert into cohort_relevant_features (item_id , _table)
+                    insert into cohort_relevant_features{self.training} (item_id , _table)
                     values
                         (50889, 'labevents'),
                         (51256, 'labevents'),
@@ -221,12 +223,12 @@ class SqlHelper:
 
         self.execute_query(query)
 
-    def init_boolean_features(self, model_type, user):
-        output_path = f"'C:/tools/boolean_features_mimic_model_{model_type}.csv'" if user == 'idan'\
-            else f"'/Users/user/Documents/University/Workshop/boolean_features_mimic_model_{model_type}.csv'"
-        query = f"""drop table if exists boolean_features;
-                    create table boolean_features (itemid int, linksto varchar(50), category varchar(100));
-                    insert into boolean_features select itemid, linksto, category from d_items where category in
+    def init_boolean_features(self):
+        output_path = f"'C:/tools/boolean_features_mimic_model_{self.model_type}{self.training}.csv'" if self.user == 'idan' \
+            else f"'/Users/user/Documents/University/Workshop/boolean_features_mimic_model_{self.model_type}{self.training}.csv'"
+        query = f"""drop table if exists boolean_features{self.training};
+                    create table boolean_features{self.training} (itemid int, linksto varchar(50), category varchar(100));
+                    insert into boolean_features{self.training} select itemid, linksto, category from d_items where category in
                     (
                     'Access Lines - Invasive',
                     'Lumbar Puncture',
@@ -244,110 +246,110 @@ class SqlHelper:
                     'Paracentesis'
                     ) and linksto = 'chartevents';
                     
-                    insert into cohort_relevant_features select itemid, linksto from boolean_features;
-                    COPY boolean_features To
+                    insert into cohort_relevant_features{self.training} select itemid, linksto from boolean_features{self.training};
+                    COPY boolean_features{self.training} To
                     {output_path}
                     With CSV DELIMITER ',' HEADER;"""
 
         self.execute_query(query)
 
-    def create_symptoms(self, model_type):
-        query = f"""drop table if exists relevant_note_events;
-                    create table relevant_note_events as
+    def create_symptoms(self):
+        query = f"""drop table if exists relevant_note_events{self.training};
+                    create table relevant_note_events{self.training} as
                         select *
                         from noteevents as ne
-                        where ne.hadm_id in (select cast(hadm_id as int) from model_{model_type}_mimic_cohort);
+                        where ne.hadm_id in (select cast(hadm_id as int) from model_{self.model_type}_mimic_cohort{self.training});
                     
-                    alter table relevant_note_events drop column if exists target_time;
-                    alter table relevant_note_events add column target_time timestamp without time zone;
-                    update relevant_note_events as tr set target_time = (
+                    alter table relevant_note_events{self.training} drop column if exists target_time;
+                    alter table relevant_note_events{self.training} add column target_time timestamp without time zone;
+                    update relevant_note_events{self.training} as tr set target_time = (
                       select target_time
-                      from model_{model_type}_mimic_cohort as re
+                      from model_{self.model_type}_mimic_cohort{self.training} as re
                       where tr.hadm_id = cast(re.hadm_id as int)
                       group by re.target_time, re.hadm_id
                     );
                     
-                    alter table relevant_note_events drop column if exists fever;
-                    alter table relevant_note_events drop column if exists chills;
-                    alter table relevant_note_events drop column if exists nausea;
-                    alter table relevant_note_events drop column if exists vomit;
-                    alter table relevant_note_events drop column if exists diarrhea;
-                    alter table relevant_note_events drop column if exists fatigue;
-                    alter table relevant_note_events drop column if exists weakness;
-                    alter table relevant_note_events drop column if exists symptoms;
-                    alter table relevant_note_events add column fever int;
-                    alter table relevant_note_events add column chills int;
-                    alter table relevant_note_events add column nausea int;
-                    alter table relevant_note_events add column vomit int;
-                    alter table relevant_note_events add column diarrhea int;
-                    alter table relevant_note_events add column fatigue int;
-                    alter table relevant_note_events add column weakness int;
-                    alter table relevant_note_events add column symptoms int;
+                    alter table relevant_note_events{self.training} drop column if exists fever;
+                    alter table relevant_note_events{self.training} drop column if exists chills;
+                    alter table relevant_note_events{self.training} drop column if exists nausea;
+                    alter table relevant_note_events{self.training} drop column if exists vomit;
+                    alter table relevant_note_events{self.training} drop column if exists diarrhea;
+                    alter table relevant_note_events{self.training} drop column if exists fatigue;
+                    alter table relevant_note_events{self.training} drop column if exists weakness;
+                    alter table relevant_note_events{self.training} drop column if exists symptoms;
+                    alter table relevant_note_events{self.training} add column fever int;
+                    alter table relevant_note_events{self.training} add column chills int;
+                    alter table relevant_note_events{self.training} add column nausea int;
+                    alter table relevant_note_events{self.training} add column vomit int;
+                    alter table relevant_note_events{self.training} add column diarrhea int;
+                    alter table relevant_note_events{self.training} add column fatigue int;
+                    alter table relevant_note_events{self.training} add column weakness int;
+                    alter table relevant_note_events{self.training} add column symptoms int;
                     
-                    update relevant_note_events set fever = case when
+                    update relevant_note_events{self.training} set fever = case when
                         (text like '%fever%' or text like '%Fever%') and
                         target_time is not null and category in ('Case Management', 'Consult', 'General', 'Nursing', 'Nursing/other', 'Pharmacy', 'Physician')
                         then 1 else 0 end;
                     
-                    update relevant_note_events set chills = case when
+                    update relevant_note_events{self.training} set chills = case when
                         (text like '%chill%' or text like '%Chill%') and
                         target_time is not null and category in ('Case Management', 'Consult', 'General', 'Nursing', 'Nursing/other', 'Pharmacy', 'Physician')
                         then 1 else 0 end;
                     
-                    update relevant_note_events set nausea = case when
+                    update relevant_note_events{self.training} set nausea = case when
                         (text like '%nausea%' or text like '%Nausea%') and
                         target_time is not null and category in ('Case Management', 'Consult', 'General', 'Nursing', 'Nursing/other', 'Pharmacy', 'Physician')
                         then 1 else 0 end;
                     
-                    update relevant_note_events set vomit = case when
+                    update relevant_note_events{self.training} set vomit = case when
                         (text like '%vomit%' or text like '%Vomit%') and
                         target_time is not null and category in ('Case Management', 'Consult', 'General', 'Nursing', 'Nursing/other', 'Pharmacy', 'Physician')
                         then 1 else 0 end;
                     
-                    update relevant_note_events set diarrhea = case when
+                    update relevant_note_events{self.training} set diarrhea = case when
                         (text like '%diarrhea%' or text like '%Diarrhea%') and
                         target_time is not null and category in ('Case Management', 'Consult', 'General', 'Nursing', 'Nursing/other', 'Pharmacy', 'Physician')
                         then 1 else 0 end;
                     
-                    update relevant_note_events set fatigue = case when
+                    update relevant_note_events{self.training} set fatigue = case when
                         (text like '%fatigue%' or text like '%Fatigue%') and
                         target_time is not null and category in ('Case Management', 'Consult', 'General', 'Nursing', 'Nursing/other', 'Pharmacy', 'Physician')
                         then 1 else 0 end;
                     
-                    update relevant_note_events set weakness = case when
+                    update relevant_note_events{self.training} set weakness = case when
                         (text like '%weakness%' or text like '%Weakness%') and
                         target_time is not null and category in ('Case Management', 'Consult', 'General', 'Nursing', 'Nursing/other', 'Pharmacy', 'Physician')
                         then 1 else 0 end;
                     
-                    update relevant_note_events as rne1 set fever =
+                    update relevant_note_events{self.training} as rne1 set fever =
                         case when exists(select 1 from relevant_note_events rne2 where rne1.hadm_id = rne2.hadm_id and rne2.fever = 1 group by rne1.hadm_id)
                         then 1 else 0 end;
                     
-                    update relevant_note_events as rne1 set chills =
+                    update relevant_note_events{self.training} as rne1 set chills =
                         case when exists(select 1 from relevant_note_events rne2 where rne1.hadm_id = rne2.hadm_id and rne2.chills = 1 group by rne1.hadm_id)
                         then 1 else 0 end;
                     
-                    update relevant_note_events as rne1 set nausea =
+                    update relevant_note_events{self.training} as rne1 set nausea =
                         case when exists(select 1 from relevant_note_events rne2 where rne1.hadm_id = rne2.hadm_id and rne2.nausea = 1 group by rne1.hadm_id)
                         then 1 else 0 end;
                     
-                    update relevant_note_events as rne1 set vomit =
+                    update relevant_note_events{self.training} as rne1 set vomit =
                         case when exists(select 1 from relevant_note_events rne2 where rne1.hadm_id = rne2.hadm_id and rne2.vomit = 1 group by rne1.hadm_id)
                         then 1 else 0 end;
                     
-                    update relevant_note_events as rne1 set diarrhea =
+                    update relevant_note_events{self.training} as rne1 set diarrhea =
                         case when exists(select 1 from relevant_note_events rne2 where rne1.hadm_id = rne2.hadm_id and rne2.diarrhea = 1 group by rne1.hadm_id)
                         then 1 else 0 end;
                     
-                    update relevant_note_events as rne1 set fatigue =
+                    update relevant_note_events{self.training} as rne1 set fatigue =
                         case when exists(select 1 from relevant_note_events rne2 where rne1.hadm_id = rne2.hadm_id and rne2.fatigue = 1 group by rne1.hadm_id)
                         then 1 else 0 end;
                     
-                    update relevant_note_events as rne1 set weakness =
+                    update relevant_note_events{self.training} as rne1 set weakness =
                         case when exists(select 1 from relevant_note_events rne2 where rne1.hadm_id = rne2.hadm_id and rne2.weakness = 1 group by rne1.hadm_id)
                         then 1 else 0 end;
                     
-                    update relevant_note_events set symptoms = case
+                    update relevant_note_events{self.training} set symptoms = case
                         when fever = 0 and chills = 0 and nausea = 0 and vomit = 0 and diarrhea = 0 and fatigue = 0 and weakness = 0 then 0
                         when fever = 1 and chills = 0 and nausea = 0 and vomit = 0 and diarrhea = 0 and fatigue = 0 and weakness = 0 then 1
                         when fever = 0 and chills = 1 and nausea = 0 and vomit = 0 and diarrhea = 0 and fatigue = 0 and weakness = 0 then 2
@@ -480,105 +482,104 @@ class SqlHelper:
 
         self.execute_query(query)
 
-    def merge_features_and_cohort(self, model_type, user):
-        output_path = f"'C:/tools/external_validation_set_{model_type}.csv'" if user == 'idan'\
-            else f"'/Users/user/Documents/University/Workshop/external_validation_set_{model_type}.csv'"
-        query = f"""DROP TABLE IF EXISTS relevant_labevents_for_cohort;
-                    CREATE TABLE relevant_labevents_for_cohort as (
+    def merge_features_and_cohort(self):
+        output_path = f"'C:/tools/external_validation_set_{self.model_type}{self.training}.csv'" if self.user == 'idan'\
+            else f"'/Users/user/Documents/University/Workshop/external_validation_set_{self.model_type}{self.training}.csv'"
+        query = f"""DROP TABLE IF EXISTS relevant_labevents_for_cohort{self.training};
+                    CREATE TABLE relevant_labevents_for_cohort{self.training} as (
                         select subject_id||'-'||hadm_id as identifier, subject_id, hadm_id, itemid, charttime, valuenum, valueuom, label
                         from labevents join (select itemid, label from d_labitems) as t1 using (itemid)
-                        where subject_id||'-'||hadm_id in (select identifier from model_{model_type}_mimic_cohort) 
-                        AND itemid in (select item_id from cohort_relevant_features where _table='labevents')
+                        where subject_id||'-'||hadm_id in (select identifier from model_{self.model_type}_mimic_cohort{self.training}) 
+                        AND itemid in (select item_id from cohort_relevant_features{self.training} where _table='labevents')
                     );
                     
                     
-                    DROP TABLE IF EXISTS relevant_chartevents_for_cohort;
-                    CREATE TABLE relevant_chartevents_for_cohort as (
+                    DROP TABLE IF EXISTS relevant_chartevents_for_cohort{self.training};
+                    CREATE TABLE relevant_chartevents_for_cohort{self.training} as (
                         select subject_id||'-'||hadm_id as identifier, subject_id, hadm_id, itemid, charttime, valuenum, valueuom, label
                         from chartevents join (select itemid, label from d_items) as t1 using (itemid)
-                        where subject_id||'-'||hadm_id in (select identifier from model_{model_type}_mimic_cohort) 
-                            AND itemid in (select item_id from cohort_relevant_features where _table='chartevents')
+                        where subject_id||'-'||hadm_id in (select identifier from model_{self.model_type}_mimic_cohort{self.training}) 
+                            AND itemid in (select item_id from cohort_relevant_features{self.training} where _table='chartevents')
                     );
                     
-                    DROP TABLE IF EXISTS relevant_procedure_for_cohort;
-                    CREATE TABLE relevant_procedure_for_cohort as (
+                    DROP TABLE IF EXISTS relevant_procedure_for_cohort{self.training};
+                    CREATE TABLE relevant_procedure_for_cohort{self.training} as (
                         select subject_id||'-'||hadm_id as identifier, subject_id, hadm_id, itemid, starttime as charttime, value as valuenum, valueuom, label
                         from procedureevents_mv join (select itemid, label from d_items) as t1 using (itemid)
-                        where subject_id||'-'||hadm_id in (select identifier from model_{model_type}_mimic_cohort) 
-                            AND itemid in (select item_id from cohort_relevant_features where _table='procedureevents_mv')
+                        where subject_id||'-'||hadm_id in (select identifier from model_{self.model_type}_mimic_cohort{self.training}) 
+                            AND itemid in (select item_id from cohort_relevant_features{self.training} where _table='procedureevents_mv')
                     );
                     
-                    DROP TABLE IF EXISTS relevant_inputs_mv_for_cohort;
-                    CREATE TABLE relevant_inputs_mv_for_cohort as (
+                    DROP TABLE IF EXISTS relevant_inputs_mv_for_cohort{self.training};
+                    CREATE TABLE relevant_inputs_mv_for_cohort{self.training} as (
                         select subject_id||'-'||hadm_id as identifier, subject_id, hadm_id, itemid, starttime as charttime, amount as valuenum, amountuom as valueuom, label
                         from inputevents_mv join (select itemid, label from d_items) as t1 using (itemid)
-                        where subject_id||'-'||hadm_id in (select identifier from model_{model_type}_mimic_cohort) 
-                            AND itemid in (select item_id from cohort_relevant_features where _table='inputevents_mv')
+                        where subject_id||'-'||hadm_id in (select identifier from model_{self.model_type}_mimic_cohort{self.training}) 
+                            AND itemid in (select item_id from cohort_relevant_features{self.training} where _table='inputevents_mv')
                     );
                     
                     
-                    DROP TABLE IF EXISTS relevant_inputs_cv_for_cohort;
-                    CREATE TABLE relevant_inputs_cv_for_cohort as (
+                    DROP TABLE IF EXISTS relevant_inputs_cv_for_cohort{self.training};
+                    CREATE TABLE relevant_inputs_cv_for_cohort{self.training} as (
                         select subject_id||'-'||hadm_id as identifier, subject_id, hadm_id, itemid, charttime, amount as valuenum, amountuom as valueuom, label
                         from inputevents_cv join (select itemid, label from d_items) as t1 using (itemid)
-                        where subject_id||'-'||hadm_id in (select identifier from model_{model_type}_mimic_cohort) 
-                            AND itemid in (select item_id from cohort_relevant_features where _table='inputevents_cv')
+                        where subject_id||'-'||hadm_id in (select identifier from model_{self.model_type}_mimic_cohort{self.training}) 
+                            AND itemid in (select item_id from cohort_relevant_features{self.training} where _table='inputevents_cv')
                     );
 
 
-                    DROP TABLE IF EXISTS relevant_note_events_for_cohort;
-                    CREATE TABLE relevant_note_events_for_cohort as (
+                    DROP TABLE IF EXISTS relevant_note_events_for_cohort{self.training};
+                    CREATE TABLE relevant_note_events_for_cohort{self.training} as (
                         select subject_id||'-'||hadm_id as identifier, subject_id, hadm_id, 0 as itemid, charttime, symptoms as valuenum, '' as valueuom, 'symptoms' as label
-                        from relevant_note_events
-                        where subject_id||'-'||hadm_id in (select identifier from model_{model_type}_mimic_cohort)
+                        from relevant_note_events{self.training}
+                        where subject_id||'-'||hadm_id in (select identifier from model_{self.model_type}_mimic_cohort{self.training})
                     );
                     
                     /* (5_c) Create a unified table of feature from the tables created above:*/
-                    DROP TABLE IF EXISTS all_relevant_lab_features;
-                    CREATE TABLE all_relevant_lab_features as (
+                    DROP TABLE IF EXISTS all_relevant_lab_features{self.training};
+                    CREATE TABLE all_relevant_lab_features{self.training} as (
                         select * from 
-                        relevant_chartevents_for_cohort 
+                        relevant_chartevents_for_cohort{self.training} 
                         union 
-                        (select * from relevant_labevents_for_cohort)
+                        (select * from relevant_labevents_for_cohort{self.training})
                         union
-                        (select * from relevant_procedure_for_cohort)
+                        (select * from relevant_procedure_for_cohort{self.training})
                         union
-                        (select * from relevant_inputs_mv_for_cohort)
+                        (select * from relevant_inputs_mv_for_cohort{self.training})
                         union
-                        (select * from relevant_inputs_cv_for_cohort)
+                        (select * from relevant_inputs_cv_for_cohort{self.training})
                         union
                         (select identifier, subject_id, hadm_id, itemid, charttime, valuenum, valueuom, label
                         from (select *, ROW_NUMBER() OVER(PARTITION BY identifier ORDER BY itemid DESC) rn
-                        from relevant_note_events_for_cohort
+                        from relevant_note_events_for_cohort{self.training}
                         ) x where x.rn = 1)                        
                     );
                     
                     /* (5_d) Create a table of relevant events (features) received near when the target (culture) was received */
-                    DROP TABLE IF EXISTS relevant_events;
-                    CREATE TABLE relevant_events as(
+                    DROP TABLE IF EXISTS relevant_events{self.training};
+                    CREATE TABLE relevant_events{self.training} as(
                         SELECT 
                                 *,
                                 date_part('year', admittime) - date_part('year', dob) as estimated_age,
-                                round(CAST((extract(epoch from target_time - all_relevant_lab_features.charttime) / 3600.0) as numeric),2) as hours_from_charttime_time_to_targettime,
+                                round(CAST((extract(epoch from target_time - all_relevant_lab_features{self.training}.charttime) / 3600.0) as numeric),2) as hours_from_charttime_time_to_targettime,
                                 round(CAST((extract(epoch from charttime - admittime) / 3600.0 ) as numeric),2) as hours_from_admittime_to_charttime,
                                 round(CAST((extract(epoch from target_time - admittime) / 3600.0) as numeric),2) as hours_from_admittime_to_targettime
                         FROM 
-                            all_relevant_lab_features			
-                            INNER JOIN (select identifier, target, target_time, admittime from model_{model_type}_mimic_cohort) _tmp2 using (identifier)
+                            all_relevant_lab_features{self.training}			
+                            INNER JOIN (select identifier, target, target_time, admittime from model_{self.model_type}_mimic_cohort{self.training}) _tmp2 using (identifier)
                             INNER JOIN (select subject_id,gender, dob from patients where subject_id in (
                                                             select CAST (subject_id as INTEGER) 
-                                                            from model_{model_type}_mimic_cohort)) as t3 	
+                                                            from model_{self.model_type}_mimic_cohort{self.training})) as t3 	
                                         using (subject_id)
                         WHERE 
-                             identifier in (select identifier from model_{model_type}_mimic_cohort)
+                             identifier in (select identifier from model_{self.model_type}_mimic_cohort{self.training})
                         AND
-                            (extract(epoch from target_time - all_relevant_lab_features.charttime)) > 0
+                            (extract(epoch from target_time - all_relevant_lab_features{self.training}.charttime)) > 0
                     );
                     
                     /* (5_e) save table to CSV file*/
-                    COPY relevant_events To
+                    COPY relevant_events{self.training} To
                     {output_path}
                     With CSV DELIMITER ',' HEADER;"""
 
         self.execute_query(query)
-        return output_path
