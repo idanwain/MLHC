@@ -476,7 +476,7 @@ class SqlHelper:
         self.execute_query(query)
 
     def merge_features_and_cohort(self, model_type, user):
-        output_path = f"'C:/tools/feature_mimic_cohort_model_{model_type}.csv'" if user == 'idan' else f"'/Users/user/Documents/University/Workshop/feature_mimic_cohort_model_{model_type}.csv'"
+        output_path = f"'C:/tools/feature_mimic_cohort_model_{model_type}.csv'" if user == 'idan' else f"'/Users/user/Documents/University/Workshop/external_validation_set_{model_type}.csv'"
         query = f"""DROP TABLE IF EXISTS relevant_labevents_for_cohort;
                     CREATE TABLE relevant_labevents_for_cohort as (
                         select subject_id||'-'||hadm_id as identifier, subject_id, hadm_id, itemid, charttime, valuenum, valueuom, label
