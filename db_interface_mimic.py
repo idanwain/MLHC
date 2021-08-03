@@ -47,12 +47,12 @@ mimic_to_eicu_mapping = {
 class DbMimic:
     def __init__(self,
                  boolean_features_path,
-                 extra_features_path,
+                 # extra_features_path,
                  data_path="/Users/user/Documents/University/Workshop/features_mimic.csv",
                  folds_path="/Users/user/Documents/University/Workshop/folds_mimic_model_a.csv"
                  ):
         self.boolean_features = pd.read_csv(boolean_features_path)
-        self.extra_features_data = pd.read_csv(extra_features_path)
+        # self.extra_features_data = pd.read_csv(extra_features_path)
         self.relevant_events_data = pd.read_csv(data_path)
         self.folds_data = pd.read_csv(folds_path)
         self.available_labels_in_events = []
@@ -76,7 +76,7 @@ class DbMimic:
         :return: labels list
         """
         distinct_labels = []
-        if(len(self.available_labels_in_events) == 0):
+        if (len(self.available_labels_in_events) == 0):
             for label in self.relevant_events_data["label"]:
                 if (label not in distinct_labels):
                     distinct_labels.append(label)
@@ -101,8 +101,9 @@ class DbMimic:
             time = datetime.strptime(row[1]["charttime"], '%Y-%m-%d %H:%M:%S')
             value = row[1]["valuenum"]
             unit_of_measuere = row[1]["valueuom"]
-            if label in self.anomaly_mapping and (value > self.anomaly_mapping[label]["max"] or value < self.anomaly_mapping[label]["min"]):
-                utils.log_dict(msg="Anomaly found",vals={"Label":label,"Value":value,"UOM":unit_of_measuere})
+            if label in self.anomaly_mapping and (
+                    value > self.anomaly_mapping[label]["max"] or value < self.anomaly_mapping[label]["min"]):
+                utils.log_dict(msg="Anomaly found", vals={"Label": label, "Value": value, "UOM": unit_of_measuere})
                 continue
             feature = Feature(time=time, value=value, uom=unit_of_measuere)
             patient_dict[label].append(feature)
@@ -114,24 +115,13 @@ class DbMimic:
         :param hadm_id: id of patient
         :return: tuple of metadata values
         """
-        members = [attr for attr in dir(PatientMimic) if not callable(getattr(PatientMimic, attr)) and not attr.startswith("__")]
+        members = [attr for attr in dir(PatientMimic) if
+                   not callable(getattr(PatientMimic, attr)) and not attr.startswith("__")]
         values = []
         relevant_rows = self.relevant_events_data.loc[lambda df: df['identifier'] == hadm_id, :]
         for member in members:
             values.append(relevant_rows.iloc[0][member])
         return tuple(values)
-
-    def get_extra_features_by_hadm_id(self, hadm_id: str):
-        """
-        Returns a tuple of values which are used as extra features given an hadm_id. Values can be found in Patient object.
-        :param hadm_id: id of patient
-        :return: tuple of metadata values
-        """
-        relevant_row = self.extra_features_data.loc[lambda df: df['identifier'] == hadm_id, :]
-        for row in relevant_row.iterrows():
-            vals = list(row[1])
-            vals.pop(0)
-            return tuple(vals)
 
     def get_folds(self):
         """
@@ -196,7 +186,7 @@ class DbMimic:
             feature = row[1]["feature"]
             max_val = row[1]["max"]
             min_val = row[1]["min"]
-            res[feature] = {"min":min_val,"max":max_val}
+            res[feature] = {"min": min_val, "max": max_val}
         return res
 
     def extract_symptoms_by_identifier(self, identifier):
@@ -204,3 +194,4 @@ class DbMimic:
         relevant_row = relevant_row.loc[lambda df: df['label'] == 'symptoms', :]
         for row in relevant_row.iterrows():
             return row[1]['valuenum']
+        return 0

@@ -133,7 +133,7 @@ def save_data_to_disk(model,indices,params):
 
 def main():
     db = DbMimic(boolean_features_path,
-                 extra_features_path,
+                 # extra_features_path,
                  data_path=data_path_mimic,
                  folds_path=folds_path)
 
