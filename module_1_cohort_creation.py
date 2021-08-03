@@ -19,7 +19,7 @@ def module_1_cohort_creation(file_path, db_conn, model_type):
     db.load_cohort_to_db(file_path, model_type)
     db.create_features_table()
     db.init_boolean_features()
-    db.merge_features_and_cohort(user)
+    db.merge_features_and_cohort(model_type, user)
     db.close()
 
 

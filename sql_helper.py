@@ -245,13 +245,13 @@ class SqlHelper:
 
         self.execute_query(query)
 
-    def merge_features_and_cohort(self, user):
+    def merge_features_and_cohort(self, model_type, user):
         output_path = "'C:/tools/feature_mimic_cohort_model_a2.csv'" if user == 'idan' else "'/Users/user/Documents/University/Workshop/feature_mimic_cohort_model_a.csv'"
         query = f"""DROP TABLE IF EXISTS relevant_labevents_for_cohort;
                     CREATE TABLE relevant_labevents_for_cohort as (
                         select subject_id||'-'||hadm_id as identifier, subject_id, hadm_id, itemid, charttime, valuenum, valueuom, label
                         from labevents join (select itemid, label from d_labitems) as t1 using (itemid)
-                        where subject_id||'-'||hadm_id in (select identifier from model_a_mimic_cohort) 
+                        where subject_id||'-'||hadm_id in (select identifier from model_{model_type}_mimic_cohort) 
                         AND itemid in (select item_id from cohort_relevant_features where _table='labevents')
                     );
                     
@@ -260,7 +260,7 @@ class SqlHelper:
                     CREATE TABLE relevant_chartevents_for_cohort as (
                         select subject_id||'-'||hadm_id as identifier, subject_id, hadm_id, itemid, charttime, valuenum, valueuom, label
                         from chartevents join (select itemid, label from d_items) as t1 using (itemid)
-                        where subject_id||'-'||hadm_id in (select identifier from model_a_mimic_cohort) 
+                        where subject_id||'-'||hadm_id in (select identifier from model_{model_type}_mimic_cohort) 
                             AND itemid in (select item_id from cohort_relevant_features where _table='chartevents')
                     );
                     
@@ -268,7 +268,7 @@ class SqlHelper:
                     CREATE TABLE relevant_procedure_for_cohort as (
                         select subject_id||'-'||hadm_id as identifier, subject_id, hadm_id, itemid, starttime as charttime, value as valuenum, valueuom, label
                         from procedureevents_mv join (select itemid, label from d_items) as t1 using (itemid)
-                        where subject_id||'-'||hadm_id in (select identifier from model_a_mimic_cohort) 
+                        where subject_id||'-'||hadm_id in (select identifier from model_{model_type}_mimic_cohort) 
                             AND itemid in (select item_id from cohort_relevant_features where _table='procedureevents_mv')
                     );
                     
@@ -276,7 +276,7 @@ class SqlHelper:
                     CREATE TABLE relevant_inputs_mv_for_cohort as (
                         select subject_id||'-'||hadm_id as identifier, subject_id, hadm_id, itemid, starttime as charttime, amount as valuenum, amountuom as valueuom, label
                         from inputevents_mv join (select itemid, label from d_items) as t1 using (itemid)
-                        where subject_id||'-'||hadm_id in (select identifier from model_a_mimic_cohort) 
+                        where subject_id||'-'||hadm_id in (select identifier from model_{model_type}_mimic_cohort) 
                             AND itemid in (select item_id from cohort_relevant_features where _table='inputevents_mv')
                     );
                     
@@ -285,7 +285,7 @@ class SqlHelper:
                     CREATE TABLE relevant_inputs_cv_for_cohort as (
                         select subject_id||'-'||hadm_id as identifier, subject_id, hadm_id, itemid, charttime, amount as valuenum, amountuom as valueuom, label
                         from inputevents_cv join (select itemid, label from d_items) as t1 using (itemid)
-                        where subject_id||'-'||hadm_id in (select identifier from model_a_mimic_cohort) 
+                        where subject_id||'-'||hadm_id in (select identifier from model_{model_type}_mimic_cohort) 
                             AND itemid in (select item_id from cohort_relevant_features where _table='inputevents_cv')
                     );
                     
@@ -315,13 +315,13 @@ class SqlHelper:
                                 round(CAST((extract(epoch from target_time - admittime) / 3600.0) as numeric),2) as hours_from_admittime_to_targettime
                         FROM 
                             all_relevant_lab_features			
-                            INNER JOIN (select identifier, target, target_time, admittime from model_a_mimic_cohort) _tmp2 using (identifier)
+                            INNER JOIN (select identifier, target, target_time, admittime from model_{model_type}_mimic_cohort) _tmp2 using (identifier)
                             INNER JOIN (select subject_id,gender, dob from patients where subject_id in (
                                                             select CAST (subject_id as INTEGER) 
-                                                            from model_a_mimic_cohort)) as t3 	
+                                                            from model_{model_type}_mimic_cohort)) as t3 	
                                         using (subject_id)
                         WHERE 
-                             identifier in (select identifier from model_a_mimic_cohort)
+                             identifier in (select identifier from model_{model_type}_mimic_cohort)
                         AND
                             (extract(epoch from target_time - all_relevant_lab_features.charttime)) > 0
                     );
