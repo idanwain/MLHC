@@ -17304,3 +17304,144 @@ DEBUG:root:DB error: DROP TABLE IF EXISTS relevant_labevents_for_cohort;
 LINE 82:                     C:/tools/feature_mimic_cohort_model_a.cs...
                              ^
 
+DEBUG:root:DB error: DROP TABLE IF EXISTS model_a_mimic_cohort;
+                    CREATE TABLE model_a_mimic_cohort (
+                      identifier VARCHAR(50),
+                      subject_id VARCHAR(50),
+                      hadm_id VARCHAR(50),
+                      admittime TIMESTAMP,
+                      icu_time TIMESTAMP,
+                      target_time TIMESTAMP,
+                      target VARCHAR(50)
+                    );
+                    COPY model_a_mimic_cohort 
+                    FROM C:/tools/model_a _mimic_cohort_v2.csv
+                    DELIMITER ','
+                    CSV HEADER;, Exception: syntax error at or near "C"
+LINE 12:                     FROM C:/tools/model_a _mimic_cohort_v2.c...
+                                  ^
+
+DEBUG:root:DB error: DROP TABLE IF EXISTS model_a_mimic_cohort;
+                    CREATE TABLE model_a_mimic_cohort (
+                      identifier VARCHAR(50),
+                      subject_id VARCHAR(50),
+                      hadm_id VARCHAR(50),
+                      admittime TIMESTAMP,
+                      icu_time TIMESTAMP,
+                      target_time TIMESTAMP,
+                      target VARCHAR(50)
+                    );
+                    COPY model_a_mimic_cohort 
+                    FROM 'C:/tools/model_'a' _mimic_cohort_v2.csv'
+                    DELIMITER ','
+                    CSV HEADER;, Exception: syntax error at or near "a"
+LINE 12:                     FROM 'C:/tools/model_'a' _mimic_cohort_v...
+                                                   ^
+
+DEBUG:root:DB error: DROP TABLE IF EXISTS model_a_mimic_cohort;
+                    CREATE TABLE model_a_mimic_cohort (
+                      identifier VARCHAR(50),
+                      subject_id VARCHAR(50),
+                      hadm_id VARCHAR(50),
+                      admittime TIMESTAMP,
+                      icu_time TIMESTAMP,
+                      target_time TIMESTAMP,
+                      target VARCHAR(50)
+                    );
+                    COPY model_a_mimic_cohort 
+                    FROM 'C:/tools/model_'a' _mimic_cohort_v2.csv'
+                    DELIMITER ','
+                    CSV HEADER;, Exception: syntax error at or near "a"
+LINE 12:                     FROM 'C:/tools/model_'a' _mimic_cohort_v...
+                                                   ^
+
+DEBUG:root:DB error: DROP TABLE IF EXISTS model_'a'_mimic_cohort;
+                    CREATE TABLE model_'a'_mimic_cohort (
+                      identifier VARCHAR(50),
+                      subject_id VARCHAR(50),
+                      hadm_id VARCHAR(50),
+                      admittime TIMESTAMP,
+                      icu_time TIMESTAMP,
+                      target_time TIMESTAMP,
+                      target VARCHAR(50)
+                    );
+                    COPY model_'a'_mimic_cohort 
+                    FROM 'C:/tools/model_''a''_mimic_cohort_v2.csv'
+                    DELIMITER ','
+                    CSV HEADER;, Exception: syntax error at or near "'a'"
+LINE 1: DROP TABLE IF EXISTS model_'a'_mimic_cohort;
+                                   ^
+
+DEBUG:root:DB error: DROP TABLE IF EXISTS model_a_mimic_cohort;
+                    CREATE TABLE model_a_mimic_cohort (
+                      identifier VARCHAR(50),
+                      subject_id VARCHAR(50),
+                      hadm_id VARCHAR(50),
+                      admittime TIMESTAMP,
+                      icu_time TIMESTAMP,
+                      target_time TIMESTAMP,
+                      target VARCHAR(50)
+                    );
+                    COPY model_a_mimic_cohort 
+                    FROM 'C:/tools/model_a_mimic_cohort_v2.csv'
+                    DELIMITER ','
+                    CSV HEADER;, Exception: could not open file "C:/tools/model_a_mimic_cohort_v2.csv" for reading: No such file or directory
+HINT:  COPY FROM instructs the PostgreSQL server process to read a file. You may want a client-side facility such as psql's \copy.
+
+DEBUG:root:DB error: DROP TABLE IF EXISTS model_a_mimic_cohort;
+                    CREATE TABLE model_a_mimic_cohort (
+                      identifier VARCHAR(50),
+                      subject_id VARCHAR(50),
+                      hadm_id VARCHAR(50),
+                      admittime TIMESTAMP,
+                      icu_time TIMESTAMP,
+                      target_time TIMESTAMP,
+                      target VARCHAR(50)
+                    );
+                    COPY model_a_mimic_cohort 
+                    FROM 'C:/tools/model_a_mimic_cohort_v2.csv'
+                    DELIMITER ','
+                    CSV HEADER;, Exception: could not open file "C:/tools/model_a_mimic_cohort_v2.csv" for reading: No such file or directory
+HINT:  COPY FROM instructs the PostgreSQL server process to read a file. You may want a client-side facility such as psql's \copy.
+
+DEBUG:root:DB error: DROP TABLE IF EXISTS model_a_mimic_cohort;
+                    CREATE TABLE model_a_mimic_cohort (
+                      identifier VARCHAR(50),
+                      subject_id VARCHAR(50),
+                      hadm_id VARCHAR(50),
+                      admittime TIMESTAMP,
+                      icu_time TIMESTAMP,
+                      target_time TIMESTAMP,
+                      target VARCHAR(50)
+                    );
+                    COPY model_a_mimic_cohort 
+                    FROM '/Users/user/Documents/University/Workshop/model_a_mimic_cohort_v2.csv'
+                    DELIMITER ','
+                    CSV HEADER;, Exception: date/time field value out of range: "26/11/2159 20:43"
+HINT:  Perhaps you need a different "datestyle" setting.
+CONTEXT:  COPY model_a_mimic_cohort, line 2, column admittime: "26/11/2159 20:43"
+
+DEBUG:root:DB error: drop table if exists boolean_features;
+                    create table boolean_features (itemid int, linksto varchar(50), category varchar(100));
+                    insert into boolean_features select itemid, linksto, category from d_items where category in
+                    (
+                    'Access Lines - Invasive',
+                    'Lumbar Puncture',
+                    'Impella',
+                    'Arterial Line Insertion',
+                    'IABP',
+                    'Intubation',
+                    'Thoracentesis',
+                    'Dialysis',
+                    'Access Lines - Peripheral',
+                    'PA Line Insertion',
+                    'Tandem Heart',
+                    'PICC Line Insertion',
+                    'CVL Insertion',
+                    'Paracentesis'
+                    ) and linksto = 'chartevents';
+                    
+                    insert into cohort_relevant_features select itemid, linksto from boolean_features;, Exception: relation "d_items" does not exist
+LINE 3: ...an_features select itemid, linksto, category from d_items wh...
+                                                             ^
+
