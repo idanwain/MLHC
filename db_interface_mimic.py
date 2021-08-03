@@ -65,7 +65,7 @@ class DbMimic:
         """
         print("Fetching all admission id's")
         hadm_id_list = []
-        for id in self.relevant_events_data["hadm_id"]:
+        for id in self.relevant_events_data["identifier"]:
             if id not in hadm_id_list:
                 hadm_id_list.append(id)
         return hadm_id_list
@@ -92,7 +92,7 @@ class DbMimic:
         :return: dictionary of labels and their values (value = Feature object)
         """
         patient_dict = {}
-        relevant_rows = self.relevant_events_data.loc[lambda df: df['hadm_id'] == hadm_id, :]
+        relevant_rows = self.relevant_events_data.loc[lambda df: df['identifier'] == hadm_id, :]
         labels = self.get_labels()
         for label in labels:
             patient_dict[label] = []
@@ -116,7 +116,7 @@ class DbMimic:
         """
         members = [attr for attr in dir(PatientMimic) if not callable(getattr(PatientMimic, attr)) and not attr.startswith("__")]
         values = []
-        relevant_rows = self.relevant_events_data.loc[lambda df: df['hadm_id'] == hadm_id, :]
+        relevant_rows = self.relevant_events_data.loc[lambda df: df['identifier'] == hadm_id, :]
         for member in members:
             values.append(relevant_rows.iloc[0][member])
         return tuple(values)
@@ -127,7 +127,7 @@ class DbMimic:
         :param hadm_id: id of patient
         :return: tuple of metadata values
         """
-        relevant_row = self.extra_features_data.loc[lambda df: df['hadm_id'] == hadm_id, :]
+        relevant_row = self.extra_features_data.loc[lambda df: df['identifier'] == hadm_id, :]
         for row in relevant_row.iterrows():
             vals = list(row[1])
             vals.pop(0)
@@ -152,7 +152,7 @@ class DbMimic:
 
     def get_boolean_features_by_hadm_id(self, hadm_id):
         res = {key: 0 for key in self.boolean_features['category']}
-        relevant_rows = self.relevant_events_data.loc[lambda df: df['hadm_id'] == hadm_id, :]
+        relevant_rows = self.relevant_events_data.loc[lambda df: df['identifier'] == hadm_id, :]
         for event in relevant_rows.iterrows():
             if event[1]['itemid'] in list(self.boolean_features['itemid']):
                 category = self.boolean_features.loc[lambda df: df['itemid'] == event[1]['itemid'], :]
@@ -174,12 +174,10 @@ class DbMimic:
                 counter += 1
             if target == 'negative' and counter < num_of_negatives:
                 continue
-            transfers_before_target, ethnicity, insurance, diagnosis, symptoms = self.get_extra_features_by_hadm_id(
-                hadm_id)
+            symptoms = self.extract_symptoms_by_identifier(hadm_id)
             event_list = self.get_events_by_hadm_id(hadm_id)
             boolean_features = self.get_boolean_features_by_hadm_id(hadm_id)
-            patient = PatientMimic(hadm_id, estimated_age, gender, ethnicity, transfers_before_target, insurance, diagnosis,
-                                   symptoms, target, event_list, boolean_features)
+            patient = PatientMimic(hadm_id, estimated_age, gender, symptoms, target, event_list, boolean_features)
             patient_list.append(patient)
         print("Done")
         return patient_list
@@ -201,7 +199,7 @@ class DbMimic:
             res[feature] = {"min":min_val,"max":max_val}
         return res
 
-
-
-
-
+    def extract_symptoms_by_identifier(self, identifier):
+        relevant_row = self.relevant_events_data.loc[lambda df: df['identifier'] == identifier and df['label'] == 'symptoms', :]
+        for row in relevant_row.iterrows():
+            return row[1]['valuenum']
