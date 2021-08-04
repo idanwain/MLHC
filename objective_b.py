@@ -9,7 +9,9 @@ import utils
 from imblearn.under_sampling import TomekLinks, ClusterCentroids, RandomUnderSampler, NearMiss, EditedNearestNeighbours
 from hpsklearn import HyperoptEstimator, svc, any_classifier, any_preprocessing, random_forest
 from sklearn.calibration import CalibratedClassifierCV
-import itertools
+from xgboost import XGBClassifier
+import os
+import pickle
 from collections import Counter
 from sklearn.linear_model import LogisticRegression
 from sklearn.model_selection import GridSearchCV
@@ -22,12 +24,10 @@ from scipy import stats
 from sklearn.linear_model import SGDClassifier
 from sklearn.ensemble import RandomForestClassifier, AdaBoostClassifier, VotingClassifier, ExtraTreesClassifier, \
     GradientBoostingClassifier
-from xgboost import XGBClassifier
 from imblearn.over_sampling import *
 from imblearn.combine import SMOTETomek
 from numpy import nan
-import os
-import pickle
+
 
 if os.name == 'posix':
     user = 'roye'
