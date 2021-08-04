@@ -47,12 +47,10 @@ mimic_to_eicu_mapping = {
 class DbMimic:
     def __init__(self,
                  boolean_features_path,
-                 # extra_features_path,
                  data_path="/Users/user/Documents/University/Workshop/features_mimic.csv",
                  folds_path="/Users/user/Documents/University/Workshop/folds_mimic_model_a.csv"
                  ):
         self.boolean_features = pd.read_csv(boolean_features_path)
-        # self.extra_features_data = pd.read_csv(extra_features_path)
         self.relevant_events_data = pd.read_csv(data_path)
         self.folds_data = pd.read_csv(folds_path)
         self.available_labels_in_events = []

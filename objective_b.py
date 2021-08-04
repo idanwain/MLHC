@@ -12,6 +12,7 @@ from sklearn.calibration import CalibratedClassifierCV
 from xgboost import XGBClassifier
 import os
 import pickle
+from module_1_cohort_creation import create_cohort_training_data
 from collections import Counter
 from sklearn.linear_model import LogisticRegression
 from sklearn.model_selection import GridSearchCV
@@ -93,7 +94,6 @@ def feature_selection(X_train, X_test, y_train, k):
     selector.fit(X_train, y_train)
     X_train = selector.transform(X_train)
     indices = selector.get_support(indices=True)
-    # X_test = utils.create_vector_of_important_features(X_test, indices)
     X_test = selector.transform(X_test)
 
     return X_train, X_test, indices
@@ -134,8 +134,8 @@ def save_data_to_disk(model,indices,params):
         optimal_values_file.write(params)
 
 def main():
+    create_cohort_training_data()
     db = DbMimic(boolean_features_path,
-                 # extra_features_path,
                  data_path=data_path_mimic,
                  folds_path=folds_path)
 
