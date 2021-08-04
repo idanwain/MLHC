@@ -8,6 +8,7 @@ from db_interface_mimic import DbMimic
 import utils
 from imblearn.under_sampling import TomekLinks, ClusterCentroids, RandomUnderSampler, NearMiss, EditedNearestNeighbours
 from hpsklearn import HyperoptEstimator, svc, any_classifier, any_preprocessing, random_forest
+from sklearn.calibration import CalibratedClassifierCV
 import itertools
 from collections import Counter
 from sklearn.linear_model import LogisticRegression
@@ -101,7 +102,8 @@ def feature_selection(X_train, X_test, y_train, k):
 def train_model(estim, X_train, y_train):
     try:
         estim.fit(X_train, y_train)
-        clf = eval(str(estim.best_model()['learner']))
+        base_clf = eval(str(estim.best_model()['learner']))
+        clf = CalibratedClassifierCV(base_estimator=base_clf)
         clf = clf.fit(X_train, y_train)
     except Exception as e:
         clf = None
@@ -211,7 +213,7 @@ def objective(params, patient_list_base, db, folds):
         X_train, y_train = balance[fold_num].fit_resample(X_train, y_train)
 
         # model fitting
-        estimator = HyperoptEstimator(classifier=random_forest('my_clf'),
+        estimator = HyperoptEstimator(classifier=any_classifier('my_clf'),
                                       algo=tpe.suggest,
                                       max_evals=10,
                                       trial_timeout=60)
