@@ -25,7 +25,7 @@ def module_3_model(processed_external_validation_set_path, model_type):
     data = df.to_numpy()
     with open(path_to_model + '_' + model_type , 'rb') as file:
         clf = pickle.load(file)
-    result = clf.predict_proba(data)
+    result = clf.predict_proba(data)[:,1]
 
     ### Save results to csv ###
     final_df['risk_score'].extend(result)
