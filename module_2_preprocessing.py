@@ -19,7 +19,7 @@ def module_2_preprocessing(external_validation_set_path, model_type):
     data = []
     ids = {'identifier':[]}
     db = DbMimic(f'/Users/user/Documents/University/Workshop/boolean_features_mimic_model_{model_type}.csv',
-                 external_validation_set_path,
+                 # external_validation_set_path,
                  data_path=external_validation_set_path
                  )
     patient_list_base = db.create_patient_list()

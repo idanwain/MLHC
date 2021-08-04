@@ -7,7 +7,7 @@ import copy
 from db_interface_mimic import DbMimic
 import utils
 from imblearn.under_sampling import TomekLinks, ClusterCentroids, RandomUnderSampler, NearMiss, EditedNearestNeighbours
-from hpsklearn import HyperoptEstimator, svc, any_classifier, any_preprocessing
+from hpsklearn import HyperoptEstimator, svc, any_classifier, any_preprocessing, random_forest
 import itertools
 from collections import Counter
 from sklearn.linear_model import LogisticRegression
@@ -36,21 +36,21 @@ counter = 0
 model_type = 'b'
 
 if model_type == 'a':
-    boolean_features_path = 'C:/tools/boolean_features_mimic_model_a.csv' if user == 'idan' \
-        else '/Users/user/Documents/University/Workshop/boolean_features_mimic_model_a.csv'
+    boolean_features_path = 'C:/tools/boolean_features_mimic_model_a_train_data.csv' if user == 'idan' \
+        else '/Users/user/Documents/University/Workshop/boolean_features_mimic_model_a_train_data.csv'
     extra_features_path = 'C:/tools/extra_features_model_a.csv' if user == 'idan' \
         else '/Users/user/Documents/University/Workshop/extra_features_model_a.csv'
-    data_path_mimic = 'C:/tools/feature_mimic_cohort_model_a.csv' if user == 'idan' \
-        else '/Users/user/Documents/University/Workshop/feature_mimic_cohort_model_a.csv'
+    data_path_mimic = 'C:/tools/external_validation_set_a_train_data.csv' if user == 'idan' \
+        else '/Users/user/Documents/University/Workshop/external_validation_set_a_train_data.csv'
     folds_path = 'C:/tools/folds.csv' if user == 'idan' \
         else '/Users/user/Documents/University/Workshop/folds_mimic_model_a.csv'
 elif model_type == 'b':
-    boolean_features_path = 'C:/tools/boolean_features_mimic_model_b.csv' if user == 'idan' \
-        else '/Users/user/Documents/University/Workshop/boolean_features_mimic_model_b.csv'
+    boolean_features_path = 'C:/tools/boolean_features_mimic_model_b_train_data.csv' if user == 'idan' \
+        else '/Users/user/Documents/University/Workshop/boolean_features_mimic_model_b_train_data.csv'
     extra_features_path = 'C:/tools/extra_features_model_b.csv' if user == 'idan' \
         else '/Users/user/Documents/University/Workshop/extra_features_model_b.csv'
-    data_path_mimic = 'C:/tools/feature_mimic_cohort_model_b.csv' if user == 'idan' \
-        else '/Users/user/Documents/University/Workshop/feature_mimic_cohort_model_b.csv'
+    data_path_mimic = 'C:/tools/external_validation_set_b_train_data.csv' if user == 'idan' \
+        else '/Users/user/Documents/University/Workshop/external_validation_set_b_train_data.csv'
     folds_path = 'C:/tools/folds_mimic_model_b.csv' if user == 'idan' \
         else '/Users/user/Documents/University/Workshop/folds_mimic_model_b.csv'
 
@@ -211,7 +211,7 @@ def objective(params, patient_list_base, db, folds):
         X_train, y_train = balance[fold_num].fit_resample(X_train, y_train)
 
         # model fitting
-        estimator = HyperoptEstimator(classifier=any_classifier('my_clf'),
+        estimator = HyperoptEstimator(classifier=random_forest('my_clf'),
                                       algo=tpe.suggest,
                                       max_evals=10,
                                       trial_timeout=60)

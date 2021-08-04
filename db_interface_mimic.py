@@ -132,8 +132,7 @@ class DbMimic:
         for row in self.folds_data.iterrows():
             identifier = row[1]["identifier"]
             fold = "fold_" + str(row[1]["fold"])
-            identifier = identifier.split('-')
-            hadm_id = identifier[1]
+            hadm_id = identifier
             try:
                 res[fold].append(hadm_id)
             except KeyError:
