@@ -31,3 +31,4 @@ def module_3_model(processed_external_validation_set_path, model_type):
     final_df['risk_score'].extend(result)
     res = pd.DataFrame.from_dict(final_df)
     res.to_csv(path_to_risk_score)
+    return path_to_risk_score
