@@ -550,7 +550,7 @@ class SqlHelper:
                         (select * from relevant_inputs_cv_for_cohort{self.training})
                         union
                         (select identifier, subject_id, hadm_id, itemid, charttime, valuenum, valueuom, label
-                        from (select *, ROW_NUMBER() OVER(PARTITION BY identifier ORDER BY itemid DESC) rn
+                        from (select *, ROW_NUMBER() OVER(PARTITION BY identifier ORDER BY charttime ASC) rn
                         from relevant_note_events_for_cohort{self.training}
                         ) x where x.rn = 1)                        
                     );
