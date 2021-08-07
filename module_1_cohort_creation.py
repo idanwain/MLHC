@@ -7,10 +7,7 @@ if os.name == 'posix':
 else:
     user = 'idan'
 
-training = False
-
-
-def module_1_cohort_creation(file_path, db_conn, model_type):
+def module_1_cohort_creation(file_path, db_conn, model_type,training=False):
     db = sql_helper.SqlHelper(db_conn, model_type, user, training)
     db.load_cohort_to_db(file_path)
     db.create_features_table()
@@ -25,7 +22,8 @@ def module_1_cohort_creation(file_path, db_conn, model_type):
         else f"/Users/user/Documents/University/Workshop/external_validation_set_{model_type}.csv"
 
 
-if __name__ == '__main__':
+def create_cohort_training_data():
+    print("Creating cohort training data")
     if user == 'idan':
         db_conn = psycopg2.connect(
             host="localhost",
@@ -41,6 +39,5 @@ if __name__ == '__main__':
             options="--search_path=mimiciii"
         )
     model_type = 'b'
-    training = True
     path = f"'C:/tools/model_{model_type}_mimic_cohort.csv'" if user == 'idan' else f"'/Users/user/Documents/University/Workshop/model_{model_type}_mimic_cohort.csv'"
-    module_1_cohort_creation(path, db_conn, model_type)
+    module_1_cohort_creation(path, db_conn, model_type,training=True)

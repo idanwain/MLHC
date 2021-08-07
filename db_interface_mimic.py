@@ -47,12 +47,10 @@ mimic_to_eicu_mapping = {
 class DbMimic:
     def __init__(self,
                  boolean_features_path,
-                 # extra_features_path,
                  data_path="/Users/user/Documents/University/Workshop/features_mimic.csv",
                  folds_path="/Users/user/Documents/University/Workshop/folds_mimic_model_a.csv"
                  ):
         self.boolean_features = pd.read_csv(boolean_features_path)
-        # self.extra_features_data = pd.read_csv(extra_features_path)
         self.relevant_events_data = pd.read_csv(data_path)
         self.folds_data = pd.read_csv(folds_path)
         self.available_labels_in_events = []
@@ -103,7 +101,7 @@ class DbMimic:
             unit_of_measuere = row[1]["valueuom"]
             if label in self.anomaly_mapping and (
                     value > self.anomaly_mapping[label]["max"] or value < self.anomaly_mapping[label]["min"]):
-                utils.log_dict(msg="Anomaly found", vals={"Label": label, "Value": value, "UOM": unit_of_measuere})
+                # utils.log_dict(msg="Anomaly found", vals={"Label": label, "Value": value, "UOM": unit_of_measuere})
                 continue
             feature = Feature(time=time, value=value, uom=unit_of_measuere)
             patient_dict[label].append(feature)

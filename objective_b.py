@@ -9,7 +9,11 @@ import utils
 from imblearn.under_sampling import TomekLinks, ClusterCentroids, RandomUnderSampler, NearMiss, EditedNearestNeighbours
 from hpsklearn import HyperoptEstimator, svc, any_classifier, any_preprocessing, random_forest
 from sklearn.calibration import CalibratedClassifierCV
-import itertools
+from xgboost import XGBClassifier
+import os
+import pickle
+from module_1_cohort_creation import create_cohort_training_data
+from fancyimpute import SoftImpute
 from collections import Counter
 from sklearn.linear_model import LogisticRegression
 from sklearn.model_selection import GridSearchCV
@@ -22,12 +26,9 @@ from scipy import stats
 from sklearn.linear_model import SGDClassifier
 from sklearn.ensemble import RandomForestClassifier, AdaBoostClassifier, VotingClassifier, ExtraTreesClassifier, \
     GradientBoostingClassifier
-from xgboost import XGBClassifier
 from imblearn.over_sampling import *
 from imblearn.combine import SMOTETomek
 from numpy import nan
-import os
-import pickle
 
 if os.name == 'posix':
     user = 'roye'
@@ -89,11 +90,10 @@ def feature_selection(X_train, X_test, y_train, k):
     if k > len(X_train[0]):
         utils.log_dict(msg="Using all features")
         k = len(X_train[0])
-    selector = SelectFromModel(estimator=XGBClassifier(),max_features=k)
+    selector = SelectFromModel(estimator=XGBClassifier(), max_features=k)
     selector.fit(X_train, y_train)
     X_train = selector.transform(X_train)
     indices = selector.get_support(indices=True)
-    # X_test = utils.create_vector_of_important_features(X_test, indices)
     X_test = selector.transform(X_test)
 
     return X_train, X_test, indices
@@ -103,6 +103,7 @@ def train_model(estim, X_train, y_train):
     try:
         estim.fit(X_train, y_train)
         base_clf = eval(str(estim.best_model()['learner']))
+        print(base_clf)
         clf = CalibratedClassifierCV(base_estimator=base_clf)
         clf = clf.fit(X_train, y_train)
     except Exception as e:
@@ -110,39 +111,48 @@ def train_model(estim, X_train, y_train):
 
     return clf, estim
 
+
 def get_best_model_and_indices(trails):
     loss = 0
     best_model = None
     indices = []
+    exclusion = {}
     for entry in trails.results:
-        if(entry['loss'] < loss):
+        if (entry['loss'] < loss):
             best_model = entry['clf']
             loss = entry['loss']
             indices = entry['indices']
-    return best_model, indices
+            exclusion = entry['exclusion']
+    return best_model, indices, exclusion
 
-def save_data_to_disk(model,indices,params):
+
+def save_data_to_disk(model, indices, params, exclusion):
     model = pickle.dumps(model)
     indices = pickle.dumps(indices)
-    params = {'threshold_vals':params['threshold_vals'],'kNN_vals':params['kNN_vals']}
+    params = {'feature_threshold': params['feature_threshold'], 'kNN_vals': params['kNN_vals']}
     params = pickle.dumps(params)
+    exclusion = pickle.dumps(exclusion)
     with open('model_' + model_type, 'wb') as model_file:
         model_file.write(model)
     with open('indices_' + model_type, 'wb') as indices_file:
         indices_file.write(indices)
-    with open('optimal_values_' + model_type,'wb') as optimal_values_file:
+    with open('optimal_values_' + model_type, 'wb') as optimal_values_file:
         optimal_values_file.write(params)
+    with open('exclusion_criteria_' + model_type, 'wb') as exclusion_file:
+        exclusion_file.write(exclusion)
+
 
 def main():
+    # create_cohort_training_data()
     db = DbMimic(boolean_features_path,
-                 # extra_features_path,
                  data_path=data_path_mimic,
                  folds_path=folds_path)
 
     folds = db.get_folds()
     patient_list_base = db.create_patient_list()
     space = {
-        'threshold_vals': hp.uniform('thershold_val', 0, 1),
+        'feature_threshold': hp.uniform('thershold_val', 0, 1),
+        'patient_thershold': hp.uniform('patient_thershold', 0.7, 1),
         'kNN_vals': hp.choice('kNN_vals', range(1, 15)),
         'XGB1_vals': hp.choice('XGB1_vals', range(1, 60)),
         'XGB2_vals': hp.choice('XGB2_vals', range(1, 60)),
@@ -153,10 +163,9 @@ def main():
     }
     objective_func = partial(objective, patient_list_base=patient_list_base, db=db, folds=folds)
     trials = Trials()
-    best = fmin(fn=objective_func, space=space, algo=tpe.suggest, max_evals=5, trials=trials, return_argmin=False)
-    best_model, indices = get_best_model_and_indices(trials)
-    save_data_to_disk(best_model,indices,best)
-
+    best = fmin(fn=objective_func, space=space, algo=tpe.suggest, max_evals=10, trials=trials, return_argmin=False)
+    best_model, indices, exclusion = get_best_model_and_indices(trials)
+    save_data_to_disk(best_model, indices, best, exclusion)
 
 
 def objective(params, patient_list_base, db, folds):
@@ -168,8 +177,9 @@ def objective(params, patient_list_base, db, folds):
     patient_list = copy.deepcopy(patient_list_base)
 
     # hyper-parameters
-    threshold = params['threshold_vals']  # Minimum appearance for feature to be included
+    feature_threshold = params['feature_threshold']  # Minimum appearance for feature to be included
     n_neighbors = params['kNN_vals']  # Neighbors amount for kNN
+    patient_threshold = params['patient_thershold']  # Percentage of missing features of patient
 
     # amount of features to return by XGB
     xgb1_k = params['XGB1_vals']
@@ -182,14 +192,18 @@ def objective(params, patient_list_base, db, folds):
     balance = [params['balance']] * len(folds)
 
     config = {
-        "Threshold": threshold,
+        "Feature Threshold": feature_threshold,
+        "Patient Thershold": patient_threshold,
         "kNN": n_neighbors,
         "K_best": xgb_k,
         "balance": balance
     }
     utils.log_dict(vals=config, msg="Configuration:")
 
-    patient_list, removed_features = utils.remove_features_by_threshold(threshold, patient_list, db)
+    patient_list, percentage_removed, total_removed = utils.remove_patients_by_thershold(patient_list,
+                                                                                         patient_threshold)
+
+    patient_list, removed_features = utils.remove_features_by_threshold(feature_threshold, patient_list, db)
     folds_indices = get_fold_indices(patient_list, targets, folds)
     data = get_data_vectors(patient_list)
     labels_vector = utils.create_labels_vector(db, removed_features)
@@ -213,7 +227,7 @@ def objective(params, patient_list_base, db, folds):
         X_train, y_train = balance[fold_num].fit_resample(X_train, y_train)
 
         # model fitting
-        estimator = HyperoptEstimator(classifier=any_classifier('my_clf'),
+        estimator = HyperoptEstimator(classifier=random_forest('my_clf'),
                                       algo=tpe.suggest,
                                       max_evals=10,
                                       trial_timeout=60)
@@ -222,7 +236,6 @@ def objective(params, patient_list_base, db, folds):
         y_train = np.array(y_train)
         X_test = np.array(X_test)
         y_test = np.array(y_test)
-
         clf, estimator = train_model(estimator, X_train, y_train)
 
         if clf is None:
@@ -267,7 +280,13 @@ def objective(params, patient_list_base, db, folds):
         'status': STATUS_OK,
         'metadata': results,
         'clf': clf,
-        'indices' : indices
+        'indices': indices,
+        'exclusion': {
+            'model_type': model_type,
+            'percentage_removed': percentage_removed,
+            'total_removed': total_removed,
+            'patient_threshold': patient_threshold
+        }
     }
 
 
