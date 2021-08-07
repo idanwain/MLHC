@@ -101,7 +101,7 @@ class DbMimic:
             unit_of_measuere = row[1]["valueuom"]
             if label in self.anomaly_mapping and (
                     value > self.anomaly_mapping[label]["max"] or value < self.anomaly_mapping[label]["min"]):
-                utils.log_dict(msg="Anomaly found", vals={"Label": label, "Value": value, "UOM": unit_of_measuere})
+                # utils.log_dict(msg="Anomaly found", vals={"Label": label, "Value": value, "UOM": unit_of_measuere})
                 continue
             feature = Feature(time=time, value=value, uom=unit_of_measuere)
             patient_dict[label].append(feature)
