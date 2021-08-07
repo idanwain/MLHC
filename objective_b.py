@@ -152,18 +152,14 @@ def main():
     patient_list_base = db.create_patient_list()
     space = {
         'feature_threshold': hp.uniform('thershold_val', 0, 1),
-        'patient_thershold': hp.uniform('patient_thershold', 0.7, 1),
+        'patient_thershold': hp.uniform('patient_thershold', 0.5, 1),
         'kNN_vals': hp.choice('kNN_vals', range(1, 15)),
-        'XGB1_vals': hp.choice('XGB1_vals', range(1, 60)),
-        'XGB2_vals': hp.choice('XGB2_vals', range(1, 60)),
-        'XGB3_vals': hp.choice('XGB3_vals', range(1, 60)),
-        'XGB4_vals': hp.choice('XGB4_vals', range(1, 60)),
-        'XGB5_vals': hp.choice('XGB5_vals', range(1, 60)),
+        'XGB_k': hp.choice('XGB1_vals', range(1, 60)),
         'balance': hp.choice('balance', [TomekLinks(), RandomUnderSampler()])
     }
     objective_func = partial(objective, patient_list_base=patient_list_base, db=db, folds=folds)
     trials = Trials()
-    best = fmin(fn=objective_func, space=space, algo=tpe.suggest, max_evals=10, trials=trials, return_argmin=False)
+    best = fmin(fn=objective_func, space=space, algo=tpe.suggest, max_evals=20, trials=trials, return_argmin=False)
     best_model, indices, exclusion = get_best_model_and_indices(trials)
     save_data_to_disk(best_model, indices, best, exclusion)
 
@@ -182,13 +178,7 @@ def objective(params, patient_list_base, db, folds):
     patient_threshold = params['patient_thershold']  # Percentage of missing features of patient
 
     # amount of features to return by XGB
-    xgb1_k = params['XGB1_vals']
-    xgb2_k = params['XGB2_vals']
-    xgb3_k = params['XGB3_vals']
-    xgb4_k = params['XGB4_vals']
-    xgb5_k = params['XGB5_vals']
-    xgb_k = [xgb1_k, xgb2_k, xgb3_k, xgb4_k, xgb5_k]
-
+    xgb_k = params['XGB_k']
     balance = [params['balance']] * len(folds)
 
     config = {
@@ -219,7 +209,7 @@ def objective(params, patient_list_base, db, folds):
         X_train, X_test = impute_data(X_train, X_test, n_neighbors)
 
         # Feature selection
-        X_train, X_test, indices = feature_selection(X_train, X_test, y_train, xgb_k[fold_num])
+        X_train, X_test, indices = feature_selection(X_train, X_test, y_train, xgb_k)
         config[f'selected_features_{fold_num}'] = [feature for i, feature in enumerate(labels_vector) if i in indices]
 
         ### Class balancing ###
@@ -229,7 +219,7 @@ def objective(params, patient_list_base, db, folds):
         # model fitting
         estimator = HyperoptEstimator(classifier=random_forest('my_clf'),
                                       algo=tpe.suggest,
-                                      max_evals=10,
+                                      max_evals=3,
                                       trial_timeout=60)
 
         X_train = np.array(X_train)
