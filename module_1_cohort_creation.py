@@ -12,6 +12,7 @@ def module_1_cohort_creation(file_path, db_conn, model_type,training=False):
     db.load_cohort_to_db(file_path)
     db.create_features_table()
     db.init_boolean_features()
+    db.create_drug_table()
     db.create_symptoms()
     db.merge_features_and_cohort()
     db.close()

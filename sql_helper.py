@@ -534,6 +534,13 @@ class SqlHelper:
                         from relevant_note_events{self.training}
                         where subject_id||'-'||hadm_id in (select identifier from model_{self.model_type}_mimic_cohort{self.training})
                     );
+
+                    DROP TABLE IF EXISTS relevant_drug_events_for_cohort{self.training};
+                    CREATE TABLE relevant_drug_events_for_cohort{self.training} as (
+                        select subject_id||'-'||hadm_id as identifier, subject_id, hadm_id, 1 as itemid, STARTDATE as charttime, cast(DOSE_VAL_RX as numeric) as valuenum, DOSE_UNIT_RX as valueuom, drug as label
+                        from relevant_drug_events{self.training}
+                        where subject_id||'-'||hadm_id in (select identifier from model_{self.model_type}_mimic_cohort{self.training})
+                    );
                     
                     /* (5_c) Create a unified table of feature from the tables created above:*/
                     DROP TABLE IF EXISTS all_relevant_lab_features{self.training};
@@ -552,7 +559,9 @@ class SqlHelper:
                         (select identifier, subject_id, hadm_id, itemid, charttime, valuenum, valueuom, label
                         from (select *, ROW_NUMBER() OVER(PARTITION BY identifier ORDER BY charttime ASC) rn
                         from relevant_note_events_for_cohort{self.training}
-                        ) x where x.rn = 1)                        
+                        ) x where x.rn = 1)
+                        union 
+                        (select * from relevant_drug_events_for_cohort{self.training})
                     );
                     
                     /* (5_d) Create a table of relevant events (features) received near when the target (culture) was received */
@@ -581,5 +590,71 @@ class SqlHelper:
                     COPY relevant_events{self.training} To
                     {output_path}
                     With CSV DELIMITER ',' HEADER;"""
+
+        self.execute_query(query)
+
+    def create_drug_table(self):
+        query = f"""DROP TABLE IF EXISTS relevant_drug{self.training};
+                    CREATE TABLE relevant_drug{self.training} AS
+                    SELECT drug
+                    FROM (
+                        select distinct drug from prescriptions where
+                        lower(drug_name_generic) like lower('%ceftriaxone%') OR
+                        lower(drug_name_generic) like lower('%ciprofloxacin%') OR
+                        lower(drug_name_generic) like lower('%clindamycin%') OR
+                        lower(drug_name_generic) like lower('%cefotaxime%') OR
+                        lower(drug_name_generic) like lower('%metronidazole%') OR
+                        lower(drug_name_generic) like lower('%vancomycin%') OR
+                        lower(drug_name_generic) like lower('%Cipro%') OR
+                        lower(drug_name_generic) like lower('%Flagyl%') OR
+                        lower(drug_name_generic) like lower('%amikacin%') OR
+                        lower(drug_name_generic) like lower('%cefepime%') OR
+                        lower(drug_name_generic) like lower('%Zyvox%') OR
+                        lower(drug_name_generic) like lower('%ceftazidime%') OR
+                        lower(drug_name_generic) like lower('%Vancocin%') OR
+                        lower(drug_name_generic) like lower('%Amikin%') OR
+                        lower(drug_name_generic) like lower('%Cleocin%') OR
+                        lower(drug_name_generic) like lower('%piperacillin%') OR
+                        lower(drug_name_generic) like lower('%tazobactam%') OR
+                        lower(drug_name_generic) like lower('%Zosyn%') OR
+                        lower(drug_name_generic) like lower('%Azactam%') OR
+                        lower(drug_name_generic) like lower('%cilastatin%') OR
+                        lower(drug_name_generic) like lower('%imipenem%') OR
+                        lower(drug_name_generic) like lower('%Flagyl IV%') OR
+                        lower(drug_name_generic) like lower('%gentamicin%') OR
+                        lower(drug_name_generic) like lower('%linezolid%') OR
+                        lower(drug_name_generic) like lower('%Maxipime%') OR
+                        lower(drug_name_generic) like lower('%Claforan%') OR
+                        lower(drug_name_generic) like lower('%Cipro XR%') OR
+                        lower(drug_name_generic) like lower('%Cubicin%') OR
+                        lower(drug_name_generic) like lower('%daptomycin%') OR
+                        lower(drug_name_generic) like lower('%Garamycin%') OR
+                        lower(drug_name_generic) like lower('%aztreonam%') OR
+                        lower(drug_name_generic) like lower('%Cipro I.V.%') OR
+                        lower(drug_name_generic) like lower('%Cleocin HCl%') OR
+                        lower(drug_name_generic) like lower('%Cleocin Phosphate%') OR
+                        lower(drug_name_generic) like lower('%Flagyl 375%') OR
+                        lower(drug_name_generic) like lower('%Primaxin IV%') OR
+                        lower(drug_name_generic) like lower('%ampicillin%') OR
+                        lower(drug_name_generic) like lower('%Cleocin Pediatric%') OR
+                        lower(drug_name_generic) like lower('%tobramycin%') OR
+                        lower(drug_name_generic) like lower('%Fortaz%') OR
+                        lower(drug_name_generic) like lower('%Tobi%') OR
+                        lower(drug_name_generic) like lower('%Vancocin HCl%') OR
+                        lower(drug_name_generic) like lower('%Vancocin HCl Pulvules%') OR
+                        lower(drug_name_generic) like lower('%Tazicef%') OR
+                        lower(drug_name_generic) like lower('%Amikin Pediatric%') OR
+                        lower(drug_name_generic) like lower('%Cubicin RF%') OR
+                        lower(drug_name_generic) like lower('%nafcillin%') OR
+                        lower(drug_name_generic) like lower('%penicillin g potassium%') OR
+                        lower(drug_name_generic) like lower('%penicillin g sodium%') OR
+                        lower(drug_name_generic) like lower('%Synercid%') OR
+                        lower(drug_name_generic) like lower('%dalfopristin / quinupristin%') OR
+                        lower(drug_name_generic) like lower('%Pfizerpen%')
+                    ) as pr;
+                DROP TABLE IF EXISTS relevant_drug_events{self.training};
+                create table relevant_drug_events{self.training} as 
+                select * from prescriptions as presc where presc.drug in (select rd.drug from relevant_drug{self.training} as rd)
+                """
 
         self.execute_query(query)
