@@ -114,10 +114,12 @@ class DbMimic:
             label = row[1]["label"]
             time = datetime.strptime(row[1]["charttime"], '%Y-%m-%d %H:%M:%S')
             value = row[1]["valuenum"]
+            if np.isnan(value):
+                value = self.parse_value(row[1]['value'])
             unit_of_measuere = row[1]["valueuom"]
-            if label in self.anomaly_mapping and (
+            if (label in self.anomaly_mapping and (
                     value > self.anomaly_mapping[label]["max"] or value < self.anomaly_mapping[label][
-                "min"]) or np.isnan(value):
+                "min"])) or np.isnan(value):
                 utils.log_dict(msg="Anomaly found", vals={"Label": label, "Value": value, "UOM": unit_of_measuere})
                 continue
             feature = Feature(time=time, value=value, uom=unit_of_measuere)
@@ -185,7 +187,8 @@ class DbMimic:
             drugs_vector = list((vectorizor.transform(drugs)).toarray()[0])
             event_list = self.get_events_by_hadm_id(hadm_id)
             boolean_features = self.get_boolean_features_by_hadm_id(hadm_id)
-            patient = PatientMimic(hadm_id, estimated_age, gender, symptoms, target, event_list, boolean_features,drugs_vector)
+            patient = PatientMimic(hadm_id, estimated_age, gender, symptoms, target, event_list, boolean_features,
+                                   drugs_vector)
             patient_list.append(patient)
         print("Done")
         return patient_list
@@ -221,3 +224,13 @@ class DbMimic:
         for row in relevant_row.iterrows():
             drugs.append(row[1]['label'])
         return [' '.join(drugs)]
+
+    def parse_value(self, value: str):
+        if ('>' in value or '<' in value):
+            return int(value[1:])
+        elif ('-' in value):
+            res = value.split('-')
+            low, high = int(res[0]), int(res[1])
+            return np.average([low, high])
+        else:
+            return np.nan
