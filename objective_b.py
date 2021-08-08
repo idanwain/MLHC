@@ -13,7 +13,6 @@ from xgboost import XGBClassifier
 import os
 import pickle
 from module_1_cohort_creation import create_cohort_training_data
-from fancyimpute import SoftImpute
 from collections import Counter
 from sklearn.linear_model import LogisticRegression
 from sklearn.model_selection import GridSearchCV
@@ -155,7 +154,7 @@ def main():
         'patient_thershold': hp.uniform('patient_thershold', 0.5, 1),
         'kNN_vals': hp.choice('kNN_vals', range(1, 15)),
         'XGB_k': hp.choice('XGB1_vals', range(1, 60)),
-        'balance': hp.choice('balance', [TomekLinks(), RandomUnderSampler()])
+        'balance': hp.choice('balance', [TomekLinks(), RandomUnderSampler(), BorderlineSMOTE()])
     }
     objective_func = partial(objective, patient_list_base=patient_list_base, db=db, folds=folds)
     trials = Trials()
