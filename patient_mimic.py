@@ -20,14 +20,16 @@ class PatientMimic:
             self.target = 0
         else:
             self.target = 1
-        self.events = {k: events_list[k] for k in sorted(events_list)}
+        self.events = events_list
         self.boolean_features = boolean_features
 
     def create_vector_for_patient(self, labels=None, objective_c=False):
         if labels is None:
             labels = self.events
         features_vector = []
-        for label in labels:
+        for label in sorted(labels.keys()):
+            if(label == 'symptoms' or label == 'WBC   (4-11,000)'):
+                continue
             features_vector += self.get_essence_values_for_label(label)
             features_vector += self.create_delta_vector(label)
         if not objective_c:
@@ -61,6 +63,8 @@ class PatientMimic:
         number_of_samples = len(self.events[label])
         if number_of_samples == 0:
             return [np.nan] * 4 + [0] + [np.nan]*5
+        if number_of_samples == 1:
+            return [self.events[label][0].value] * 4 + [1] + [self.events[label][0].value] * 5
         for feature in self.events[label]:
             raw_data.append(feature.value)
             if feature.value > max_val:
