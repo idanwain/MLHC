@@ -487,7 +487,7 @@ class SqlHelper:
             else f"'/Users/user/Documents/University/Workshop/external_validation_set_{self.model_type}{self.training}.csv'"
         query = f"""DROP TABLE IF EXISTS relevant_labevents_for_cohort{self.training};
                     CREATE TABLE relevant_labevents_for_cohort{self.training} as (
-                        select subject_id||'-'||hadm_id as identifier, subject_id, hadm_id, itemid, charttime, valuenum, valueuom, label
+                        select subject_id||'-'||hadm_id as identifier, subject_id, hadm_id, itemid, charttime, value::varchar(255), valuenum, valueuom, label
                         from labevents join (select itemid, label from d_labitems) as t1 using (itemid)
                         where subject_id||'-'||hadm_id in (select identifier from model_{self.model_type}_mimic_cohort{self.training}) 
                         AND itemid in (select item_id from cohort_relevant_features{self.training} where _table='labevents')
@@ -496,7 +496,7 @@ class SqlHelper:
                     
                     DROP TABLE IF EXISTS relevant_chartevents_for_cohort{self.training};
                     CREATE TABLE relevant_chartevents_for_cohort{self.training} as (
-                        select subject_id||'-'||hadm_id as identifier, subject_id, hadm_id, itemid, charttime, valuenum, valueuom, label
+                        select subject_id||'-'||hadm_id as identifier, subject_id, hadm_id, itemid, charttime, value::varchar(255), valuenum, valueuom, label
                         from chartevents join (select itemid, label from d_items) as t1 using (itemid)
                         where subject_id||'-'||hadm_id in (select identifier from model_{self.model_type}_mimic_cohort{self.training}) 
                             AND itemid in (select item_id from cohort_relevant_features{self.training} where _table='chartevents')
@@ -504,7 +504,7 @@ class SqlHelper:
                     
                     DROP TABLE IF EXISTS relevant_procedure_for_cohort{self.training};
                     CREATE TABLE relevant_procedure_for_cohort{self.training} as (
-                        select subject_id||'-'||hadm_id as identifier, subject_id, hadm_id, itemid, starttime as charttime, value as valuenum, valueuom, label
+                        select subject_id||'-'||hadm_id as identifier, subject_id, hadm_id, itemid, starttime as charttime, value::varchar(255), value as valuenum, valueuom, label
                         from procedureevents_mv join (select itemid, label from d_items) as t1 using (itemid)
                         where subject_id||'-'||hadm_id in (select identifier from model_{self.model_type}_mimic_cohort{self.training}) 
                             AND itemid in (select item_id from cohort_relevant_features{self.training} where _table='procedureevents_mv')
@@ -512,7 +512,7 @@ class SqlHelper:
                     
                     DROP TABLE IF EXISTS relevant_inputs_mv_for_cohort{self.training};
                     CREATE TABLE relevant_inputs_mv_for_cohort{self.training} as (
-                        select subject_id||'-'||hadm_id as identifier, subject_id, hadm_id, itemid, starttime as charttime, amount as valuenum, amountuom as valueuom, label
+                        select subject_id||'-'||hadm_id as identifier, subject_id, hadm_id, itemid, starttime as charttime, amount::varchar(255) as value, amount as valuenum, amountuom as valueuom, label
                         from inputevents_mv join (select itemid, label from d_items) as t1 using (itemid)
                         where subject_id||'-'||hadm_id in (select identifier from model_{self.model_type}_mimic_cohort{self.training}) 
                             AND itemid in (select item_id from cohort_relevant_features{self.training} where _table='inputevents_mv')
@@ -521,7 +521,7 @@ class SqlHelper:
                     
                     DROP TABLE IF EXISTS relevant_inputs_cv_for_cohort{self.training};
                     CREATE TABLE relevant_inputs_cv_for_cohort{self.training} as (
-                        select subject_id||'-'||hadm_id as identifier, subject_id, hadm_id, itemid, charttime, amount as valuenum, amountuom as valueuom, label
+                        select subject_id||'-'||hadm_id as identifier, subject_id, hadm_id, itemid, charttime, amount::varchar(255) as value, amount as valuenum, amountuom as valueuom, label
                         from inputevents_cv join (select itemid, label from d_items) as t1 using (itemid)
                         where subject_id||'-'||hadm_id in (select identifier from model_{self.model_type}_mimic_cohort{self.training}) 
                             AND itemid in (select item_id from cohort_relevant_features{self.training} where _table='inputevents_cv')
@@ -530,14 +530,14 @@ class SqlHelper:
 
                     DROP TABLE IF EXISTS relevant_note_events_for_cohort{self.training};
                     CREATE TABLE relevant_note_events_for_cohort{self.training} as (
-                        select subject_id||'-'||hadm_id as identifier, subject_id, hadm_id, 0 as itemid, charttime, symptoms as valuenum, '' as valueuom, 'symptoms' as label
+                        select subject_id||'-'||hadm_id as identifier, subject_id, hadm_id, 0 as itemid, charttime, symptoms::varchar(255) as value, symptoms as valuenum, '' as valueuom, 'symptoms' as label
                         from relevant_note_events{self.training}
                         where subject_id||'-'||hadm_id in (select identifier from model_{self.model_type}_mimic_cohort{self.training})
                     );
 
                     DROP TABLE IF EXISTS relevant_drug_events_for_cohort{self.training};
                     CREATE TABLE relevant_drug_events_for_cohort{self.training} as (
-                        select subject_id||'-'||hadm_id as identifier, subject_id, hadm_id, 1 as itemid, STARTDATE as charttime, (CASE WHEN DOSE_VAL_RX~E'^\\d+$' THEN DOSE_VAL_RX::integer ELSE RIGHT(DOSE_VAL_RX,1)::integer END) as valuenum, DOSE_UNIT_RX as valueuom, drug as label
+                        select subject_id||'-'||hadm_id as identifier, subject_id, hadm_id, 1 as itemid, STARTDATE as charttime, '0' as value, (CASE WHEN DOSE_VAL_RX~E'^\\d+$' THEN DOSE_VAL_RX::integer ELSE RIGHT(DOSE_VAL_RX,1)::integer END) as valuenum, DOSE_UNIT_RX as valueuom, drug as label
                         from relevant_drug_events{self.training}
                         where subject_id||'-'||hadm_id in (select identifier from model_{self.model_type}_mimic_cohort{self.training})
                     );
