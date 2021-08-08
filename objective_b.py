@@ -7,9 +7,10 @@ import copy
 from db_interface_mimic import DbMimic
 import utils
 from imblearn.under_sampling import TomekLinks, ClusterCentroids, RandomUnderSampler, NearMiss, EditedNearestNeighbours
-from hpsklearn import HyperoptEstimator, sgd, any_classifier, svc, random_forest, ada_boost
+from hpsklearn import HyperoptEstimator, sgd, any_classifier, svc, random_forest, ada_boost, extra_trees
 from hpsklearn import xgboost_classification as xgb_clf
 from sklearn.calibration import CalibratedClassifierCV
+from sklearn.svm import LinearSVC
 from xgboost import XGBClassifier
 import os
 import pickle
@@ -37,24 +38,13 @@ else:
 counter = 0
 model_type = 'b'
 
-if model_type == 'a':
-    boolean_features_path = 'C:/tools/boolean_features_mimic_model_a_train_data.csv' if user == 'idan' \
-        else '/Users/user/Documents/University/Workshop/boolean_features_mimic_model_a_train_data.csv'
-    extra_features_path = 'C:/tools/extra_features_model_a.csv' if user == 'idan' \
-        else '/Users/user/Documents/University/Workshop/extra_features_model_a.csv'
-    data_path_mimic = 'C:/tools/external_validation_set_a_train_data.csv' if user == 'idan' \
-        else '/Users/user/Documents/University/Workshop/external_validation_set_a_train_data.csv'
-    folds_path = 'C:/tools/folds.csv' if user == 'idan' \
-        else '/Users/user/Documents/University/Workshop/folds_mimic_model_a.csv'
-elif model_type == 'b':
-    boolean_features_path = 'C:/tools/boolean_features_mimic_model_b_train_data.csv' if user == 'idan' \
-        else '/Users/user/Documents/University/Workshop/boolean_features_mimic_model_b_train_data.csv'
-    extra_features_path = 'C:/tools/extra_features_model_b.csv' if user == 'idan' \
-        else '/Users/user/Documents/University/Workshop/extra_features_model_b.csv'
-    data_path_mimic = 'C:/tools/external_validation_set_b_train_data.csv' if user == 'idan' \
-        else '/Users/user/Documents/University/Workshop/external_validation_set_b_train_data.csv'
-    folds_path = 'C:/tools/folds_mimic_model_b.csv' if user == 'idan' \
-        else '/Users/user/Documents/University/Workshop/folds_mimic_model_b.csv'
+
+boolean_features_path = f'C:/tools/boolean_features_mimic_model_{model_type}_train_data.csv' if user == 'idan' \
+    else f'/Users/user/Documents/University/Workshop/boolean_features_mimic_model_{model_type}_train_data.csv'
+data_path_mimic = f'C:/tools/external_validation_set_{model_type}_train_data.csv' if user == 'idan' \
+    else f'/Users/user/Documents/University/Workshop/external_validation_set_{model_type}_train_data.csv'
+folds_path = f'C:/tools/folds_mimic_model_{model_type}.csv' if user == 'idan' \
+    else f'/Users/user/Documents/University/Workshop/folds_mimic_model_{model_type}.csv'
 
 
 def get_fold_indices(patient_list, targets, folds):
@@ -90,7 +80,13 @@ def feature_selection(X_train, X_test, y_train, k):
     if k > len(X_train[0]):
         utils.log_dict(msg="Using all features")
         k = len(X_train[0])
-    selector = SelectKBest(k=k)#SelectFromModel(estimator=XGBClassifier(), max_features=k)
+    estimator = HyperoptEstimator(classifier=xgb_clf('xgb_clf'),
+                                   algo=tpe.suggest,
+                                   max_evals=3,
+                                   trial_timeout=10)
+    estimator.fit(X_train, y_train)
+    clf = eval(str(estimator.best_model()['learner']))
+    selector = SelectFromModel(estimator=clf, max_features=k)#SelectKBest(k=k)
     selector.fit(X_train, y_train)
     X_train = selector.transform(X_train)
     indices = selector.get_support(indices=True)
@@ -102,7 +98,10 @@ def feature_selection(X_train, X_test, y_train, k):
 def train_model(estimator_list, X_train, y_train):
     calibrated_classifiers = []
     for estimator in estimator_list:
-        estimator.fit(X_train, y_train)
+        try:
+            estimator.fit(X_train, y_train)
+        except:
+            continue
         base_clf = eval(str(estimator.best_model()['learner']))
         clf = CalibratedClassifierCV(base_estimator=base_clf)
         clf = clf.fit(X_train, y_train)
@@ -216,6 +215,10 @@ def objective(params, patient_list_base, db, folds):
         ### Class balancing ###
         config[f'balance_method_{fold_num}'] = str(balance[fold_num])
         X_train, y_train = balance[fold_num].fit_resample(X_train, y_train)
+        class_0 = [zero for i,zero in enumerate(y_train) if y_train[i] == 0]
+        class_1 = [one for i,one in enumerate(y_train) if y_train[i] == 1]
+        print('class 0:', len(class_0))
+        print('class 1:', len(class_1))
 
         # model fitting
         estimator_list = []
@@ -229,7 +232,7 @@ def objective(params, patient_list_base, db, folds):
                                        max_evals=3,
                                        trial_timeout=10)
 
-        estimator3 = HyperoptEstimator(classifier=svc('sgd_clf'),
+        estimator3 = HyperoptEstimator(classifier=ada_boost('ada_clf'),
                                        algo=tpe.suggest,
                                        max_evals=3,
                                        trial_timeout=10)

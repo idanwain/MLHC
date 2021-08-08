@@ -5,6 +5,7 @@ from patient_mimic import PatientMimic
 from datetime import datetime
 import numpy as np
 import utils
+from sklearn.feature_extraction.text import CountVectorizer
 
 mimic_to_eicu_mapping = {
     'Neturophils': '-polys',
@@ -56,6 +57,7 @@ class DbMimic:
         self.folds_data = pd.read_csv(folds_path)
         self.available_labels_in_events = []
         self.anomaly_mapping = self.build_anomaly_mapping()
+        self.available_drugs = []
 
     def get_hadm_id_list(self) -> list:
         """
@@ -84,6 +86,19 @@ class DbMimic:
         else:
             return self.available_labels_in_events
 
+    def get_drugs(self) -> list:
+        """
+        Returns a list with all distinct drugs
+        :return: drugs list
+        """
+        distinct_drugs = []
+        if (len(self.available_drugs) == 0):
+            relevant_row = self.relevant_events_data.loc[lambda df: df['itemid'] == 1, :]
+            for row in relevant_row.iterrows():
+                distinct_drugs.append(row[1]['label'])
+            self.available_drugs = [' '.join(list(set(distinct_drugs)))]
+        return self.available_drugs
+
     def get_events_by_hadm_id(self, hadm_id: str) -> Dict[str, List[Feature]]:
         """
         Creates a dictionary of labels and thier values, with a given hadm_id
@@ -99,9 +114,12 @@ class DbMimic:
             label = row[1]["label"]
             time = datetime.strptime(row[1]["charttime"], '%Y-%m-%d %H:%M:%S')
             value = row[1]["valuenum"]
+            if np.isnan(value):
+                value = self.parse_value(row[1]['value'])
             unit_of_measuere = row[1]["valueuom"]
-            if label in self.anomaly_mapping and (
-                    value > self.anomaly_mapping[label]["max"] or value < self.anomaly_mapping[label]["min"]) or np.isnan(value):
+            if (label in self.anomaly_mapping and (
+                    value > self.anomaly_mapping[label]["max"] or value < self.anomaly_mapping[label][
+                "min"])) or np.isnan(value):
                 utils.log_dict(msg="Anomaly found", vals={"Label": label, "Value": value, "UOM": unit_of_measuere})
                 continue
             feature = Feature(time=time, value=value, uom=unit_of_measuere)
@@ -154,6 +172,8 @@ class DbMimic:
         """
         print("Building patient list from MIMIC...")
         hadm_id_list = self.get_hadm_id_list()
+        vectorizor = CountVectorizer()
+        vectorizor.fit(self.get_drugs())
         patient_list = []
         counter = 0
         for hadm_id in hadm_id_list:
@@ -163,9 +183,12 @@ class DbMimic:
             if target == 'negative' and counter < num_of_negatives:
                 continue
             symptoms = self.extract_symptoms_by_identifier(hadm_id)
+            drugs = self.extract_drugs_by_identifier(hadm_id)
+            drugs_vector = list((vectorizor.transform(drugs)).toarray()[0])
             event_list = self.get_events_by_hadm_id(hadm_id)
             boolean_features = self.get_boolean_features_by_hadm_id(hadm_id)
-            patient = PatientMimic(hadm_id, estimated_age, gender, symptoms, target, event_list, boolean_features)
+            patient = PatientMimic(hadm_id, estimated_age, gender, symptoms, target, event_list, boolean_features,
+                                   drugs_vector)
             patient_list.append(patient)
         print("Done")
         return patient_list
@@ -193,3 +216,21 @@ class DbMimic:
         for row in relevant_row.iterrows():
             return row[1]['valuenum']
         return 0
+
+    def extract_drugs_by_identifier(self, identifier):
+        drugs = []
+        relevant_row = self.relevant_events_data.loc[lambda df: df['identifier'] == identifier, :]
+        relevant_row = relevant_row.loc[lambda df: df['itemid'] == 1, :]
+        for row in relevant_row.iterrows():
+            drugs.append(row[1]['label'])
+        return [' '.join(drugs)]
+
+    def parse_value(self, value: str):
+        if ('>' in value or '<' in value):
+            return int(value[1:])
+        elif ('-' in value):
+            res = value.split('-')
+            low, high = int(res[0]), int(res[1])
+            return np.average([low, high])
+        else:
+            return np.nan
