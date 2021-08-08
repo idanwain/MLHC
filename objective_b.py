@@ -15,7 +15,6 @@ from xgboost import XGBClassifier
 import os
 import pickle
 from module_1_cohort_creation import create_cohort_training_data
-from fancyimpute import SoftImpute
 from collections import Counter
 from sklearn.linear_model import LogisticRegression
 from sklearn.model_selection import GridSearchCV
