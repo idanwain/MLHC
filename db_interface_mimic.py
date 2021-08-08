@@ -226,11 +226,19 @@ class DbMimic:
         return [' '.join(drugs)]
 
     def parse_value(self, value: str):
-        if ('>' in value or '<' in value):
-            return int(value[1:])
-        elif ('-' in value):
-            res = value.split('-')
-            low, high = int(res[0]), int(res[1])
-            return np.average([low, high])
-        else:
+        value = str(value)
+        #TODO: Handle special cases
+        try:
+            if(value == 'nan'):
+                return np.nan
+            if ('>' in value or '<' in value):
+                return int(value[1:])
+            elif ('-' in value):
+                res = value.split('-')
+                low, high = int(res[0]), int(res[1])
+                return np.average([low, high])
+            else:
+                return np.nan
+        except Exception as e:
+            print(value)
             return np.nan
