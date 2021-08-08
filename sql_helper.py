@@ -537,7 +537,7 @@ class SqlHelper:
 
                     DROP TABLE IF EXISTS relevant_drug_events_for_cohort{self.training};
                     CREATE TABLE relevant_drug_events_for_cohort{self.training} as (
-                        select subject_id||'-'||hadm_id as identifier, subject_id, hadm_id, 1 as itemid, STARTDATE as charttime, cast(DOSE_VAL_RX as numeric) as valuenum, DOSE_UNIT_RX as valueuom, drug as label
+                        select subject_id||'-'||hadm_id as identifier, subject_id, hadm_id, 1 as itemid, STARTDATE as charttime, (CASE WHEN DOSE_VAL_RX~E'^\\d+$' THEN DOSE_VAL_RX::integer ELSE RIGHT(DOSE_VAL_RX,1)::integer END) as valuenum, DOSE_UNIT_RX as valueuom, drug as label
                         from relevant_drug_events{self.training}
                         where subject_id||'-'||hadm_id in (select identifier from model_{self.model_type}_mimic_cohort{self.training})
                     );
@@ -654,7 +654,7 @@ class SqlHelper:
                     ) as pr;
                 DROP TABLE IF EXISTS relevant_drug_events{self.training};
                 create table relevant_drug_events{self.training} as 
-                select * from prescriptions as presc where presc.drug in (select rd.drug from relevant_drug{self.training} as rd)
+                select * from prescriptions as presc where presc.drug in (select rd.drug from relevant_drug{self.training} as rd);
                 """
 
         self.execute_query(query)
