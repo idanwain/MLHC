@@ -1,5 +1,5 @@
 from sklearn.impute import KNNImputer
-from sklearn.feature_selection import SelectKBest, SelectFpr, SelectFromModel
+from sklearn.feature_selection import SelectKBest, SelectFpr, SelectFromModel, chi2
 from hyperopt import hp, tpe, fmin, Trials, STATUS_OK, STATUS_FAIL, atpe
 import numpy as np
 from functools import partial
@@ -7,8 +7,8 @@ import copy
 from db_interface_mimic import DbMimic
 import utils
 from imblearn.under_sampling import TomekLinks, ClusterCentroids, RandomUnderSampler, NearMiss, EditedNearestNeighbours
-from hpsklearn import HyperoptEstimator, svc, any_classifier, any_preprocessing, random_forest, ada_boost
-from hpsklearn import  xgboost as xgb_clf
+from hpsklearn import HyperoptEstimator, sgd, any_classifier, svc, random_forest, ada_boost
+from hpsklearn import xgboost_classification as xgb_clf
 from sklearn.calibration import CalibratedClassifierCV
 from xgboost import XGBClassifier
 import os
@@ -91,7 +91,7 @@ def feature_selection(X_train, X_test, y_train, k):
     if k > len(X_train[0]):
         utils.log_dict(msg="Using all features")
         k = len(X_train[0])
-    selector = SelectFromModel(estimator=XGBClassifier(), max_features=k)
+    selector = SelectKBest(k=k)#SelectFromModel(estimator=XGBClassifier(), max_features=k)
     selector.fit(X_train, y_train)
     X_train = selector.transform(X_train)
     indices = selector.get_support(indices=True)
@@ -145,7 +145,7 @@ def save_data_to_disk(model, indices, params, exclusion):
 
 
 def main():
-    # create_cohort_training_data()
+    # create_cohort_training_data(model_type)
     db = DbMimic(boolean_features_path,
                  data_path=data_path_mimic,
                  folds_path=folds_path)
@@ -161,7 +161,7 @@ def main():
     }
     objective_func = partial(objective, patient_list_base=patient_list_base, db=db, folds=folds)
     trials = Trials()
-    best = fmin(fn=objective_func, space=space, algo=tpe.suggest, max_evals=20, trials=trials, return_argmin=False)
+    best = fmin(fn=objective_func, space=space, algo=tpe.suggest, max_evals=10, trials=trials, return_argmin=False)
     best_model, indices, exclusion = get_best_model_and_indices(trials)
     save_data_to_disk(best_model, indices, best, exclusion)
 
@@ -222,14 +222,20 @@ def objective(params, patient_list_base, db, folds):
         estimator_list = []
         estimator1 = HyperoptEstimator(classifier=random_forest('forest_clf'),
                                        algo=tpe.suggest,
-                                       max_evals=5,
+                                       max_evals=3,
                                        trial_timeout=10)
 
-        estimator2 = HyperoptEstimator(classifier=xgb_clf('xgb_clf'),
+        estimator2 = HyperoptEstimator(classifier=sgd('sgd_clf'),
                                        algo=tpe.suggest,
-                                       max_evals=5,
+                                       max_evals=3,
                                        trial_timeout=10)
-        estimator_list.extend([estimator1, estimator2])
+
+        estimator3 = HyperoptEstimator(classifier=svc('sgd_clf'),
+                                       algo=tpe.suggest,
+                                       max_evals=3,
+                                       trial_timeout=10)
+
+        estimator_list.extend([estimator1, estimator2,estimator3])
 
         X_train = np.array(X_train)
         y_train = np.array(y_train)

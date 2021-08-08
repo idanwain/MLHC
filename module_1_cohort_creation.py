@@ -22,7 +22,7 @@ def module_1_cohort_creation(file_path, db_conn, model_type,training=False):
         else f"/Users/user/Documents/University/Workshop/external_validation_set_{model_type}.csv"
 
 
-def create_cohort_training_data():
+def create_cohort_training_data(model_type):
     print("Creating cohort training data")
     if user == 'idan':
         db_conn = psycopg2.connect(
@@ -38,6 +38,5 @@ def create_cohort_training_data():
             password="",
             options="--search_path=mimiciii"
         )
-    model_type = 'b'
     path = f"'C:/tools/model_{model_type}_mimic_cohort.csv'" if user == 'idan' else f"'/Users/user/Documents/University/Workshop/model_{model_type}_mimic_cohort.csv'"
     module_1_cohort_creation(path, db_conn, model_type,training=True)
