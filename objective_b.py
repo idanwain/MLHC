@@ -7,7 +7,8 @@ import copy
 from db_interface_mimic import DbMimic
 import utils
 from imblearn.under_sampling import TomekLinks, ClusterCentroids, RandomUnderSampler, NearMiss, EditedNearestNeighbours
-from hpsklearn import HyperoptEstimator, svc, any_classifier, any_preprocessing, random_forest
+from hpsklearn import HyperoptEstimator, svc, any_classifier, any_preprocessing, random_forest, ada_boost
+from hpsklearn import  xgboost as xgb_clf
 from sklearn.calibration import CalibratedClassifierCV
 from xgboost import XGBClassifier
 import os
@@ -99,17 +100,18 @@ def feature_selection(X_train, X_test, y_train, k):
     return X_train, X_test, indices
 
 
-def train_model(estim, X_train, y_train):
-    try:
-        estim.fit(X_train, y_train)
-        base_clf = eval(str(estim.best_model()['learner']))
-        print(base_clf)
+def train_model(estimator_list, X_train, y_train):
+    calibrated_classifiers = []
+    for estimator in estimator_list:
+        estimator.fit(X_train, y_train)
+        base_clf = eval(str(estimator.best_model()['learner']))
         clf = CalibratedClassifierCV(base_estimator=base_clf)
         clf = clf.fit(X_train, y_train)
-    except Exception as e:
-        clf = None
-
-    return clf, estim
+        calibrated_classifiers.append(clf)
+    calibrated_classifiers = [(f'clf{i + 1}', clf) for i, clf in enumerate(calibrated_classifiers)]
+    voting_clf = VotingClassifier(estimators=calibrated_classifiers, voting='soft')
+    voting_clf.fit(X_train, y_train)
+    return voting_clf, estimator_list
 
 
 def get_best_model_and_indices(trails):
@@ -151,11 +153,11 @@ def main():
     folds = db.get_folds()
     patient_list_base = db.create_patient_list()
     space = {
-        'feature_threshold': hp.uniform('thershold_val', 0, 1),
+        'feature_threshold': hp.uniform('thershold_val', 0.5, 1),
         'patient_thershold': hp.uniform('patient_thershold', 0.5, 1),
-        'kNN_vals': hp.choice('kNN_vals', range(1, 15)),
-        'XGB_k': hp.choice('XGB1_vals', range(1, 60)),
-        'balance': hp.choice('balance', [TomekLinks(), RandomUnderSampler()])
+        'kNN_vals': hp.choice('kNN_vals', range(3, 15)),
+        'XGB_k': hp.choice('XGB1_vals', range(40, 80)),
+        'balance': hp.choice('balance', [TomekLinks(), RandomUnderSampler(), BorderlineSMOTE()])
     }
     objective_func = partial(objective, patient_list_base=patient_list_base, db=db, folds=folds)
     trials = Trials()
@@ -217,23 +219,28 @@ def objective(params, patient_list_base, db, folds):
         X_train, y_train = balance[fold_num].fit_resample(X_train, y_train)
 
         # model fitting
-        estimator = HyperoptEstimator(classifier=random_forest('my_clf'),
-                                      algo=tpe.suggest,
-                                      max_evals=3,
-                                      trial_timeout=60)
+        estimator_list = []
+        estimator1 = HyperoptEstimator(classifier=random_forest('forest_clf'),
+                                       algo=tpe.suggest,
+                                       max_evals=5,
+                                       trial_timeout=10)
+
+        estimator2 = HyperoptEstimator(classifier=xgb_clf('xgb_clf'),
+                                       algo=tpe.suggest,
+                                       max_evals=5,
+                                       trial_timeout=10)
+        estimator_list.extend([estimator1, estimator2])
 
         X_train = np.array(X_train)
         y_train = np.array(y_train)
         X_test = np.array(X_test)
         y_test = np.array(y_test)
-        clf, estimator = train_model(estimator, X_train, y_train)
+        clf, estimator_list = train_model(estimator_list, X_train, y_train)
 
         if clf is None:
             auroc_vals = []
             aupr_vals = []
             break
-
-        config[f'best_model_{fold_num}'] = str(estimator.best_model()['learner'])
 
         # performance assessment
         roc_val, ns_fpr, ns_tpr, lr_fpr, lr_tpr = utils.calc_metrics_roc(clf, X_test, y_test, X_train, y_train)

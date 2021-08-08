@@ -3,6 +3,7 @@ from feature import Feature
 import pandas as pd
 from patient_mimic import PatientMimic
 from datetime import datetime
+import numpy as np
 import utils
 
 mimic_to_eicu_mapping = {
@@ -100,8 +101,8 @@ class DbMimic:
             value = row[1]["valuenum"]
             unit_of_measuere = row[1]["valueuom"]
             if label in self.anomaly_mapping and (
-                    value > self.anomaly_mapping[label]["max"] or value < self.anomaly_mapping[label]["min"]):
-                # utils.log_dict(msg="Anomaly found", vals={"Label": label, "Value": value, "UOM": unit_of_measuere})
+                    value > self.anomaly_mapping[label]["max"] or value < self.anomaly_mapping[label]["min"]) or np.isnan(value):
+                utils.log_dict(msg="Anomaly found", vals={"Label": label, "Value": value, "UOM": unit_of_measuere})
                 continue
             feature = Feature(time=time, value=value, uom=unit_of_measuere)
             patient_dict[label].append(feature)

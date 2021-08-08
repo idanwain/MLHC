@@ -53,27 +53,6 @@ def remove_features_by_threshold(threshold: float, patient_list: list, db):
     return patient_list, features_to_be_removed
 
 
-def get_top_K_features_xgb(labels_vector, feature_importance: list, k=50):
-    indices = []
-    list_cpy = feature_importance.copy()
-    feature_amount = len(list_cpy)
-    if (feature_amount < k):
-        log_dict(msg="No %s features in XGB. using %s features instead" % (k, feature_amount))
-        print(list_cpy)
-        k = feature_amount
-    list_cpy.sort(reverse=True)
-    for i in range(k):
-        indices.append(feature_importance.index(list_cpy[i]))
-    # for i in range(k):
-    #     index = np.argmax(list_cpy)
-    #     indices.append(index)
-    #     list_cpy.pop(index)
-    # print("Top %s features according to XGB:" % k)
-    # for i in indices:
-    #     print("Feature: %s, Importance: %s" % (labels_vector[i], feature_importance[i]))
-    return indices
-
-
 def create_vector_of_important_features(data, features):
     """
     Given the top K important features, remove unimportant features.
@@ -92,13 +71,11 @@ def create_vector_of_important_features(data, features):
     return new_training_data
 
 
-def split_data_by_folds(data, labels, folds, test_fold, removal_factor=0):
+def split_data_by_folds(data, labels, folds, test_fold):
     X_train = []
     y_train = []
     X_test = []
     y_test = []
-    indices_for_removal = []
-    counter = 0
     data_len = len(data)
     for i in range(data_len):
         curr_fold = folds[i]
@@ -108,30 +85,6 @@ def split_data_by_folds(data, labels, folds, test_fold, removal_factor=0):
         else:
             X_train.append(data[i])
             y_train.append(labels[i])
-    X_train_len = len(X_train)
-    for i in range(X_train_len):
-        if y_train[i] == 0:
-            indices_for_removal.append(i)
-            counter += 1
-        if counter >= int(X_train_len * removal_factor):
-            break
-
-    X_train_removed = []
-    y_train_removed = []
-    for i in range(X_train_len):
-        if i not in indices_for_removal:
-            X_train_removed.append(X_train[i])
-            y_train_removed.append(y_train[i])
-
-    X_train = X_train_removed
-    y_train = y_train_removed
-    tot_zero = 0
-    tot_one = 1
-    for i in range(len(y_train)):
-        if y_train[i] == 0:
-            tot_zero += 1
-        else:
-            tot_one += 1
     return X_train, y_train, X_test, y_test
 
 
@@ -168,13 +121,6 @@ def calc_metrics_pr(clf, x_test, y_test, X_train, y_train):
     no_skill = positives / len(y_test)
 
     return lr_auc, no_skill, lr_recall, lr_precision
-
-
-def get_essence_label_vector(labels):
-    ret_vector = []
-    for label in labels:
-        ret_vector.extend([label + "_avg", label + "_max", label + "_min", label + "_latest", label + "_amount"])
-    return ret_vector
 
 
 def log_dict(vals=None, msg=None, log_path="log_file"):
@@ -249,8 +195,7 @@ def create_labels_vector(db, removed_features, objective_c=False):
 
 
 def create_labels_for_categorical_features():
-    return [*one_hot_encoding.GENDER_ENCODING.keys()] + [*one_hot_encoding.INSURANCE_ENCODING.keys()] + \
-           [*one_hot_encoding.ETHNICITY_ENCODING.keys()] + ['transfers'] + [f'symp_{i}' for i in range(0, 128)]
+    return [*one_hot_encoding.GENDER_ENCODING.keys()] + [f'symp_{i}' for i in range(0, 128)]
 
 
 def normalize_data(data):
@@ -258,7 +203,7 @@ def normalize_data(data):
     res = []
     for row in trans:
         try:
-            z_score = stats.zscore(row, nan_policy='omit')  # maybe should 'omit'
+            z_score = stats.zscore(row, nan_policy='omit')
         except Exception as e:
             z_score = row
         res.append(z_score)
