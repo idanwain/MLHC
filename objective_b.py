@@ -38,24 +38,13 @@ else:
 counter = 0
 model_type = 'b'
 
-if model_type == 'a':
-    boolean_features_path = 'C:/tools/boolean_features_mimic_model_a_train_data.csv' if user == 'idan' \
-        else '/Users/user/Documents/University/Workshop/boolean_features_mimic_model_a_train_data.csv'
-    extra_features_path = 'C:/tools/extra_features_model_a.csv' if user == 'idan' \
-        else '/Users/user/Documents/University/Workshop/extra_features_model_a.csv'
-    data_path_mimic = 'C:/tools/external_validation_set_a_train_data.csv' if user == 'idan' \
-        else '/Users/user/Documents/University/Workshop/external_validation_set_a_train_data.csv'
-    folds_path = 'C:/tools/folds.csv' if user == 'idan' \
-        else '/Users/user/Documents/University/Workshop/folds_mimic_model_a.csv'
-elif model_type == 'b':
-    boolean_features_path = 'C:/tools/boolean_features_mimic_model_b_train_data.csv' if user == 'idan' \
-        else '/Users/user/Documents/University/Workshop/boolean_features_mimic_model_b_train_data.csv'
-    extra_features_path = 'C:/tools/extra_features_model_b.csv' if user == 'idan' \
-        else '/Users/user/Documents/University/Workshop/extra_features_model_b.csv'
-    data_path_mimic = 'C:/tools/external_validation_set_b_train_data.csv' if user == 'idan' \
-        else '/Users/user/Documents/University/Workshop/external_validation_set_b_train_data.csv'
-    folds_path = 'C:/tools/folds_mimic_model_b.csv' if user == 'idan' \
-        else '/Users/user/Documents/University/Workshop/folds_mimic_model_b.csv'
+
+boolean_features_path = f'C:/tools/boolean_features_mimic_model_{model_type}_train_data.csv' if user == 'idan' \
+    else f'/Users/user/Documents/University/Workshop/boolean_features_mimic_model_{model_type}_train_data.csv'
+data_path_mimic = f'C:/tools/external_validation_set_{model_type}_train_data.csv' if user == 'idan' \
+    else f'/Users/user/Documents/University/Workshop/external_validation_set_{model_type}_train_data.csv'
+folds_path = f'C:/tools/folds_mimic_model_{model_type}.csv' if user == 'idan' \
+    else f'/Users/user/Documents/University/Workshop/folds_mimic_model_{model_type}.csv'
 
 
 def get_fold_indices(patient_list, targets, folds):
