@@ -7,7 +7,7 @@ import copy
 from db_interface_mimic import DbMimic
 import utils
 from imblearn.under_sampling import TomekLinks, ClusterCentroids, RandomUnderSampler, NearMiss, EditedNearestNeighbours
-from hpsklearn import HyperoptEstimator, sgd, any_classifier, svc, random_forest, ada_boost, extra_trees
+from hpsklearn import HyperoptEstimator, sgd, any_classifier, svc, random_forest, ada_boost, extra_trees, knn
 from hpsklearn import xgboost_classification as xgb_clf
 from sklearn.calibration import CalibratedClassifierCV
 from sklearn.svm import LinearSVC
@@ -80,13 +80,16 @@ def feature_selection(X_train, X_test, y_train, k):
     if k > len(X_train[0]):
         utils.log_dict(msg="Using all features")
         k = len(X_train[0])
-    estimator = HyperoptEstimator(classifier=xgb_clf('xgb_clf'),
-                                   algo=tpe.suggest,
-                                   max_evals=3,
-                                   trial_timeout=10)
-    estimator.fit(X_train, y_train)
-    clf = eval(str(estimator.best_model()['learner']))
-    selector = SelectFromModel(estimator=clf, max_features=k)#SelectKBest(k=k)
+    try:
+        estimator = HyperoptEstimator(classifier=xgb_clf('xgb_clf'),
+                                      algo=tpe.suggest,
+                                      max_evals=3,
+                                      trial_timeout=120)
+        estimator.fit(X_train, y_train)
+        clf = eval(str(estimator.best_model()['learner']))
+        selector = SelectFromModel(estimator=clf, max_features=k)
+    except Exception as e:
+        selector = SelectKBest(k=k)
     selector.fit(X_train, y_train)
     X_train = selector.transform(X_train)
     indices = selector.get_support(indices=True)
@@ -95,19 +98,9 @@ def feature_selection(X_train, X_test, y_train, k):
     return X_train, X_test, indices
 
 
-def train_model(estimator_list, X_train, y_train):
-    calibrated_classifiers = []
-    for estimator in estimator_list:
-        try:
-            estimator.fit(X_train, y_train)
-        except:
-            continue
-        base_clf = eval(str(estimator.best_model()['learner']))
-        clf = CalibratedClassifierCV(base_estimator=base_clf)
-        clf = clf.fit(X_train, y_train)
-        calibrated_classifiers.append(clf)
-    calibrated_classifiers = [(f'clf{i + 1}', clf) for i, clf in enumerate(calibrated_classifiers)]
-    voting_clf = VotingClassifier(estimators=calibrated_classifiers, voting='soft')
+def train_model(estimator_list, weight, X_train, y_train):
+    estimators = [(f'clf{i + 1}', clf) for i, clf in enumerate(estimator_list)]
+    voting_clf = VotingClassifier(estimators=estimators, voting='soft', weights=weight)
     voting_clf.fit(X_train, y_train)
     return voting_clf, estimator_list
 
@@ -142,8 +135,21 @@ def save_data_to_disk(model, indices, params, exclusion):
         exclusion_file.write(exclusion)
 
 
+def estimate_best_model(clf, data_mimic, targets_mimic):
+    estimator = HyperoptEstimator(classifier=clf,
+                                  algo=atpe.suggest,
+                                  max_evals=10,
+                                  trial_timeout=120)
+    try:
+        estimator.fit(data_mimic, targets_mimic)
+        res = eval(str(estimator.best_model()['learner']))
+    except Exception as e:
+        res = RandomForestClassifier()
+    return res
+
+
 def main():
-    create_cohort_training_data(model_type)
+    # create_cohort_training_data(model_type)
     db = DbMimic(boolean_features_path,
                  data_path=data_path_mimic,
                  folds_path=folds_path)
@@ -155,18 +161,19 @@ def main():
         'patient_thershold': hp.uniform('patient_thershold', 0.5, 1),
         'kNN_vals': hp.choice('kNN_vals', range(3, 15)),
         'XGB_k': hp.choice('XGB1_vals', range(40, 80)),
+        'clf1_weight': hp.choice('clf1_weight', range(1, 30)),
+        'clf2_weight': hp.choice('clf2_weight', range(1, 30)),
         'balance': hp.choice('balance', [TomekLinks(), RandomUnderSampler(), BorderlineSMOTE()])
     }
     objective_func = partial(objective, patient_list_base=patient_list_base, db=db, folds=folds)
     trials = Trials()
-    best = fmin(fn=objective_func, space=space, algo=tpe.suggest, max_evals=10, trials=trials, return_argmin=False)
+    best = fmin(fn=objective_func, space=space, algo=tpe.suggest, max_evals=100, trials=trials, return_argmin=False)
     best_model, indices, exclusion = get_best_model_and_indices(trials)
     save_data_to_disk(best_model, indices, best, exclusion)
 
 
 def objective(params, patient_list_base, db, folds):
     global counter
-    data = []
     targets = []
     auroc_vals = []
     aupr_vals = []
@@ -176,7 +183,9 @@ def objective(params, patient_list_base, db, folds):
     feature_threshold = params['feature_threshold']  # Minimum appearance for feature to be included
     n_neighbors = params['kNN_vals']  # Neighbors amount for kNN
     patient_threshold = params['patient_thershold']  # Percentage of missing features of patient
-
+    clf1_weight = params['clf1_weight']
+    clf2_weight = params['clf2_weight']
+    weight = [clf1_weight, clf2_weight]
     # amount of features to return by XGB
     xgb_k = params['XGB_k']
     balance = [params['balance']] * len(folds)
@@ -186,7 +195,8 @@ def objective(params, patient_list_base, db, folds):
         "Patient Thershold": patient_threshold,
         "kNN": n_neighbors,
         "K_best": xgb_k,
-        "balance": balance
+        "balance": balance,
+        "weight": weight
     }
     utils.log_dict(vals=config, msg="Configuration:")
 
@@ -220,30 +230,19 @@ def objective(params, patient_list_base, db, folds):
         print('class 0:', len(class_0))
         print('class 1:', len(class_1))
 
-        # model fitting
-        estimator_list = []
-        estimator1 = HyperoptEstimator(classifier=random_forest('forest_clf'),
-                                       algo=tpe.suggest,
-                                       max_evals=3,
-                                       trial_timeout=10)
-
-        estimator2 = HyperoptEstimator(classifier=sgd('sgd_clf'),
-                                       algo=tpe.suggest,
-                                       max_evals=3,
-                                       trial_timeout=10)
-
-        estimator3 = HyperoptEstimator(classifier=ada_boost('ada_clf'),
-                                       algo=tpe.suggest,
-                                       max_evals=3,
-                                       trial_timeout=10)
-
-        estimator_list.extend([estimator1, estimator2,estimator3])
 
         X_train = np.array(X_train)
         y_train = np.array(y_train)
         X_test = np.array(X_test)
         y_test = np.array(y_test)
-        clf, estimator_list = train_model(estimator_list, X_train, y_train)
+
+        # model fitting
+        estimator1 = estimate_best_model(random_forest('random_forest'), X_train, y_train)
+        estimator2 = estimate_best_model(knn('knn'), X_train, y_train)
+
+        estimator_list = [estimator1, estimator2]
+
+        clf, estimator_list = train_model(estimator_list, weight, X_train, y_train)
 
         if clf is None:
             auroc_vals = []

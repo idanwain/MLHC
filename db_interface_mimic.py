@@ -117,9 +117,10 @@ class DbMimic:
             if np.isnan(value):
                 value = self.parse_value(row[1]['value'])
             unit_of_measuere = row[1]["valueuom"]
-            if (label in self.anomaly_mapping and (
-                    value > self.anomaly_mapping[label]["max"] or value < self.anomaly_mapping[label][
-                "min"])) or np.isnan(value):
+            if (label in self.anomaly_mapping and
+                (value > self.anomaly_mapping[label]["max"] or
+                 value < self.anomaly_mapping[label]["min"])) or \
+                    np.isnan(value):
                 utils.log_dict(msg="Anomaly found", vals={"Label": label, "Value": value, "UOM": unit_of_measuere})
                 continue
             feature = Feature(time=time, value=value, uom=unit_of_measuere)
@@ -227,18 +228,19 @@ class DbMimic:
 
     def parse_value(self, value: str):
         value = str(value)
-        #TODO: Handle special cases
+        # TODO: Handle special cases
         try:
-            if(value == 'nan'):
+            if value == 'nan':
                 return np.nan
-            if ('>' in value or '<' in value):
+            if '>' in value or '<' in value:
+                if '*' == value[-1]:
+                    value = value[:-1]
                 return int(value[1:])
-            elif ('-' in value):
+            elif '-' in value:
                 res = value.split('-')
                 low, high = int(res[0]), int(res[1])
                 return np.average([low, high])
             else:
                 return np.nan
         except Exception as e:
-            print(value)
             return np.nan
