@@ -6,6 +6,7 @@ from datetime import datetime
 import numpy as np
 import utils
 from sklearn.feature_extraction.text import CountVectorizer
+import hashlib
 
 mimic_to_eicu_mapping = {
     'Neturophils': '-polys',
@@ -55,9 +56,10 @@ class DbMimic:
         self.boolean_features = pd.read_csv(boolean_features_path)
         self.relevant_events_data = pd.read_csv(data_path)
         self.folds_data = pd.read_csv(folds_path)
-        self.available_labels_in_events = []
         self.anomaly_mapping = self.build_anomaly_mapping()
+        self.available_labels_in_events = []
         self.available_drugs = []
+        self.invasive_procedures = []
 
     def get_hadm_id_list(self) -> list:
         """
@@ -98,6 +100,20 @@ class DbMimic:
                 distinct_drugs.append(row[1]['label'])
             self.available_drugs = [' '.join(list(set(distinct_drugs)))]
         return self.available_drugs
+
+    def get_invasive_procedures(self) -> list:
+        """
+        Returns a list with all distinct drugs
+        :return: drugs list
+        """
+        distinct_procedures = []
+        if (len(self.invasive_procedures) == 0):
+            relevant_row = self.relevant_events_data
+            for row in relevant_row.iterrows():
+                if row[1]['itemid'] in list(self.boolean_features['itemid']):
+                    distinct_procedures.append(hashlib.sha1(row[1]['label'].encode()).hexdigest())
+            self.invasive_procedures = [' '.join(list(set(distinct_procedures)))]
+        return self.invasive_procedures
 
     def get_events_by_hadm_id(self, hadm_id: str) -> Dict[str, List[Feature]]:
         """
@@ -173,8 +189,10 @@ class DbMimic:
         """
         print("Building patient list from MIMIC...")
         hadm_id_list = self.get_hadm_id_list()
-        vectorizor = CountVectorizer()
-        vectorizor.fit(self.get_drugs())
+        drugs_vectorizer = CountVectorizer()
+        invasive_procedures_vectorizer = CountVectorizer()
+        drugs_vectorizer.fit(self.get_drugs())
+        invasive_procedures_vectorizer.fit(self.get_invasive_procedures())
         patient_list = []
         counter = 0
         for hadm_id in hadm_id_list:
@@ -185,11 +203,13 @@ class DbMimic:
                 continue
             symptoms = self.extract_symptoms_by_identifier(hadm_id)
             drugs = self.extract_drugs_by_identifier(hadm_id)
-            drugs_vector = list((vectorizor.transform(drugs)).toarray()[0])
+            drugs_vector = sorted(list((drugs_vectorizer.transform(drugs)).toarray()[0]))
+            procedures = self.extract_invasive_procedure_by_identifier(hadm_id)
+            procedures_vector = sorted(list((invasive_procedures_vectorizer.transform(procedures)).toarray()[0]))
             event_list = self.get_events_by_hadm_id(hadm_id)
             boolean_features = self.get_boolean_features_by_hadm_id(hadm_id)
             patient = PatientMimic(hadm_id, estimated_age, gender, symptoms, target, event_list, boolean_features,
-                                   drugs_vector)
+                                   drugs_vector,procedures_vector)
             patient_list.append(patient)
         print("Done")
         return patient_list
@@ -225,6 +245,13 @@ class DbMimic:
         for row in relevant_row.iterrows():
             drugs.append(row[1]['label'])
         return [' '.join(drugs)]
+    def extract_invasive_procedure_by_identifier(self, identifier):
+        procedures = []
+        relevant_row = self.relevant_events_data.loc[lambda df: df['identifier'] == identifier, :]
+        for row in relevant_row.iterrows():
+            if row[1]['itemid'] in list(self.boolean_features['itemid']):
+                procedures.append(hashlib.sha1(row[1]['label'].encode()).hexdigest())
+        return [' '.join(procedures)]
 
     def parse_value(self, value: str):
         value = str(value)
@@ -235,10 +262,10 @@ class DbMimic:
             if '>' in value or '<' in value:
                 if '*' == value[-1]:
                     value = value[:-1]
-                return int(value[1:])
+                return float(value[1:])
             elif '-' in value:
                 res = value.split('-')
-                low, high = int(res[0]), int(res[1])
+                low, high = float(res[0]), float(res[1])
                 return np.average([low, high])
             else:
                 return np.nan

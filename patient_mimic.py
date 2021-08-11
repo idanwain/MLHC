@@ -11,7 +11,7 @@ class PatientMimic:
     gender = None
     target = None
 
-    def __init__(self, hadm_id, estimated_age, gender, symptoms, target, events_list, boolean_features,drugs_vector):
+    def __init__(self, hadm_id, estimated_age, gender, symptoms, target, events_list, boolean_features,drugs_vector, procedures_vector):
         self.hadm_id = hadm_id
         self.estimated_age = estimated_age
         self.gender = gender
@@ -23,6 +23,7 @@ class PatientMimic:
         self.events = events_list
         self.boolean_features = boolean_features
         self.drugs_vector = drugs_vector
+        self.procedures_vector = procedures_vector
 
     def create_vector_for_patient(self, labels=None, objective_c=False):
         if labels is None:
@@ -37,6 +38,7 @@ class PatientMimic:
             features_vector += self.create_vector_for_boolean_features()
             features_vector += self.create_vector_of_categorical_features()
             features_vector += self.drugs_vector
+            features_vector += self.procedures_vector
         return features_vector
 
     def get_essence_values_for_label(self, label):
