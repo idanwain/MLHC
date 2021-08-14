@@ -30,7 +30,7 @@ class PatientMimic:
             labels = self.events
         features_vector = []
         for label in sorted(labels.keys()):
-            if(label == 'symptoms' or label == 'WBC   (4-11,000)'):
+            if label == 'symptoms' or label == 'WBC   (4-11,000)':
                 continue
             features_vector += self.get_essence_values_for_label(label)
             features_vector += self.create_delta_vector(label)

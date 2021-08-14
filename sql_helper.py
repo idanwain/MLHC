@@ -658,3 +658,182 @@ class SqlHelper:
                 """
 
         self.execute_query(query)
+
+    def load_eicu_cohort_to_db(self, file_path):
+        query = f"""DROP TABLE IF EXISTS model_a_eicu_cohort;
+                    CREATE TABLE model_a_eicu_cohort (
+                        patienthealthsystemstayid INTEGER,
+                        patientUnitStayID  INTEGER,
+                        admittime INTEGER,
+                        icu_time INTEGER,
+                        target_time INTEGER,
+                        target VARCHAR(50)
+                    );
+                    COPY model_a_eicu_cohort
+                    FROM {file_path}
+                    DELIMITER ','
+                    CSV HEADER;
+                """
+
+        self.execute_query(query)
+
+    def create_eicu_to_mimic_mapping(self):
+        query = f"""DROP TABLE IF EXISTS eicu_to_mimic_mapping;
+                    CREATE TABLE eicu_to_mimic_mapping (
+                      eicu_label VARCHAR(256),
+                      mimic_label VARCHAR(256)
+                    );
+                    
+                    insert into eicu_to_mimic_mapping (eicu_label , mimic_label)
+                    values
+                        ('-polys', 'Neturophils'),
+                        ('RBC', 'Red Blood Cells'),
+                        ('Hgb', 'Hemoglobin'),
+                        ('Hct', 'Hematocrit'),
+                        ('MCV', 'MCV'),
+                        ('MCH', 'MCH'),
+                        ('MCHC', 'MCHC'),
+                        ('RDW', 'RDW'),
+                        ('-lymphs', 'Lymphocytes'),
+                        ('-monos', 'Monocytes'),
+                        ('-eos', 'Eosinophils'),
+                        ('-basos', 'Basophils'),
+                        ('platelets x 1000', 'Platelet Count'),
+                    
+                        ('potassium', 'Potassium'),
+                        ('sodium', 'Sodium'),
+                        ('creatinine', 'Creatinine'),
+                        ('chloride', 'Chloride'),
+                        ('BUN', 'Urea Nitrogen'),
+                        ('bicarbonate', 'Bicarbonate'),
+                        ('anion gap', 'Anion Gap'),
+                        ('glucose', 'Glucose'),
+                        ('magnesium', 'Magnesium'),
+                        ('calcium', 'Calcium, Total'),
+                        ('phosphate', 'Phosphate'),
+                        ('pH', 'pH'),
+                    
+                        ('Base Excess', 'Base Excess'),
+                        ('Total CO2', 'Calculated Total CO2'),
+                        ('paO2', 'pO2'),
+                        ('paCO2', 'pCO2'),
+                    
+                        ('PTT', 'PTT'),
+                        ('PT - INR', 'INR(PT)'),
+                        ('PT', 'PT');
+                """
+
+        self.execute_query(query)
+
+    def create_eicu_features_table(self):
+        output_path = f"'C:/tools/model_a_eicu_cohort_training_data.csv'" if self.user == 'idan' \
+            else f"'/Users/user/Documents/University/Workshop/model_a_eicu_cohort_training_data.csv'"
+        query = f"""DROP TABLE IF EXISTS _relevantFeatures;
+                    CREATE TABLE _relevantFeatures as (
+                        SELECT *
+                        FROM eicu.lab as MICROLAB
+                    
+                        /* Specific lab tests*/
+                        WHERE MICROLAB.labname IN (
+                            /* Complete Blood Count: */
+                            -- Not AVAILEBLE ::C-Reactive Protein
+                            '-polys', --Neturophils
+                            'RBC', --Red Blood Cells
+                            'Hgb', --Hemoglobin
+                            'Hct', --Hematocrit
+                            'MCV',
+                            'MCH',
+                            'MCHC',
+                            'RDW',
+                            '-lymphs', -- Lymphocytes
+                            '-monos', -- Monocytes
+                            '-eos', -- Eosinophils
+                            '-basos', -- Basophils
+                            'platelets x 1000', -- Platelet Count
+                    
+                            /* Basic Metabolic Panel: */
+                            'potassium',
+                            'sodium',
+                            'creatinine',
+                            'chloride',
+                            'BUN', --::Urea Nitrogen
+                            'bicarbonate',
+                            'anion gap',
+                            'glucose',
+                            'magnesium',
+                            'calcium', --::Calcium, Total
+                            'phosphate',
+                            'pH',
+                    
+                            /* Blood Gases: */
+                            'Base Excess',
+                            'Total CO2', -- Calculated Total CO2
+                            'paO2', -- pO2
+                            'paCO2', -- pCO2
+                    
+                            /* Cauglation Panel: */
+                            'PTT',
+                            'PT - INR',
+                            'PT'
+                        )
+                    
+                        /* Take a subset of the relevant patientUnitStayIDs for the patients in model_a_eicu_cohort */
+                        AND
+                            MICROLAB.patientUnitStayID in (
+                                SELECT DISTINCT patientUnitStayID
+                                FROM patient as PAT
+                                WHERE PAT.patienthealthsystemstayid IN (
+                                    SELECT DISTINCT patienthealthsystemstayid
+                                    FROM patient as PAT
+                                    WHERE PAT.patientUnitStayID IN(
+                                        SELECT DISTINCT patientUnitStayID FROM model_a_eicu_cohort
+                                    )
+                                )
+                            )
+                    );
+                    
+                    /* (1_b) Create table of all relevant rows from labs that occuredt before target time */
+                    
+                    DROP TABLE IF EXISTS relevant_labevents_for_cohort;
+                    CREATE TABLE relevant_labevents_for_cohort as (
+                        SELECT 	temp_lab.*,
+                                PAT.patienthealthsystemstayid,
+                                cohort.target_time,
+                                (temp_lab.labresultrevisedoffset - PAT.hospitalAdmitOffset)/60 as lab_time,
+                                cohort.target
+                        FROM _relevantFeatures as temp_lab
+                        LEFT JOIN patient as PAT USING (patientUnitStayID)
+                        LEFT JOIN model_a_eicu_cohort as cohort USING (patienthealthsystemstayid)
+                        WHERE cohort.target_time > ((temp_lab.labresultrevisedoffset - PAT.hospitalAdmitOffset)/60)
+                    );
+                    alter table relevant_labevents_for_cohort add column mimic_label VARCHAR(255);
+                    update relevant_labevents_for_cohort as rlc set mimic_label = (select mm.mimic_label from eicu_to_mimic_mapping as mm where mm.eicu_label=rlc.labname);
+
+                    /* convert to mimic format */
+                    DROP TABLE IF EXISTS relevant_labevents_for_cohort_mimic_format;
+                    CREATE TABLE relevant_labevents_for_cohort_mimic_format as (
+                        SELECT 	rlc.patientunitstayid ||'-'|| rlc.patienthealthsystemstayid as identifier,
+                                rlc.patientunitstayid as subject_id,
+                                rlc.patienthealthsystemstayid as hadm_id,
+                                rlc.labid as itemid,
+                                TIMESTAMP '1990-01-01 10:00:00' + interval '1 hour' * rlc.lab_time as charttime,
+                                rlc.labresulttext::varchar(255) as value,
+                                rlc.labresult as valuenum,
+                                labmeasurenamesystem as valueuom,
+                                rlc.mimic_label as label,
+                                50 as estimated_age,
+                                rlc.target_time - rlc.lab_time as hours_from_charttime_time_to_targettime,
+                                rlc.lab_time as hours_from_admittime_to_charttime,
+                                rlc.target_time as hours_from_admittime_to_targettime,
+                                rlc.target as target,
+                                'M' as gender,
+                                TIMESTAMP '1990-01-01 10:00:00' + interval '1 hour' * rlc.target_time as target_time,
+                                TIMESTAMP '1990-01-01 10:00:00' as admittime
+                        FROM relevant_labevents_for_cohort as rlc
+                    );
+                    /* (1_c) save table to CSV file */
+                    COPY relevant_labevents_for_cohort_mimic_format To {output_path} With CSV DELIMITER ',' HEADER;
+
+                """
+
+        self.execute_query(query)

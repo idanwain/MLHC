@@ -50,12 +50,20 @@ mimic_to_eicu_mapping = {
 class DbMimic:
     def __init__(self,
                  boolean_features_path,
-                 data_path="/Users/user/Documents/University/Workshop/features_mimic.csv",
-                 folds_path="/Users/user/Documents/University/Workshop/folds_mimic_model_a.csv"
+                 mimic_data_path="/Users/user/Documents/University/Workshop/features_mimic.csv",
+                 folds_path="/Users/user/Documents/University/Workshop/folds_mimic_model_a.csv",
+                 eicu_data_path=None
                  ):
         self.boolean_features = pd.read_csv(boolean_features_path)
-        self.relevant_events_data = pd.read_csv(data_path)
-        self.folds_data = pd.read_csv(folds_path)
+        data = [pd.read_csv(mimic_data_path)]
+        folds = [pd.read_csv(folds_path)]
+        if eicu_data_path:
+            data.append(pd.read_csv(eicu_data_path))
+            eicu_fold = pd.DataFrame({'identifier': data[1][["identifier"]]["identifier"].unique()})
+            eicu_fold.loc[:, 'fold'] = 3
+            folds.append(eicu_fold)
+        self.relevant_events_data = pd.concat(data)
+        self.folds_data = pd.concat(folds)
         self.anomaly_mapping = self.build_anomaly_mapping()
         self.available_labels_in_events = []
         self.available_drugs = []
@@ -209,7 +217,7 @@ class DbMimic:
             event_list = self.get_events_by_hadm_id(hadm_id)
             boolean_features = self.get_boolean_features_by_hadm_id(hadm_id)
             patient = PatientMimic(hadm_id, estimated_age, gender, symptoms, target, event_list, boolean_features,
-                                   drugs_vector,procedures_vector)
+                                   drugs_vector, procedures_vector)
             patient_list.append(patient)
         print("Done")
         return patient_list
@@ -245,6 +253,7 @@ class DbMimic:
         for row in relevant_row.iterrows():
             drugs.append(row[1]['label'])
         return [' '.join(drugs)]
+
     def extract_invasive_procedure_by_identifier(self, identifier):
         procedures = []
         relevant_row = self.relevant_events_data.loc[lambda df: df['identifier'] == identifier, :]
@@ -255,7 +264,6 @@ class DbMimic:
 
     def parse_value(self, value: str):
         value = str(value)
-        # TODO: Handle special cases
         try:
             if value == 'nan':
                 return np.nan

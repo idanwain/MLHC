@@ -22,8 +22,9 @@ def module_2_preprocessing(external_validation_set_path, model_type):
     exclusion_data = load_exclusion_from_disk(exclusion_path)
     data = []
     ids = {'identifier': []}
+    # TODO: change string to variable
     db = DbMimic(f'/Users/user/Documents/University/Workshop/boolean_features_mimic_model_{model_type}.csv',
-                 data_path=external_validation_set_path
+                 mimic_data_path=external_validation_set_path
                  )
     patient_list_base = db.create_patient_list()
 

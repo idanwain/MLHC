@@ -36,16 +36,17 @@ if os.name == 'posix':
 else:
     user = 'idan'
 counter = 0
-model_type = 'b'
+model_type = 'a'
 
 
 boolean_features_path = f'C:/tools/boolean_features_mimic_model_{model_type}_train_data.csv' if user == 'idan' \
     else f'/Users/user/Documents/University/Workshop/boolean_features_mimic_model_{model_type}_train_data.csv'
 data_path_mimic = f'C:/tools/external_validation_set_{model_type}_train_data.csv' if user == 'idan' \
     else f'/Users/user/Documents/University/Workshop/external_validation_set_{model_type}_train_data.csv'
-folds_path = f'C:/tools/folds_mimic_model_{model_type}.csv' if user == 'idan' \
+folds_path = f'C:/tools/model_{model_type}_folds.csv' if user == 'idan' \
     else f'/Users/user/Documents/University/Workshop/folds_mimic_model_{model_type}.csv'
-
+data_path_eicu = 'C:/tools/model_a_eicu_cohort_training_data.csv' if user == 'idan' \
+    else '/Users/user/Documents/University/Workshop/model_a_eicu_cohort_training_data.csv'
 
 def get_fold_indices(patient_list, targets, folds):
     folds_indices = []
@@ -151,8 +152,10 @@ def estimate_best_model(clf, data_mimic, targets_mimic):
 def main():
     # create_cohort_training_data(model_type)
     db = DbMimic(boolean_features_path,
-                 data_path=data_path_mimic,
-                 folds_path=folds_path)
+                 mimic_data_path=data_path_mimic,
+                 folds_path=folds_path,
+                 eicu_data_path=data_path_eicu if model_type == 'a' else None
+                 )
 
     folds = db.get_folds()
     patient_list_base = db.create_patient_list()
@@ -211,57 +214,52 @@ def objective(params, patient_list_base, db, folds):
     # normalize data
     data = utils.normalize_data(data)
 
-    for fold_num, test_fold in enumerate(folds):
-        # data split
-        X_train, y_train, X_test, y_test = utils.split_data_by_folds(data, targets, folds_indices, test_fold)
+    # fixed fold = fixed train data & fixed test data
+    fold_num = 0
+    test_fold = 'fold_1'
+    # data split
+    X_train, y_train, X_test, y_test = utils.split_data_by_folds(data, targets, folds_indices, test_fold)
 
-        # Data imputation
-        X_train, X_test = impute_data(X_train, X_test, n_neighbors)
+    # Data imputation
+    X_train, X_test = impute_data(X_train, X_test, n_neighbors)
 
-        # Feature selection
-        X_train, X_test, indices = feature_selection(X_train, X_test, y_train, xgb_k)
-        config[f'selected_features_{fold_num}'] = [feature for i, feature in enumerate(labels_vector) if i in indices]
+    # Feature selection
+    X_train, X_test, indices = feature_selection(X_train, X_test, y_train, xgb_k)
+    config[f'selected_features_{fold_num}'] = [feature for i, feature in enumerate(labels_vector) if i in indices]
 
-        ### Class balancing ###
-        config[f'balance_method_{fold_num}'] = str(balance[fold_num])
-        X_train, y_train = balance[fold_num].fit_resample(X_train, y_train)
-        class_0 = [zero for i,zero in enumerate(y_train) if y_train[i] == 0]
-        class_1 = [one for i,one in enumerate(y_train) if y_train[i] == 1]
-        print('class 0:', len(class_0))
-        print('class 1:', len(class_1))
+    ### Class balancing ###
+    config[f'balance_method_{fold_num}'] = str(balance[fold_num])
+    X_train, y_train = balance[fold_num].fit_resample(X_train, y_train)
+    class_0 = [zero for i,zero in enumerate(y_train) if y_train[i] == 0]
+    class_1 = [one for i,one in enumerate(y_train) if y_train[i] == 1]
+    print('class 0:', len(class_0))
+    print('class 1:', len(class_1))
 
 
-        X_train = np.array(X_train)
-        y_train = np.array(y_train)
-        X_test = np.array(X_test)
-        y_test = np.array(y_test)
+    X_train = np.array(X_train)
+    y_train = np.array(y_train)
+    X_test = np.array(X_test)
+    y_test = np.array(y_test)
 
-        # model fitting
-        estimator1 = estimate_best_model(random_forest('random_forest'), X_train, y_train)
-        estimator2 = estimate_best_model(knn('knn'), X_train, y_train)
+    # model fitting
+    estimator1 = estimate_best_model(random_forest('random_forest'), X_train, y_train)
+    estimator2 = estimate_best_model(knn('knn'), X_train, y_train)
 
-        estimator_list = [estimator1, estimator2]
+    estimator_list = [estimator1, estimator2]
 
-        clf, estimator_list = train_model(estimator_list, weight, X_train, y_train)
+    clf, estimator_list = train_model(estimator_list, weight, X_train, y_train)
 
-        if clf is None:
-            auroc_vals = []
-            aupr_vals = []
-            break
+    if clf is None:
+        auroc_vals = []
+        aupr_vals = []
 
-        # performance assessment
-        roc_val, ns_fpr, ns_tpr, lr_fpr, lr_tpr = utils.calc_metrics_roc(clf, X_test, y_test, X_train, y_train)
-        pr_val, no_skill, lr_recall, lr_precision = utils.calc_metrics_pr(clf, X_test, y_test, X_train, y_train)
-        auroc_vals.append([roc_val, ns_fpr, ns_tpr, lr_fpr, lr_tpr])
-        aupr_vals.append([pr_val, no_skill, lr_recall, lr_precision])
+    # performance assessment
+    roc_val, ns_fpr, ns_tpr, lr_fpr, lr_tpr = utils.calc_metrics_roc(clf, X_test, y_test, X_train, y_train)
+    pr_val, no_skill, lr_recall, lr_precision = utils.calc_metrics_pr(clf, X_test, y_test, X_train, y_train)
+    auroc_vals.append([roc_val, ns_fpr, ns_tpr, lr_fpr, lr_tpr])
+    aupr_vals.append([pr_val, no_skill, lr_recall, lr_precision])
 
     counter += 1
-
-    if len(auroc_vals) != len(folds):
-        return {
-            'loss': 0,
-            'status': STATUS_FAIL,
-        }
 
     # save result
     utils.plot_graphs(auroc_vals, aupr_vals, counter, model_type)
