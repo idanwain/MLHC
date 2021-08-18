@@ -155,8 +155,8 @@ def estimate_best_model(clf, data_mimic, targets_mimic):
 
 
 def main(given_model_type=None):
-    # create_cohort_training_data(model_type)
     global model_type
+    create_cohort_training_data(model_type)
     if(given_model_type is not None):
         model_type = given_model_type
     db = DbMimic(boolean_features_path,
