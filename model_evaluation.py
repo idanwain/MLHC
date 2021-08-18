@@ -2,21 +2,28 @@ import pickle
 import utils
 from db_interface_mimic import DbMimic
 import os
-from objective_b import get_data_vectors,get_fold_indices,impute_data
+from objective_b import get_data_vectors, get_fold_indices, impute_data
 import numpy as np
+
 if os.name == 'posix':
     user = 'roye'
 else:
     user = 'idan'
 
-
-
 counter = 0
+
 
 def load_pre_trained_model(model_type):
     with open(f"pre_trained_model_{model_type}", 'rb') as file:
         clf = pickle.load(file)
         return clf
+
+
+def load_balance_method(model_type):
+    with open('balance_method_' + model_type, 'rb') as file:
+        clf = pickle.load(file)
+        return clf
+
 
 def load_indices_from_disk(model_type):
     with open(f'indices_{model_type}', 'rb') as file:
@@ -53,9 +60,9 @@ def evaluate(model_type):
     patient_list = db.create_patient_list()
 
     # hyper-parameters
-    feature_threshold ,n_neighbors, patient_threshold = load_optimal_values_from_disk(model_type)
+    feature_threshold, n_neighbors, patient_threshold = load_optimal_values_from_disk(model_type)
     indices = load_indices_from_disk(model_type)
-    balance = [params['balance']] * len(folds)
+    balance = load_balance_method(model_type)
 
     patient_list, percentage_removed, total_removed = utils.remove_patients_by_thershold(patient_list,
                                                                                          patient_threshold)
@@ -67,7 +74,6 @@ def evaluate(model_type):
     data = utils.create_vector_of_important_features(data, indices)
 
     for fold_num, test_fold in enumerate(folds):
-
         # data split
         X_train, y_train, X_test, y_test = utils.split_data_by_folds(data, targets, folds_indices, test_fold)
 
@@ -79,13 +85,7 @@ def evaluate(model_type):
         X_train, X_test = impute_data(X_train, X_test, n_neighbors)
 
         ### Class balancing ###
-        config[f'balance_method_{fold_num}'] = str(balance[fold_num])
-        X_train, y_train = balance[fold_num].fit_resample(X_train, y_train)
-        class_0 = [zero for i,zero in enumerate(y_train) if y_train[i] == 0]
-        class_1 = [one for i,one in enumerate(y_train) if y_train[i] == 1]
-        print('class 0:', len(class_0))
-        print('class 1:', len(class_1))
-
+        X_train, y_train = balance.fit_resample(X_train, y_train)
 
         X_train = np.array(X_train)
         y_train = np.array(y_train)
@@ -94,7 +94,7 @@ def evaluate(model_type):
 
         # model fitting
         clf = load_pre_trained_model(model_type)
-        clf.fit(X_train,y_train)
+        clf.fit(X_train, y_train)
 
         # performance assessment
         roc_val, ns_fpr, ns_tpr, lr_fpr, lr_tpr = utils.calc_metrics_roc(clf, X_test, y_test, X_train, y_train)
@@ -111,7 +111,6 @@ def evaluate(model_type):
     aupr_avg = np.average([i[0] for i in aupr_vals])
     auroc_std = np.std([i[0] for i in auroc_vals])
     aupr_std = np.std([i[0] for i in aupr_vals])
-
 
     results = {
         "AUROC_AVG": auroc_avg,
