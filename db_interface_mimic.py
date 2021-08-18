@@ -51,18 +51,20 @@ class DbMimic:
     def __init__(self,
                  boolean_features_path,
                  mimic_data_path="/Users/user/Documents/University/Workshop/features_mimic.csv",
-                 folds_path="/Users/user/Documents/University/Workshop/folds_mimic_model_a.csv",
+                 folds_path=None,
                  eicu_data_path=None
                  ):
         self.boolean_features = pd.read_csv(boolean_features_path)
         data = [pd.read_csv(mimic_data_path)]
-        folds = [pd.read_csv(folds_path)]
+        if folds_path:
+            folds = [pd.read_csv(folds_path)]
         if eicu_data_path:
             data.append(pd.read_csv(eicu_data_path))
-            eicu_fold = pd.DataFrame({'identifier': data[1][["identifier"]]["identifier"].unique()})
-            for i in range(0, 5):
-                eicu_fold.loc[(i / 5) * len(eicu_fold):(i + 1 / 5) * len(eicu_fold), 'fold'] = i + 1
-            folds.append(eicu_fold)
+            if folds_path:
+                eicu_fold = pd.DataFrame({'identifier': data[1][["identifier"]]["identifier"].unique()})
+                for i in range(0, 5):
+                    eicu_fold.loc[(i / 5) * len(eicu_fold):(i + 1 / 5) * len(eicu_fold), 'fold'] = i + 1
+                folds.append(eicu_fold)
         self.relevant_events_data = pd.concat(data)
         self.folds_data = pd.concat(folds)
         self.anomaly_mapping = self.build_anomaly_mapping()
