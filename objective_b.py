@@ -36,7 +36,7 @@ if os.name == 'posix':
 else:
     user = 'idan'
 counter = 0
-model_type = 'a'
+model_type = 'b'
 
 
 boolean_features_path = f'C:/tools/boolean_features_mimic_model_{model_type}_train_data.csv' if user == 'idan' \
@@ -149,8 +149,11 @@ def estimate_best_model(clf, data_mimic, targets_mimic):
     return res
 
 
-def main():
+def main(given_model_type=None):
     # create_cohort_training_data(model_type)
+    global model_type
+    if(given_model_type is not None):
+        model_type = given_model_type
     db = DbMimic(boolean_features_path,
                  mimic_data_path=data_path_mimic,
                  folds_path=folds_path,
@@ -269,6 +272,7 @@ def objective(params, patient_list_base, db, folds):
     aupr_avg = np.average([i[0] for i in aupr_vals])
     auroc_std = np.std([i[0] for i in auroc_vals])
     aupr_std = np.std([i[0] for i in aupr_vals])
+
 
     results = {
         "AUROC_AVG": auroc_avg,
