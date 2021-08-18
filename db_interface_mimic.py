@@ -60,7 +60,8 @@ class DbMimic:
         if eicu_data_path:
             data.append(pd.read_csv(eicu_data_path))
             eicu_fold = pd.DataFrame({'identifier': data[1][["identifier"]]["identifier"].unique()})
-            eicu_fold.loc[:, 'fold'] = 3
+            for i in range(0, 5):
+                eicu_fold.loc[(i / 5) * len(eicu_fold):(i + 1 / 5) * len(eicu_fold), 'fold'] = i + 1
             folds.append(eicu_fold)
         self.relevant_events_data = pd.concat(data)
         self.folds_data = pd.concat(folds)

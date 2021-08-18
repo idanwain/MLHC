@@ -112,6 +112,7 @@ def get_best_model_and_indices(trails):
     best_model = None
     indices = []
     exclusion = {}
+    best_model_pre_trained = None
     for entry in trails.results:
         if (entry['loss'] < loss):
             best_model = entry['trained_clf']
