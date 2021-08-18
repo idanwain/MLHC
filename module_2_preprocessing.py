@@ -10,10 +10,11 @@ if os.name == 'posix':
 else:
     user = 'idan'
 
-processed_external_validation_set_path = 'C:/tools/processed_external_validation_set_path.csv' if user == 'idan' \
-    else '/Users/user/Documents/University/Workshop/processed_external_validation_set_path.csv'
+processed_external_validation_set_path = 'C:/tools/processed_external_validation_set.csv' if user == 'idan' \
+    else '/Users/user/Documents/University/Workshop/processed_external_validation_set.csv'
 data_path_eicu = 'C:/tools/model_a_eicu_cohort.csv' if user == 'idan'\
     else '/Users/user/Documents/University/Workshop/model_a_eicu_cohort.csv'
+
 
 def module_2_preprocessing(external_validation_set_path, model_type):
     indices_file_path = 'indices_' + model_type
@@ -23,7 +24,10 @@ def module_2_preprocessing(external_validation_set_path, model_type):
     exclusion_data = load_exclusion_from_disk(exclusion_path)
     data = []
     ids = {'identifier': []}
-    db = DbMimic(f'/Users/user/Documents/University/Workshop/boolean_features_mimic_model_{model_type}.csv',
+
+    boolean_feature_path = f'C:/tools/boolean_features_mimic_model_{model_type}.csv' if user == 'idan' \
+        else f'/Users/user/Documents/University/Workshop/boolean_features_mimic_model_{model_type}.csv'
+    db = DbMimic(boolean_feature_path,
                  mimic_data_path=external_validation_set_path,
                  eicu_data_path=data_path_eicu if model_type == 'a' else None
                  )
@@ -33,7 +37,6 @@ def module_2_preprocessing(external_validation_set_path, model_type):
                                                                                          exclusion_data[
                                                                                              'patient_threshold'])
 
-    # TODO: add patient removal (load value from disk)
     ### Removing rare features ###
     patient_list, removed_features = utils.remove_features_by_threshold(threshold, patient_list, db)
     for patient in patient_list:

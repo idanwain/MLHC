@@ -122,4 +122,5 @@ def evaluate(model_type):
     print(results)
 
 
-evaluate('b')
+if __name__ == '__main__':
+    evaluate('b')
