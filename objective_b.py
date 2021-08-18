@@ -113,17 +113,19 @@ def get_best_model_and_indices(trails):
     indices = []
     exclusion = {}
     best_model_pre_trained = None
+    balance_method = None
     for entry in trails.results:
         if (entry['loss'] < loss):
             best_model = entry['trained_clf']
             best_model_pre_trained = entry['pre_trained_clf']
+            balance_method = entry['balance_method']
             loss = entry['loss']
             indices = entry['indices']
             exclusion = entry['exclusion']
-    return best_model, indices, exclusion, best_model_pre_trained
+    return best_model, indices, exclusion, best_model_pre_trained, balance_method
 
 
-def save_data_to_disk(model, indices, params, exclusion, pre_trained_model):
+def save_data_to_disk(model, indices, params, exclusion, pre_trained_model, balance_method):
     model = pickle.dumps(model)
     indices = pickle.dumps(indices)
     params = {
@@ -133,16 +135,20 @@ def save_data_to_disk(model, indices, params, exclusion, pre_trained_model):
     }
     params = pickle.dumps(params)
     exclusion = pickle.dumps(exclusion)
+    pre_trained_model = pickle.dumps(pre_trained_model)
+    balance_method = pickle.dumps(balance_method)
     with open('model_' + model_type, 'wb') as model_file:
         model_file.write(model)
-    with open('pre_trained_model_' + model_type, 'wb') as model_file:
-        model_file.write(pre_trained_model)
+    with open('pre_trained_model_' + model_type, 'wb') as pre_trained_model_file:
+        pre_trained_model_file.write(pre_trained_model)
     with open('indices_' + model_type, 'wb') as indices_file:
         indices_file.write(indices)
     with open('optimal_values_' + model_type, 'wb') as optimal_values_file:
         optimal_values_file.write(params)
     with open('exclusion_criteria_' + model_type, 'wb') as exclusion_file:
         exclusion_file.write(exclusion)
+    with open('balance_method_' + model_type, 'wb') as balance_method_file:
+        balance_method_file.write(balance_method)
 
 
 def estimate_best_model(clf, data_mimic, targets_mimic):
@@ -183,8 +189,8 @@ def main(given_model_type=None):
     objective_func = partial(objective, patient_list_base=patient_list_base, db=db, folds=folds)
     trials = Trials()
     best = fmin(fn=objective_func, space=space, algo=tpe.suggest, max_evals=100, trials=trials, return_argmin=False)
-    best_model, indices, exclusion, best_model_pre_trained = get_best_model_and_indices(trials)
-    save_data_to_disk(best_model, indices, best, exclusion, best_model_pre_trained)
+    best_model, indices, exclusion, best_model_pre_trained, balance_method = get_best_model_and_indices(trials)
+    save_data_to_disk(best_model, indices, best, exclusion, best_model_pre_trained, balance_method)
 
 
 def objective(params, patient_list_base, db, folds):
@@ -298,6 +304,7 @@ def objective(params, patient_list_base, db, folds):
         'trained_clf': clf,
         'pre_trained_clf': pre_trained_clf,
         'indices': indices,
+        'balance_method': balance[0],
         'exclusion': {
             'model_type': model_type,
             'percentage_removed': percentage_removed,
