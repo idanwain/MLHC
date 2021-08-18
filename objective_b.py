@@ -102,8 +102,9 @@ def feature_selection(X_train, X_test, y_train, k):
 def train_model(estimator_list, weight, X_train, y_train):
     estimators = [(f'clf{i + 1}', clf) for i, clf in enumerate(estimator_list)]
     voting_clf = VotingClassifier(estimators=estimators, voting='soft', weights=weight)
+    pre_trained_clf = copy.deepcopy(voting_clf)
     voting_clf.fit(X_train, y_train)
-    return voting_clf, estimator_list
+    return voting_clf, estimator_list, pre_trained_clf
 
 
 def get_best_model_and_indices(trails):
@@ -113,14 +114,15 @@ def get_best_model_and_indices(trails):
     exclusion = {}
     for entry in trails.results:
         if (entry['loss'] < loss):
-            best_model = entry['clf']
+            best_model = entry['trained_clf']
+            best_model_pre_trained = entry['pre_trained_clf']
             loss = entry['loss']
             indices = entry['indices']
             exclusion = entry['exclusion']
-    return best_model, indices, exclusion
+    return best_model, indices, exclusion, best_model_pre_trained
 
 
-def save_data_to_disk(model, indices, params, exclusion):
+def save_data_to_disk(model, indices, params, exclusion, pre_trained_model):
     model = pickle.dumps(model)
     indices = pickle.dumps(indices)
     params = {'feature_threshold': params['feature_threshold'], 'kNN_vals': params['kNN_vals']}
@@ -128,6 +130,8 @@ def save_data_to_disk(model, indices, params, exclusion):
     exclusion = pickle.dumps(exclusion)
     with open('model_' + model_type, 'wb') as model_file:
         model_file.write(model)
+    with open('pre_trained_model_' + model_type, 'wb') as model_file:
+        model_file.write(pre_trained_model)
     with open('indices_' + model_type, 'wb') as indices_file:
         indices_file.write(indices)
     with open('optimal_values_' + model_type, 'wb') as optimal_values_file:
@@ -171,8 +175,8 @@ def main():
     objective_func = partial(objective, patient_list_base=patient_list_base, db=db, folds=folds)
     trials = Trials()
     best = fmin(fn=objective_func, space=space, algo=tpe.suggest, max_evals=100, trials=trials, return_argmin=False)
-    best_model, indices, exclusion = get_best_model_and_indices(trials)
-    save_data_to_disk(best_model, indices, best, exclusion)
+    best_model, indices, exclusion, best_model_pre_trained = get_best_model_and_indices(trials)
+    save_data_to_disk(best_model, indices, best, exclusion, best_model_pre_trained)
 
 
 def objective(params, patient_list_base, db, folds):
@@ -211,14 +215,15 @@ def objective(params, patient_list_base, db, folds):
     data = get_data_vectors(patient_list)
     labels_vector = utils.create_labels_vector(db, removed_features)
 
-    # normalize data
-    data = utils.normalize_data(data)
-
     # fixed fold = fixed train data & fixed test data
     fold_num = 0
     test_fold = 'fold_1'
     # data split
     X_train, y_train, X_test, y_test = utils.split_data_by_folds(data, targets, folds_indices, test_fold)
+
+    # normalize data
+    X_train = utils.normalize_data(X_train)
+    X_test = utils.normalize_data(X_test)
 
     # Data imputation
     X_train, X_test = impute_data(X_train, X_test, n_neighbors)
@@ -247,7 +252,7 @@ def objective(params, patient_list_base, db, folds):
 
     estimator_list = [estimator1, estimator2]
 
-    clf, estimator_list = train_model(estimator_list, weight, X_train, y_train)
+    clf, estimator_list, pre_trained_clf = train_model(estimator_list, weight, X_train, y_train)
 
     if clf is None:
         auroc_vals = []
@@ -281,7 +286,8 @@ def objective(params, patient_list_base, db, folds):
         'loss': -1.0 * auroc_avg,
         'status': STATUS_OK,
         'metadata': results,
-        'clf': clf,
+        'trained_clf': clf,
+        'pre_trained_clf': pre_trained_clf,
         'indices': indices,
         'exclusion': {
             'model_type': model_type,
