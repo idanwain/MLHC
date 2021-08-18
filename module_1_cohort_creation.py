@@ -35,10 +35,10 @@ def eicu_cohort_creation():
     else:  # TODO: set configuration for Roye
         db_conn = psycopg2.connect(
             host="localhost",
-            database="mimic",
-            user="mimicuser",
+            database="eicu",
+            user="eicuuser",
             password="",
-            options="--search_path=mimiciii"
+            options="--search_path=eicu"
         )
 
     db = sql_helper.SqlHelper(db_conn, 'a', user, True)
