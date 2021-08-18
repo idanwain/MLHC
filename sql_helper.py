@@ -46,6 +46,7 @@ class SqlHelper:
         return result
 
     def load_cohort_to_db(self, file_path):
+        update_target = f'UPDATE model_{self.model_type}_mimic_cohort{self.training} SET target=0;' if not self.training else ''
         query = f"""SET datestyle = dmy;
                     DROP TABLE IF EXISTS model_{self.model_type}_mimic_cohort{self.training};
                     CREATE TABLE model_{self.model_type}_mimic_cohort{self.training} (
@@ -55,12 +56,14 @@ class SqlHelper:
                       admittime TIMESTAMP,
                       icu_time TIMESTAMP,
                       target_time TIMESTAMP,
-                      target VARCHAR(50)
+                      target VARCHAR(50) 
                     );
-                    COPY model_{self.model_type}_mimic_cohort{self.training}
+                    COPY model_{self.model_type}_mimic_cohort{self.training} {'(identifier, subject_id, hadm_id, admittime, icu_time, target_time)' if not self.training else ''} 
                     FROM {file_path}
                     DELIMITER ','
-                    CSV HEADER;"""
+                    CSV HEADER;
+                    {update_target}
+                    """
 
         self.execute_query(query)
 

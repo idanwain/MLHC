@@ -56,6 +56,7 @@ class DbMimic:
                  ):
         self.boolean_features = pd.read_csv(boolean_features_path)
         data = [pd.read_csv(mimic_data_path)]
+        folds = []
         if folds_path:
             folds = [pd.read_csv(folds_path)]
         if eicu_data_path:
@@ -65,8 +66,9 @@ class DbMimic:
                 for i in range(0, 5):
                     eicu_fold.loc[(i / 5) * len(eicu_fold):(i + 1 / 5) * len(eicu_fold), 'fold'] = i + 1
                 folds.append(eicu_fold)
+        if folds_path:
+            self.folds_data = pd.concat(folds)
         self.relevant_events_data = pd.concat(data)
-        self.folds_data = pd.concat(folds)
         self.anomaly_mapping = self.build_anomaly_mapping()
         self.available_labels_in_events = []
         self.available_drugs = []

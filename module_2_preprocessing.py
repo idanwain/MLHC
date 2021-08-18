@@ -27,8 +27,9 @@ def module_2_preprocessing(external_validation_set_path, model_type):
 
     boolean_feature_path = f'C:/tools/boolean_features_mimic_model_{model_type}.csv' if user == 'idan' \
         else f'/Users/user/Documents/University/Workshop/boolean_features_mimic_model_{model_type}.csv'
-    db = DbMimic(boolean_feature_path,
+    db = DbMimic(boolean_features_path=boolean_feature_path,
                  mimic_data_path=external_validation_set_path,
+                 folds_path=None,
                  eicu_data_path=data_path_eicu if model_type == 'a' else None
                  )
     patient_list_base = db.create_patient_list()
