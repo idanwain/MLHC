@@ -120,3 +120,6 @@ def evaluate(model_type):
     }
     utils.log_dict(vals=results, msg="Run results:")
     print(results)
+
+
+evaluate('b')

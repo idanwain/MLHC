@@ -167,7 +167,7 @@ def estimate_best_model(clf, data_mimic, targets_mimic):
 def main(given_model_type=None):
     global model_type
     create_cohort_training_data(model_type)
-    if(given_model_type is not None):
+    if given_model_type is not None:
         model_type = given_model_type
     db = DbMimic(boolean_features_path,
                  mimic_data_path=data_path_mimic,
@@ -188,7 +188,7 @@ def main(given_model_type=None):
     }
     objective_func = partial(objective, patient_list_base=patient_list_base, db=db, folds=folds)
     trials = Trials()
-    best = fmin(fn=objective_func, space=space, algo=tpe.suggest, max_evals=100, trials=trials, return_argmin=False)
+    best = fmin(fn=objective_func, space=space, algo=tpe.suggest, max_evals=5, trials=trials, return_argmin=False)
     best_model, indices, exclusion, best_model_pre_trained, balance_method = get_best_model_and_indices(trials)
     save_data_to_disk(best_model, indices, best, exclusion, best_model_pre_trained, balance_method)
 
