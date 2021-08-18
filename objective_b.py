@@ -126,7 +126,11 @@ def get_best_model_and_indices(trails):
 def save_data_to_disk(model, indices, params, exclusion, pre_trained_model):
     model = pickle.dumps(model)
     indices = pickle.dumps(indices)
-    params = {'feature_threshold': params['feature_threshold'], 'kNN_vals': params['kNN_vals']}
+    params = {
+        'feature_threshold': params['feature_threshold'],
+        'kNN_vals': params['kNN_vals'],
+        'patient_threshold': params['patient_threshold']
+    }
     params = pickle.dumps(params)
     exclusion = pickle.dumps(exclusion)
     with open('model_' + model_type, 'wb') as model_file:
@@ -169,7 +173,7 @@ def main(given_model_type=None):
     patient_list_base = db.create_patient_list()
     space = {
         'feature_threshold': hp.uniform('thershold_val', 0.5, 1),
-        'patient_thershold': hp.uniform('patient_thershold', 0.5, 1),
+        'patient_threshold': hp.uniform('patient_threshold', 0.5, 1),
         'kNN_vals': hp.choice('kNN_vals', range(3, 15)),
         'XGB_k': hp.choice('XGB1_vals', range(40, 80)),
         'clf1_weight': hp.choice('clf1_weight', range(1, 30)),
@@ -193,7 +197,7 @@ def objective(params, patient_list_base, db, folds):
     # hyper-parameters
     feature_threshold = params['feature_threshold']  # Minimum appearance for feature to be included
     n_neighbors = params['kNN_vals']  # Neighbors amount for kNN
-    patient_threshold = params['patient_thershold']  # Percentage of missing features of patient
+    patient_threshold = params['patient_threshold']  # Percentage of missing features of patient
     clf1_weight = params['clf1_weight']
     clf2_weight = params['clf2_weight']
     weight = [clf1_weight, clf2_weight]

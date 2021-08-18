@@ -12,7 +12,8 @@ else:
 
 processed_external_validation_set_path = 'C:/tools/processed_external_validation_set_path.csv' if user == 'idan' \
     else '/Users/user/Documents/University/Workshop/processed_external_validation_set_path.csv'
-
+data_path_eicu = 'C:/tools/model_a_eicu_cohort.csv' if user == 'idan'\
+    else '/Users/user/Documents/University/Workshop/model_a_eicu_cohort.csv'
 
 def module_2_preprocessing(external_validation_set_path, model_type):
     indices_file_path = 'indices_' + model_type
@@ -22,9 +23,9 @@ def module_2_preprocessing(external_validation_set_path, model_type):
     exclusion_data = load_exclusion_from_disk(exclusion_path)
     data = []
     ids = {'identifier': []}
-    # TODO: change string to variable
     db = DbMimic(f'/Users/user/Documents/University/Workshop/boolean_features_mimic_model_{model_type}.csv',
-                 mimic_data_path=external_validation_set_path
+                 mimic_data_path=external_validation_set_path,
+                 eicu_data_path=data_path_eicu if model_type == 'a' else None
                  )
     patient_list_base = db.create_patient_list()
 
@@ -32,6 +33,7 @@ def module_2_preprocessing(external_validation_set_path, model_type):
                                                                                          exclusion_data[
                                                                                              'patient_threshold'])
 
+    # TODO: add patient removal (load value from disk)
     ### Removing rare features ###
     patient_list, removed_features = utils.remove_features_by_threshold(threshold, patient_list, db)
     for patient in patient_list:
@@ -55,7 +57,7 @@ def module_2_preprocessing(external_validation_set_path, model_type):
     df = pd.DataFrame(data)
     df['identifier'] = ids['identifier']
     df.to_csv(processed_external_validation_set_path)
-    write_exclusion_file(exclusion_data,percentage_removed,total_removed,model_type)
+    write_exclusion_file(exclusion_data, percentage_removed, total_removed, model_type)
     return processed_external_validation_set_path
 
 
@@ -77,12 +79,12 @@ def load_exclusion_from_disk(exclusion_path):
     return data
 
 
-def write_exclusion_file(exclusion_data, percentage_removed, total_removed,model_type):
+def write_exclusion_file(exclusion_data, percentage_removed, total_removed, model_type):
     file_content = f"Exclusion criteria are:\n1. All patients with less than {exclusion_data['patient_threshold'] * 100}% " \
                    "out of total features were removed."
-    file_content += f"\nOn model type {model_type}: {exclusion_data['total_removed']} were removed ({exclusion_data['percentage_removed']*100}" \
+    file_content += f"\nOn model type {model_type}: {exclusion_data['total_removed']} were removed ({exclusion_data['percentage_removed'] * 100}" \
                     "% of the cohort)"
     file_content += f"\n{total_removed} patients were removed from the external validation set ({percentage_removed}%)"
 
-    with open("cohort_exclusion.txt",'w') as file:
+    with open("cohort_exclusion.txt", 'w') as file:
         file.write(file_content)
