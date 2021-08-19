@@ -81,9 +81,8 @@ class DbMimic:
         """
         print("Fetching all admission id's")
         hadm_id_list = []
-        for id in self.relevant_events_data["identifier"]:
-            if id not in hadm_id_list:
-                hadm_id_list.append(id)
+        for id in self.relevant_events_data["identifier"].unique():
+            hadm_id_list.append(id)
         return hadm_id_list
 
     def get_labels(self) -> list:
@@ -150,7 +149,6 @@ class DbMimic:
                 (value > self.anomaly_mapping[label]["max"] or
                  value < self.anomaly_mapping[label]["min"])) or \
                     np.isnan(value):
-                utils.log_dict(msg="Anomaly found", vals={"Label": label, "Value": value, "UOM": unit_of_measuere})
                 continue
             feature = Feature(time=time, value=value, uom=unit_of_measuere)
             patient_dict[label].append(feature)
@@ -195,7 +193,7 @@ class DbMimic:
                 res[list(category['category'])[0]] = 1
         return res
 
-    def create_patient_list(self, num_of_negatives=0):
+    def create_patient_list(self):
         """
         Creates and returns list of all patients
         :return: list of patients
@@ -207,13 +205,8 @@ class DbMimic:
         drugs_vectorizer.fit(self.get_drugs())
         invasive_procedures_vectorizer.fit(self.get_invasive_procedures())
         patient_list = []
-        counter = 0
         for hadm_id in hadm_id_list:
             estimated_age, gender, target = self.get_metadata_by_hadm_id(hadm_id)
-            if target == 'negative':
-                counter += 1
-            if target == 'negative' and counter < num_of_negatives:
-                continue
             symptoms = self.extract_symptoms_by_identifier(hadm_id)
             drugs = self.extract_drugs_by_identifier(hadm_id)
             drugs_vector = sorted(list((drugs_vectorizer.transform(drugs)).toarray()[0]))
@@ -224,6 +217,7 @@ class DbMimic:
             patient = PatientMimic(hadm_id, estimated_age, gender, symptoms, target, event_list, boolean_features,
                                    drugs_vector, procedures_vector)
             patient_list.append(patient)
+            print(len(patient_list))
         print("Done")
         return patient_list
 
