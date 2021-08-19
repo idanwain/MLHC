@@ -36,7 +36,7 @@ if os.name == 'posix':
 else:
     user = 'idan'
 counter = 0
-model_type = 'b'
+model_type = 'a'
 
 
 boolean_features_path = f'C:/tools/boolean_features_mimic_model_{model_type}_train_data.csv' if user == 'idan' \
@@ -166,7 +166,7 @@ def estimate_best_model(clf, data_mimic, targets_mimic):
 
 def main(given_model_type=None):
     global model_type
-    create_cohort_training_data(model_type)
+    # create_cohort_training_data(model_type)
     if given_model_type is not None:
         model_type = given_model_type
     db = DbMimic(boolean_features_path,
@@ -177,6 +177,8 @@ def main(given_model_type=None):
 
     folds = db.get_folds()
     patient_list_base = db.create_patient_list()
+    with open(f'patient_list_base_model_{model_type}','wb') as file:
+        file.write(pickle.dumps(patient_list_base))
     space = {
         'feature_threshold': hp.uniform('thershold_val', 0.5, 1),
         'patient_threshold': hp.uniform('patient_threshold', 0.5, 1),
