@@ -187,11 +187,11 @@ class DbMimic:
 
     def get_boolean_features_by_hadm_id(self, hadm_id, relevant_rows):
         res = {key: 0 for key in self.boolean_features['category']}
-        relevant_rows = relevant_rows
+        boolean_features_itemid_list = list(self.boolean_features['itemid'])
+        relevant_rows = relevant_rows[relevant_rows['itemid'].isin(boolean_features_itemid_list)]
         for event in relevant_rows.iterrows():
-            if event[1]['itemid'] in list(self.boolean_features['itemid']):
-                category = self.boolean_features.loc[lambda df: df['itemid'] == event[1]['itemid'], :]
-                res[list(category['category'])[0]] = 1
+            category = self.boolean_features.loc[lambda df: df['itemid'] == event[1]['itemid'], :]
+            res[list(category['category'])[0]] = 1
         return res
 
     def create_patient_list(self):
@@ -257,10 +257,10 @@ class DbMimic:
 
     def extract_invasive_procedure_by_identifier(self, identifier, relevant_rows):
         procedures = []
-        relevant_row = relevant_rows
+        boolean_features_itemid_list = list(self.boolean_features['itemid'])
+        relevant_row = relevant_rows[relevant_rows['itemid'].isin(boolean_features_itemid_list)]
         for row in relevant_row.iterrows():
-            if row[1]['itemid'] in list(self.boolean_features['itemid']):
-                procedures.append(hashlib.sha1(row[1]['label'].encode()).hexdigest())
+            procedures.append(hashlib.sha1(row[1]['label'].encode()).hexdigest())
         return [' '.join(procedures)]
 
     def parse_value(self, value: str):
