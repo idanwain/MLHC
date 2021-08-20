@@ -120,10 +120,10 @@ class DbMimic:
         """
         distinct_procedures = []
         if (len(self.invasive_procedures) == 0):
-            relevant_row = self.relevant_events_data
-            for row in relevant_row.iterrows():
-                if row[1]['itemid'] in list(self.boolean_features['itemid']):
-                    distinct_procedures.append(hashlib.sha1(row[1]['label'].encode()).hexdigest())
+            boolean_features_list = list(self.boolean_features['itemid'])
+            relevant_rows = self.relevant_events_data[self.relevant_events_data['itemid'].isin(boolean_features_list)]
+            for row in relevant_rows.iterrows():
+                distinct_procedures.append(hashlib.sha1(row[1]['label'].encode()).hexdigest())
             self.invasive_procedures = [' '.join(list(set(distinct_procedures)))]
         return self.invasive_procedures
 
