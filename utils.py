@@ -179,6 +179,22 @@ def plot_graphs(auroc_vals, aupr_vals, counter, objective: str):
     pyplot.close()
 
 
+def create_labels_for_drugs_feature(db):
+    ret = []
+    drugs = db.get_drugs()[0].split()
+    for i in range(len(drugs)):
+        ret.append(f"drug_{drugs[i]}")
+    return ret
+
+
+def create_labels_for_procedures_feature(db):
+    ret = []
+    procedures = db.get_invasive_procedures()[0].split()
+    for i in range(len(procedures)):
+        ret.append(f"invasive_procedure_{i}")
+    return ret
+
+
 def create_labels_vector(db, removed_features, objective_c=False):
     ret_vecotr = []
     essences = ["Average", "Max", "Min", "Latest", "Amount", "STD", "Last 5 average", "Max-min diff", "0.25 quantile",
@@ -191,6 +207,8 @@ def create_labels_vector(db, removed_features, objective_c=False):
         boolean_features.sort()
         ret_vecotr.extend(boolean_features)
         ret_vecotr += create_labels_for_categorical_features()
+        ret_vecotr.extend(create_labels_for_drugs_feature(db))
+        ret_vecotr.extend(create_labels_for_procedures_feature(db))
     return ret_vecotr
 
 
