@@ -55,6 +55,7 @@ class DbMimic:
                  eicu_data_path=None
                  ):
         self.boolean_features = pd.read_csv(boolean_features_path)
+        self.itemid_to_category_mapping = self.map_itemid_to_category()
         data = [pd.read_csv(mimic_data_path)]
         folds = []
         if folds_path:
@@ -154,17 +155,14 @@ class DbMimic:
             patient_dict[label].append(feature)
         return patient_dict
 
-    def get_metadata_by_hadm_id(self, hadm_id: str, relevant_rows):
+    def get_metadata_by_hadm_id(self, hadm_id: str, relevant_rows, members):
         """
         Returns a tuple of values which are used as metadata given an hadm_id. Values can be found in Patient object.
         :param relevant_rows:
         :param hadm_id: id of patient
         :return: tuple of metadata values
         """
-        members = [attr for attr in dir(PatientMimic) if
-                   not callable(getattr(PatientMimic, attr)) and not attr.startswith("__")]
         values = []
-        relevant_rows = relevant_rows
         for member in members:
             values.append(relevant_rows.iloc[0][member])
         return tuple(values)
@@ -190,8 +188,8 @@ class DbMimic:
         boolean_features_itemid_list = list(self.boolean_features['itemid'])
         relevant_rows = relevant_rows[relevant_rows['itemid'].isin(boolean_features_itemid_list)]
         for event in relevant_rows.iterrows():
-            category = self.boolean_features.loc[lambda df: df['itemid'] == event[1]['itemid'], :]
-            res[list(category['category'])[0]] = 1
+            # category = self.boolean_features.loc[lambda df: df['itemid'] == event[1]['itemid'], :]
+            res[self.itemid_to_category_mapping[event[1]['itemid']]] = 1
         return res
 
     def create_patient_list(self):
@@ -205,10 +203,13 @@ class DbMimic:
         invasive_procedures_vectorizer = CountVectorizer()
         drugs_vectorizer.fit(self.get_drugs())
         invasive_procedures_vectorizer.fit(self.get_invasive_procedures())
+        members = [attr for attr in dir(PatientMimic) if
+                   not callable(getattr(PatientMimic, attr)) and not attr.startswith("__")]
+
         patient_list = []
         for hadm_id in hadm_id_list:
             relevant_rows = self.relevant_events_data.loc[lambda df: df['identifier'] == hadm_id, :]
-            estimated_age, gender, target = self.get_metadata_by_hadm_id(hadm_id,relevant_rows)
+            estimated_age, gender, target = self.get_metadata_by_hadm_id(hadm_id, relevant_rows, members)
             symptoms = self.extract_symptoms_by_identifier(hadm_id,relevant_rows)
             drugs = self.extract_drugs_by_identifier(hadm_id,relevant_rows)
             drugs_vector = sorted(list((drugs_vectorizer.transform(drugs)).toarray()[0]))
@@ -280,3 +281,10 @@ class DbMimic:
                 return np.nan
         except Exception as e:
             return np.nan
+
+    def map_itemid_to_category(self):
+        res = {}
+        for row in self.boolean_features.iterrows():
+            res[row[1]['itemid']] = row[1]['category']
+        return res
+

@@ -30,7 +30,7 @@ def module_2_preprocessing(external_validation_set_path, model_type):
     db = DbMimic(boolean_features_path=boolean_feature_path,
                  mimic_data_path=external_validation_set_path,
                  folds_path=None,
-                 eicu_data_path=data_path_eicu if model_type == 'a' else None
+                 eicu_data_path=None
                  )
     patient_list_base = db.create_patient_list()
 
