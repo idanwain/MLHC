@@ -10,8 +10,7 @@ else:
     user = 'idan'
 
 def module_3_model(processed_external_validation_set_path, model_type):
-    path_to_risk_score = f'C:/tools/model_{model_type}_mimic_cohort_risk_score_group_8.csv' if user == 'idan' \
-        else f'/Users/user/Documents/University/Workshop/model_{model_type}_mimic_cohort_risk_score_group_8.csv'
+    path_to_risk_score = f'./model_{model_type}_mimic_cohort_risk_score_group_8.csv'
 
     final_df = {'identifier': [], 'risk_score': []}
 

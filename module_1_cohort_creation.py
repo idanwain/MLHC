@@ -7,6 +7,11 @@ if os.name == 'posix':
 else:
     user = 'idan'
 
+"""
+This module collects data of given cohort from DB.
+Returns a CSV of external validation set that contains
+"""
+
 
 def module_1_cohort_creation(file_path, db_conn, model_type, training=False):
     db = sql_helper.SqlHelper(db_conn, model_type, user, training)

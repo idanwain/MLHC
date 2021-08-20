@@ -7,6 +7,11 @@ import os
 import pandas as pd
 import dataframe_image as dfi
 
+""""
+This module runs hypothesis test between group with target = 1 and group with target = 0.
+Saves 50 features with most significant difference.
+"""
+
 model_type = 'b'
 if os.name == 'posix':
     user = 'roye'
