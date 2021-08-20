@@ -55,6 +55,7 @@ class DbMimic:
                  eicu_data_path=None
                  ):
         self.boolean_features = pd.read_csv(boolean_features_path)
+        self.itemid_to_category_mapping = self.map_itemid_to_category()
         data = [pd.read_csv(mimic_data_path)]
         folds = []
         if folds_path:
@@ -127,14 +128,14 @@ class DbMimic:
             self.invasive_procedures = [' '.join(list(set(distinct_procedures)))]
         return self.invasive_procedures
 
-    def get_events_by_hadm_id(self, hadm_id: str) -> Dict[str, List[Feature]]:
+    def get_events_by_hadm_id(self, hadm_id: str, relevant_rows) -> Dict[str, List[Feature]]:
         """
         Creates a dictionary of labels and thier values, with a given hadm_id
         :param hadm_id: used to identify the patient
         :return: dictionary of labels and their values (value = Feature object)
         """
         patient_dict = {}
-        relevant_rows = self.relevant_events_data.loc[lambda df: df['identifier'] == hadm_id, :]
+        relevant_rows = relevant_rows
         labels = self.get_labels()
         for label in labels:
             patient_dict[label] = []
@@ -154,16 +155,14 @@ class DbMimic:
             patient_dict[label].append(feature)
         return patient_dict
 
-    def get_metadata_by_hadm_id(self, hadm_id: str):
+    def get_metadata_by_hadm_id(self, hadm_id: str, relevant_rows, members):
         """
         Returns a tuple of values which are used as metadata given an hadm_id. Values can be found in Patient object.
+        :param relevant_rows:
         :param hadm_id: id of patient
         :return: tuple of metadata values
         """
-        members = [attr for attr in dir(PatientMimic) if
-                   not callable(getattr(PatientMimic, attr)) and not attr.startswith("__")]
         values = []
-        relevant_rows = self.relevant_events_data.loc[lambda df: df['identifier'] == hadm_id, :]
         for member in members:
             values.append(relevant_rows.iloc[0][member])
         return tuple(values)
@@ -184,18 +183,18 @@ class DbMimic:
                 res.update({fold: [hadm_id]})
         return res
 
-    def get_boolean_features_by_hadm_id(self, hadm_id):
+    def get_boolean_features_by_hadm_id(self, hadm_id, relevant_rows):
         """
         Returns a dictionary contains whether patient with identifier == hadm_id had a procedure.
         :param hadm_id: identifier
         :return: dictionary of boolean features
         """
         res = {key: 0 for key in self.boolean_features['category']}
-        relevant_rows = self.relevant_events_data.loc[lambda df: df['identifier'] == hadm_id, :]
+        boolean_features_itemid_list = list(self.boolean_features['itemid'])
+        relevant_rows = relevant_rows[relevant_rows['itemid'].isin(boolean_features_itemid_list)]
         for event in relevant_rows.iterrows():
-            if event[1]['itemid'] in list(self.boolean_features['itemid']):
-                category = self.boolean_features.loc[lambda df: df['itemid'] == event[1]['itemid'], :]
-                res[list(category['category'])[0]] = 1
+            # category = self.boolean_features.loc[lambda df: df['itemid'] == event[1]['itemid'], :]
+            res[self.itemid_to_category_mapping[event[1]['itemid']]] = 1
         return res
 
     def create_patient_list(self):
@@ -209,16 +208,20 @@ class DbMimic:
         invasive_procedures_vectorizer = CountVectorizer()
         drugs_vectorizer.fit(self.get_drugs())
         invasive_procedures_vectorizer.fit(self.get_invasive_procedures())
+        members = [attr for attr in dir(PatientMimic) if
+                   not callable(getattr(PatientMimic, attr)) and not attr.startswith("__")]
+
         patient_list = []
         for hadm_id in hadm_id_list:
-            estimated_age, gender, target = self.get_metadata_by_hadm_id(hadm_id)
-            symptoms = self.extract_symptoms_by_identifier(hadm_id)
-            drugs = self.extract_drugs_by_identifier(hadm_id)
+            relevant_rows = self.relevant_events_data.loc[lambda df: df['identifier'] == hadm_id, :]
+            estimated_age, gender, target = self.get_metadata_by_hadm_id(hadm_id, relevant_rows, members)
+            symptoms = self.extract_symptoms_by_identifier(hadm_id,relevant_rows)
+            drugs = self.extract_drugs_by_identifier(hadm_id,relevant_rows)
             drugs_vector = sorted(list((drugs_vectorizer.transform(drugs)).toarray()[0]))
-            procedures = self.extract_invasive_procedure_by_identifier(hadm_id)
+            procedures = self.extract_invasive_procedure_by_identifier(hadm_id, relevant_rows)
             procedures_vector = sorted(list((invasive_procedures_vectorizer.transform(procedures)).toarray()[0]))
-            event_list = self.get_events_by_hadm_id(hadm_id)
-            boolean_features = self.get_boolean_features_by_hadm_id(hadm_id)
+            event_list = self.get_events_by_hadm_id(hadm_id, relevant_rows)
+            boolean_features = self.get_boolean_features_by_hadm_id(hadm_id,relevant_rows)
             patient = PatientMimic(hadm_id, estimated_age, gender, symptoms, target, event_list, boolean_features,
                                    drugs_vector, procedures_vector)
             patient_list.append(patient)
@@ -246,38 +249,38 @@ class DbMimic:
             res[feature] = {"min": min_val, "max": max_val}
         return res
 
-    def extract_symptoms_by_identifier(self, identifier):
+    def extract_symptoms_by_identifier(self, identifier, relevant_rows):
         """
         returns a unique mapping of patient's symptoms.
         :param identifier: patient identifier
         """
-        relevant_row = self.relevant_events_data.loc[lambda df: df['identifier'] == identifier, :]
+        relevant_row = relevant_rows
         relevant_row = relevant_row.loc[lambda df: df['label'] == 'symptoms', :]
         for row in relevant_row.iterrows():
             return row[1]['valuenum']
         return 0
 
-    def extract_drugs_by_identifier(self, identifier):
+    def extract_drugs_by_identifier(self, identifier,relevant_rows):
         """
         Returns used drugs by patient.
         :param identifier: patient identifier
         """
         drugs = []
-        relevant_row = self.relevant_events_data.loc[lambda df: df['identifier'] == identifier, :]
+        relevant_row = relevant_rows
         relevant_row = relevant_row.loc[lambda df: df['itemid'] == 1, :]
         for row in relevant_row.iterrows():
             drugs.append(row[1]['label'])
         return [' '.join(drugs)]
 
-    def extract_invasive_procedure_by_identifier(self, identifier):
+    def extract_invasive_procedure_by_identifier(self, identifier, relevant_rows):
         """
         Returns hash of invasive procedures of patient.
         """
         procedures = []
-        relevant_row = self.relevant_events_data.loc[lambda df: df['identifier'] == identifier, :]
+        boolean_features_itemid_list = list(self.boolean_features['itemid'])
+        relevant_row = relevant_rows[relevant_rows['itemid'].isin(boolean_features_itemid_list)]
         for row in relevant_row.iterrows():
-            if row[1]['itemid'] in list(self.boolean_features['itemid']):
-                procedures.append(hashlib.sha1(row[1]['label'].encode()).hexdigest())
+            procedures.append(hashlib.sha1(row[1]['label'].encode()).hexdigest())
         return [' '.join(procedures)]
 
     def parse_value(self, value: str):
@@ -300,3 +303,10 @@ class DbMimic:
                 return np.nan
         except Exception as e:
             return np.nan
+
+    def map_itemid_to_category(self):
+        res = {}
+        for row in self.boolean_features.iterrows():
+            res[row[1]['itemid']] = row[1]['category']
+        return res
+
