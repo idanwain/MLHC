@@ -12,6 +12,11 @@ else:
 
 counter = 0
 
+"""
+This module evaluates the trained model by running 5-folds cross validation.
+Saves plot of AUROC and AUPR.
+"""
+
 
 def load_pre_trained_model(model_type):
     with open(f"pre_trained_model_{model_type}", 'rb') as file:
