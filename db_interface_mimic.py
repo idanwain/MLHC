@@ -185,6 +185,11 @@ class DbMimic:
         return res
 
     def get_boolean_features_by_hadm_id(self, hadm_id):
+        """
+        Returns a dictionary contains whether patient with identifier == hadm_id had a procedure.
+        :param hadm_id: identifier
+        :return: dictionary of boolean features
+        """
         res = {key: 0 for key in self.boolean_features['category']}
         relevant_rows = self.relevant_events_data.loc[lambda df: df['identifier'] == hadm_id, :]
         for event in relevant_rows.iterrows():
@@ -229,6 +234,9 @@ class DbMimic:
         return list({key for key in self.boolean_features['category']})
 
     def build_anomaly_mapping(self):
+        """
+        builds anomaly mapping for features.
+        """
         data = pd.read_csv('human_range.csv')
         res = {}
         for row in data.iterrows():
@@ -239,6 +247,10 @@ class DbMimic:
         return res
 
     def extract_symptoms_by_identifier(self, identifier):
+        """
+        returns a unique mapping of patient's symptoms.
+        :param identifier: patient identifier
+        """
         relevant_row = self.relevant_events_data.loc[lambda df: df['identifier'] == identifier, :]
         relevant_row = relevant_row.loc[lambda df: df['label'] == 'symptoms', :]
         for row in relevant_row.iterrows():
@@ -246,6 +258,10 @@ class DbMimic:
         return 0
 
     def extract_drugs_by_identifier(self, identifier):
+        """
+        Returns used drugs by patient.
+        :param identifier: patient identifier
+        """
         drugs = []
         relevant_row = self.relevant_events_data.loc[lambda df: df['identifier'] == identifier, :]
         relevant_row = relevant_row.loc[lambda df: df['itemid'] == 1, :]
@@ -254,6 +270,9 @@ class DbMimic:
         return [' '.join(drugs)]
 
     def extract_invasive_procedure_by_identifier(self, identifier):
+        """
+        Returns hash of invasive procedures of patient.
+        """
         procedures = []
         relevant_row = self.relevant_events_data.loc[lambda df: df['identifier'] == identifier, :]
         for row in relevant_row.iterrows():
@@ -262,6 +281,9 @@ class DbMimic:
         return [' '.join(procedures)]
 
     def parse_value(self, value: str):
+        """
+        Parses value of a sample into numeric value.
+        """
         value = str(value)
         try:
             if value == 'nan':
