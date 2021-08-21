@@ -18,29 +18,10 @@ Saves plot of AUROC and AUPR.
 """
 
 
-def load_pre_trained_model(model_type):
-    with open(f"pre_trained_model_{model_type}", 'rb') as file:
-        clf = pickle.load(file)
-        return clf
-
-
-def load_balance_method(model_type):
-    with open(f'balance_method_{model_type}', 'rb') as file:
-        clf = pickle.load(file)
-        return clf
-
-
-def load_indices_from_disk(model_type):
-    with open(f'indices_{model_type}', 'rb') as file:
-        indices = pickle.load(file)
-    return indices
-
-
-def load_optimal_values_from_disk(model_type):
-    with open(f'optimal_values_{model_type}', 'rb') as file:
+def load_data_from_disk(path):
+    with open(path, 'rb') as file:
         data = pickle.load(file)
-    return data['feature_threshold'], data['kNN_vals'], data['patient_threshold']
-
+    return data
 
 def evaluate(model_type):
     boolean_features_path = f'C:/tools/boolean_features_mimic_model_{model_type}_train_data.csv' if user == 'idan' \
@@ -65,9 +46,10 @@ def evaluate(model_type):
     patient_list = db.create_patient_list()
 
     # hyper-parameters
-    feature_threshold, n_neighbors, patient_threshold = load_optimal_values_from_disk(model_type)
-    indices = load_indices_from_disk(model_type)
-    balance = load_balance_method(model_type)
+    optimal_values = load_data_from_disk(f'optimal_values_{model_type}')
+    feature_threshold, n_neighbors, patient_threshold = optimal_values['feature_threshold'], optimal_values['kNN_vals'], optimal_values['patient_threshold']
+    indices = load_data_from_disk(f'indices_{model_type}')
+    balance = load_data_from_disk(f'balance_method_{model_type}')
 
     patient_list, percentage_removed, total_removed = utils.remove_patients_by_thershold(patient_list,
                                                                                          patient_threshold)
@@ -98,7 +80,7 @@ def evaluate(model_type):
         y_test = np.array(y_test)
 
         # model fitting
-        clf = load_pre_trained_model(model_type)
+        clf = load_data_from_disk(f"pre_trained_model_{model_type}")
         clf.fit(X_train, y_train)
 
         # performance assessment
@@ -128,4 +110,4 @@ def evaluate(model_type):
 
 
 if __name__ == '__main__':
-    evaluate('a')
+    evaluate('b')
