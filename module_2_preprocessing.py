@@ -88,7 +88,7 @@ def write_exclusion_file(exclusion_data, percentage_removed, total_removed, mode
                    "out of total features were removed."
     file_content += f"\nOn model type {model_type}: {exclusion_data['total_removed']} were removed ({exclusion_data['percentage_removed'] * 100}" \
                     "% of the cohort)"
-    file_content += f"\n{total_removed} patients were removed from the external validation set ({percentage_removed}%)"
+    file_content += f"\n{total_removed} patients were removed from the external validation set ({percentage_removed * 100}%)"
 
     with open("cohort_exclusion.txt", 'w') as file:
         file.write(file_content)
