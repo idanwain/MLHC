@@ -256,10 +256,7 @@ def objective(params, patient_list_base, db, folds):
     ### Class balancing ###
     config[f'balance_method_{fold_num}'] = str(balance[fold_num])
     X_train, y_train = balance[fold_num].fit_resample(X_train, y_train)
-    class_0 = [zero for i, zero in enumerate(y_train) if y_train[i] == 0]
-    class_1 = [one for i, one in enumerate(y_train) if y_train[i] == 1]
-    print('class 0:', len(class_0))
-    print('class 1:', len(class_1))
+
 
     X_train = np.array(X_train)
     y_train = np.array(y_train)
@@ -273,10 +270,6 @@ def objective(params, patient_list_base, db, folds):
     estimator_list = [estimator1, estimator2]
 
     clf, estimator_list, pre_trained_clf = train_model(estimator_list, weight, X_train, y_train)
-
-    if clf is None:
-        auroc_vals = []
-        aupr_vals = []
 
     # performance assessment
     roc_val, ns_fpr, ns_tpr, lr_fpr, lr_tpr = utils.calc_metrics_roc(clf, X_test, y_test, X_train, y_train)
