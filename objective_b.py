@@ -36,7 +36,7 @@ if os.name == 'posix':
 else:
     user = 'idan'
 counter = 0
-model_type = 'b'
+model_type = 'a'
 
 
 boolean_features_path = f'C:/tools/boolean_features_mimic_model_{model_type}_train_data.csv' if user == 'idan' \
@@ -233,7 +233,7 @@ def objective(params, patient_list_base, db, folds):
 
     # fixed fold = fixed train data & fixed test data
     fold_num = 0
-    test_fold = 'fold_1' if model_type == 'b' else 'fold_1.0'
+    test_fold = 'fold_1' if model_type == 'b' else 'fold_4.0'
     # data split
     X_train, y_train, X_test, y_test = utils.split_data_by_folds(data, targets, folds_indices, test_fold)
 

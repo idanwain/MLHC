@@ -1,5 +1,0 @@
-DEBUG:root:Configuration:
-DEBUG:root:{'Feature Threshold': 0.978040775770566, 'Patient Thershold': 0.6917894788465904, 'kNN': 10, 'K_best': 61, 'balance': [BorderlineSMOTE(), BorderlineSMOTE(), BorderlineSMOTE(), BorderlineSMOTE(), BorderlineSMOTE()], 'weight': [25, 7]}
-ERROR:hyperopt.fmin:job exception: Expected 2D array, got 1D array instead:
-array=[].
-Reshape your data either using array.reshape(-1, 1) if your data has a single feature or array.reshape(1, -1) if it contains a single sample.
