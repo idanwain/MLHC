@@ -183,14 +183,13 @@ class DbMimic:
                 res.update({fold: [hadm_id]})
         return res
 
-    def get_boolean_features_by_hadm_id(self, hadm_id, relevant_rows):
+    def get_boolean_features_by_hadm_id(self, hadm_id, relevant_rows, boolean_features_itemid_list):
         """
         Returns a dictionary contains whether patient with identifier == hadm_id had a procedure.
         :param hadm_id: identifier
         :return: dictionary of boolean features
         """
         res = {key: 0 for key in self.boolean_features['category']}
-        boolean_features_itemid_list = list(self.boolean_features['itemid'])
         relevant_rows = relevant_rows[relevant_rows['itemid'].isin(boolean_features_itemid_list)]
         for event in relevant_rows.iterrows():
             # category = self.boolean_features.loc[lambda df: df['itemid'] == event[1]['itemid'], :]
@@ -210,22 +209,27 @@ class DbMimic:
         invasive_procedures_vectorizer.fit(self.get_invasive_procedures())
         members = [attr for attr in dir(PatientMimic) if
                    not callable(getattr(PatientMimic, attr)) and not attr.startswith("__")]
+        boolean_features_itemid_list = list(self.boolean_features['itemid'])
 
         patient_list = []
+        i = 0
         for hadm_id in hadm_id_list:
             relevant_rows = self.relevant_events_data.loc[lambda df: df['identifier'] == hadm_id, :]
             estimated_age, gender, target = self.get_metadata_by_hadm_id(hadm_id, relevant_rows, members)
-            symptoms = self.extract_symptoms_by_identifier(hadm_id,relevant_rows)
-            drugs = self.extract_drugs_by_identifier(hadm_id,relevant_rows)
+            symptoms = self.extract_symptoms_by_identifier(hadm_id, relevant_rows)
+            drugs = self.extract_drugs_by_identifier(hadm_id, relevant_rows)
             drugs_vector = sorted(list((drugs_vectorizer.transform(drugs)).toarray()[0]))
-            procedures = self.extract_invasive_procedure_by_identifier(hadm_id, relevant_rows)
+            procedures = self.extract_invasive_procedure_by_identifier(hadm_id, relevant_rows,
+                                                                       boolean_features_itemid_list)
             procedures_vector = sorted(list((invasive_procedures_vectorizer.transform(procedures)).toarray()[0]))
             event_list = self.get_events_by_hadm_id(hadm_id, relevant_rows)
-            boolean_features = self.get_boolean_features_by_hadm_id(hadm_id,relevant_rows)
+            boolean_features = self.get_boolean_features_by_hadm_id(hadm_id, relevant_rows,
+                                                                    boolean_features_itemid_list)
             patient = PatientMimic(hadm_id, estimated_age, gender, symptoms, target, event_list, boolean_features,
                                    drugs_vector, procedures_vector)
             patient_list.append(patient)
-            print(len(patient_list))
+            i += 1
+            print(i)
         print("Done")
         return patient_list
 
@@ -260,7 +264,7 @@ class DbMimic:
             return row[1]['valuenum']
         return 0
 
-    def extract_drugs_by_identifier(self, identifier,relevant_rows):
+    def extract_drugs_by_identifier(self, identifier, relevant_rows):
         """
         Returns used drugs by patient.
         :param identifier: patient identifier
@@ -272,12 +276,11 @@ class DbMimic:
             drugs.append(row[1]['label'])
         return [' '.join(drugs)]
 
-    def extract_invasive_procedure_by_identifier(self, identifier, relevant_rows):
+    def extract_invasive_procedure_by_identifier(self, identifier, relevant_rows, boolean_features_itemid_list):
         """
         Returns hash of invasive procedures of patient.
         """
         procedures = []
-        boolean_features_itemid_list = list(self.boolean_features['itemid'])
         relevant_row = relevant_rows[relevant_rows['itemid'].isin(boolean_features_itemid_list)]
         for row in relevant_row.iterrows():
             procedures.append(hashlib.sha1(row[1]['label'].encode()).hexdigest())
@@ -309,4 +312,3 @@ class DbMimic:
         for row in self.boolean_features.iterrows():
             res[row[1]['itemid']] = row[1]['category']
         return res
-
