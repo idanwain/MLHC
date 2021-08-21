@@ -38,7 +38,6 @@ else:
 counter = 0
 model_type = 'a'
 
-
 boolean_features_path = f'C:/tools/boolean_features_mimic_model_{model_type}_train_data.csv' if user == 'idan' \
     else f'/Users/user/Documents/University/Workshop/boolean_features_mimic_model_{model_type}_train_data.csv'
 data_path_mimic = f'C:/tools/external_validation_set_{model_type}_train_data.csv' if user == 'idan' \
@@ -47,6 +46,7 @@ folds_path = f'C:/tools/model_{model_type}_folds.csv' if user == 'idan' \
     else f'/Users/user/Documents/University/Workshop/folds_mimic_model_{model_type}.csv'
 data_path_eicu = 'C:/tools/model_a_eicu_cohort_training_data.csv' if user == 'idan' \
     else '/Users/user/Documents/University/Workshop/model_a_eicu_cohort_training_data.csv'
+
 
 def get_fold_indices(patient_list, targets, folds):
     folds_indices = []
@@ -164,11 +164,18 @@ def estimate_best_model(clf, data_mimic, targets_mimic):
     return res
 
 
-def main(given_model_type=None):
+def main(given_model_type=None, given_mimic_data_path=None, given_eicu_data_path=None):
     global model_type
-    # create_cohort_training_data(model_type)
+    global data_path_mimic
+    global data_path_eicu
+    create_cohort_training_data(model_type)
     if given_model_type is not None:
         model_type = given_model_type
+    if given_mimic_data_path is not None:
+        data_path_mimic = given_mimic_data_path
+    if given_eicu_data_path is not None:
+        data_path_eicu = given_eicu_data_path
+
     db = DbMimic(boolean_features_path,
                  mimic_data_path=data_path_mimic,
                  folds_path=folds_path,
@@ -177,7 +184,7 @@ def main(given_model_type=None):
 
     folds = db.get_folds()
     patient_list_base = db.create_patient_list()
-    with open(f'patient_list_base_model_{model_type}','wb') as file:
+    with open(f'patient_list_base_model_{model_type}', 'wb') as file:
         file.write(pickle.dumps(patient_list_base))
     space = {
         'feature_threshold': hp.uniform('thershold_val', 0.5, 1),
@@ -251,11 +258,10 @@ def objective(params, patient_list_base, db, folds):
     ### Class balancing ###
     config[f'balance_method_{fold_num}'] = str(balance[fold_num])
     X_train, y_train = balance[fold_num].fit_resample(X_train, y_train)
-    class_0 = [zero for i,zero in enumerate(y_train) if y_train[i] == 0]
-    class_1 = [one for i,one in enumerate(y_train) if y_train[i] == 1]
+    class_0 = [zero for i, zero in enumerate(y_train) if y_train[i] == 0]
+    class_1 = [one for i, one in enumerate(y_train) if y_train[i] == 1]
     print('class 0:', len(class_0))
     print('class 1:', len(class_1))
-
 
     X_train = np.array(X_train)
     y_train = np.array(y_train)
@@ -290,7 +296,6 @@ def objective(params, patient_list_base, db, folds):
     aupr_avg = np.average([i[0] for i in aupr_vals])
     auroc_std = np.std([i[0] for i in auroc_vals])
     aupr_std = np.std([i[0] for i in aupr_vals])
-
 
     results = {
         "AUROC_AVG": auroc_avg,
