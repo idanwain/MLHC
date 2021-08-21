@@ -184,8 +184,6 @@ def main(given_model_type=None, given_mimic_data_path=None, given_eicu_data_path
 
     folds = db.get_folds()
     patient_list_base = db.create_patient_list()
-    with open(f'patient_list_base_model_{model_type}', 'wb') as file:
-        file.write(pickle.dumps(patient_list_base))
     space = {
         'feature_threshold': hp.uniform('thershold_val', 0.5, 1),
         'patient_threshold': hp.uniform('patient_threshold', 0.5, 1),
