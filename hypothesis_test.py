@@ -12,7 +12,7 @@ This module runs hypothesis test between group with target = 1 and group with ta
 Saves 50 features with most significant difference.
 """
 
-model_type = 'b'
+model_type = 'a'
 if os.name == 'posix':
     user = 'roye'
 else:
@@ -56,7 +56,11 @@ def hypothesis_test():
                  eicu_data_path=data_path_eicu if model_type == 'a' else None
                  )
     patient_list = db.create_patient_list()
-    labels_vector = utils.create_labels_vector(db, [])
+    patient_list, percentage_removed, total_removed = utils.remove_patients_by_thershold(patient_list,
+                                                                                         0.57)
+
+    patient_list, removed_features = utils.remove_features_by_threshold(0.56, patient_list, db)
+    labels_vector = utils.create_labels_vector(db, removed_features)
 
     data_0, data_1 = get_data_vectors(patient_list)
     data = utils.normalize_data(data_0 + data_1)

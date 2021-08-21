@@ -190,7 +190,7 @@ def main(given_model_type=None):
     }
     objective_func = partial(objective, patient_list_base=patient_list_base, db=db, folds=folds)
     trials = Trials()
-    best = fmin(fn=objective_func, space=space, algo=tpe.suggest, max_evals=100, trials=trials, return_argmin=False)
+    best = fmin(fn=objective_func, space=space, algo=tpe.suggest, max_evals=20, trials=trials, return_argmin=False)
     best_model, indices, exclusion, best_model_pre_trained, balance_method = get_best_model_and_indices(trials)
     save_data_to_disk(best_model, indices, best, exclusion, best_model_pre_trained, balance_method)
 

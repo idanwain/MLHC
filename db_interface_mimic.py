@@ -164,8 +164,14 @@ class DbMimic:
         """
         values = []
         for member in members:
-            values.append(relevant_rows.iloc[0][member])
+            try:
+                values.append(relevant_rows.iloc[0][member])
+            except Exception as e:
+                print(member)
+                print(e)
+                exit(1)
         return tuple(values)
+
 
     def get_folds(self):
         """
