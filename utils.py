@@ -234,20 +234,17 @@ def create_labels_vector_by_labels(labels):
     return ret_vecotr
 
 
-def remove_patients_by_thershold(patients_list, thershold):
+def remove_patients_by_thershold(patients_list, threshold):
     max_percentage = int(len(patients_list) * 0.04)
     total_features = len(patients_list[0].events)
     missing_rates = []
     for i, patient in enumerate(patients_list):
         missing_rate = calculate_amount_of_missing_features_for_patient(patient, total_features)
-        if (missing_rate > thershold):
+        if (missing_rate > threshold):
             missing_rates.append((i, missing_rate))
     missing_rates.sort(key=lambda tup: tup[1], reverse=True)
     missing_rates = missing_rates[:max_percentage]
     total_removed = len(missing_rates) / len(patients_list)
-    for t in missing_rates:
-        print("Removing patient with id: %s\nTotal percentage removed: %s" % (
-        patients_list[t[0]].get_identifier(), total_removed))
     return [p for i, p in enumerate(patients_list) if i not in [t[0] for t in missing_rates]], total_removed, len(
         missing_rates)
 

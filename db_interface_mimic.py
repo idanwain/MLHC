@@ -218,7 +218,6 @@ class DbMimic:
         boolean_features_itemid_list = list(self.boolean_features['itemid'])
 
         patient_list = []
-        i = 0
         for hadm_id in hadm_id_list:
             relevant_rows = self.relevant_events_data.loc[lambda df: df['identifier'] == hadm_id, :]
             estimated_age, gender, target = self.get_metadata_by_hadm_id(hadm_id, relevant_rows, members)
@@ -234,8 +233,6 @@ class DbMimic:
             patient = PatientMimic(hadm_id, estimated_age, gender, symptoms, target, event_list, boolean_features,
                                    drugs_vector, procedures_vector)
             patient_list.append(patient)
-            i += 1
-            print(i)
         print("Done")
         return patient_list
 
