@@ -88,7 +88,7 @@ def split_data_by_folds(data, labels, folds, test_fold):
     return X_train, y_train, X_test, y_test
 
 
-def calc_metrics_roc(clf, X_test, y_test, X_train, y_train, display_plots=False):
+def calc_metrics_roc(clf, X_test, y_test, X_train, y_train):
     try:
         y_score = clf.predict_proba(X_test)
     except Exception as e:
@@ -129,20 +129,6 @@ def log_dict(vals=None, msg=None, log_path="log_file"):
         logging.debug(msg)
     if vals:
         logging.debug(str(vals))
-
-
-def remove_features_by_intersected_list(final_list, patient_list):
-    """
-    Removes all features that doesn't apear in final_list
-    :param final_list: final list of intersected features
-    :param patient_list: list of patients
-    :return: list of patients after removing irrelevant features
-    """
-    for patient in patient_list:
-        for feature in patient.events.copy():
-            if feature not in final_list:
-                del patient.events[feature]
-    return patient_list
 
 
 def plot_graphs(auroc_vals, aupr_vals, counter, objective: str):

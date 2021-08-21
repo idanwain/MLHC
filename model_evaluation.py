@@ -25,7 +25,7 @@ def load_pre_trained_model(model_type):
 
 
 def load_balance_method(model_type):
-    with open('balance_method_' + model_type, 'rb') as file:
+    with open(f'balance_method_{model_type}', 'rb') as file:
         clf = pickle.load(file)
         return clf
 
